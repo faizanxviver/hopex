@@ -378,7 +378,7 @@ function Admin() {
                 onBlur={(e) =>
                   update((d) => {
                     const value = k === "siteName" ? e.target.value : Number(e.target.value);
-                    (d.settings as Record<string, unknown>)[k] = value;
+                    (d.settings as unknown as Record<string, unknown>)[k] = value;
                     return d;
                   })
                 }
