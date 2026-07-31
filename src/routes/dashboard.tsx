@@ -22,7 +22,15 @@ import {
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, StatCard, StatusBadge } from "@/components/glass";
 import { Progress } from "@/components/ui/progress";
-import { investmentProgress, money, referralTree, useStore } from "@/lib/store";
+import {
+  depositBalance,
+  hasActivePlan,
+  investmentProgress,
+  money,
+  pendingDeposits,
+  referralTree,
+  useStore,
+} from "@/lib/store";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
