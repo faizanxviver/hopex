@@ -332,6 +332,8 @@ interface Ctx {
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<string | null>;
   redeemPromo: (code: string, amount: number) => Promise<{ bonus: number; code: string } | null>;
+  claimEarnings: () => Promise<number>;
+
   addNotification: (userId: string, n: Omit<AppNotification, "id" | "userId" | "read" | "createdAt">) => void;
   theme: "dark" | "light";
   toggleTheme: () => void;
@@ -601,6 +603,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     logout,
     resetPassword,
     redeemPromo,
+    claimEarnings,
+
     addNotification,
     theme,
     toggleTheme,
