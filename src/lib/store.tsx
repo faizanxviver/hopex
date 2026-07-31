@@ -58,7 +58,11 @@ export interface ChatMessage {
   from: "user" | "support";
   text: string;
   createdAt: string;
+  status?: "sent" | "delivered" | "read";
+  attachment?: { name: string; kind: "image" | "file"; url?: string };
+  replyTo?: { from: "user" | "support"; text: string };
 }
+
 
 export interface PromoCode {
   id: string;
@@ -346,6 +350,9 @@ interface Ctx {
   addNotification: (userId: string, n: Omit<AppNotification, "id" | "userId" | "read" | "createdAt">) => void;
   theme: "dark" | "light";
   toggleTheme: () => void;
+  chatOpen: boolean;
+  setChatOpen: (v: boolean) => void;
+
 }
 
 const StoreContext = createContext<Ctx | null>(null);
@@ -353,14 +360,16 @@ const StoreContext = createContext<Ctx | null>(null);
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [db, setDb] = useState<DB>(() => seed());
   const [hydrated, setHydrated] = useState(false);
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light">("light");
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
       if (raw) setDb(JSON.parse(raw) as DB);
-      const t = (localStorage.getItem(KEY + "-theme") as "dark" | "light") || "dark";
+      const t = (localStorage.getItem(KEY + "-theme") as "dark" | "light") || "light";
       setTheme(t);
+
     } catch {
       /* ignore */
     }
@@ -500,7 +509,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     addNotification,
     theme,
     toggleTheme,
+    chatOpen,
+    setChatOpen,
   };
+
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
 
@@ -537,4 +549,22 @@ export function investmentProgress(inv: Investment) {
   const elapsed = (Date.now() - new Date(inv.startedAt).getTime()) / 86400000;
   const pct = Math.min(100, (elapsed / inv.durationDays) * 100);
   return { pct, daysLeft: Math.max(0, Math.ceil(inv.durationDays - elapsed)) };
+}
+
+/** A user may withdraw only after purchasing at least one investment plan. */
+export function hasActivePlan(db: DB, userId: string) {
+  return db.investments.some((i) => i.userId === userId);
+}
+
+/** Total funds the user has deposited and that were approved by an admin. */
+export function depositBalance(db: DB, userId: string) {
+  return db.transactions
+    .filter((t) => t.userId === userId && t.type === "deposit" && (t.status === "approved" || t.status === "completed"))
+    .reduce((a, t) => a + t.amount, 0);
+}
+
+export function pendingDeposits(db: DB, userId: string) {
+  return db.transactions
+    .filter((t) => t.userId === userId && t.type === "deposit" && (t.status === "pending" || t.status === "processing"))
+    .reduce((a, t) => a + t.amount, 0);
 }

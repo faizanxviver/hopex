@@ -114,7 +114,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
         <HeadContent />
       </head>
@@ -135,7 +135,23 @@ function RootComponent() {
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <LiveChat />
-        <Toaster position="top-right" richColors />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            classNames: {
+              toast:
+                "glass !rounded-2xl !border-border/60 !text-foreground !shadow-[var(--shadow-elegant)] !backdrop-blur-xl",
+              title: "!font-semibold",
+              description: "!text-muted-foreground",
+              actionButton: "!bg-primary !text-primary-foreground",
+              cancelButton: "!bg-muted !text-muted-foreground",
+              success: "!border-success/40",
+              error: "!border-destructive/40",
+              warning: "!border-warning/40",
+              info: "!border-primary/40",
+            },
+          }}
+        />
       </StoreProvider>
     </QueryClientProvider>
   );

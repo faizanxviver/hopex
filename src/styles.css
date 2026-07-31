@@ -253,3 +253,40 @@
 .animate-rise {
   animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+/* WhatsApp-style chat wallpaper */
+.chat-wallpaper {
+  background-color: color-mix(in oklab, var(--muted) 55%, var(--background));
+  background-image:
+    radial-gradient(circle at 15% 20%, color-mix(in oklab, var(--primary) 10%, transparent) 0 2px, transparent 3px),
+    radial-gradient(circle at 65% 55%, color-mix(in oklab, var(--gold) 14%, transparent) 0 2px, transparent 3px),
+    radial-gradient(circle at 85% 85%, color-mix(in oklab, var(--primary) 8%, transparent) 0 2px, transparent 3px);
+  background-size: 120px 120px;
+}
+
+/* Payment gateway — deliberately a different visual world from the app */
+.gateway-scope {
+  --gw-bg: #071a16;
+  --gw-panel: #0e2a24;
+  --gw-line: #1c463b;
+  --gw-text: #e6fff6;
+  --gw-dim: #83b3a4;
+  --gw-accent: #12d18e;
+  --gw-accent-2: #0aa3ff;
+  color: var(--gw-text);
+  background:
+    radial-gradient(1000px 600px at 15% -10%, #12d18e22, transparent 60%),
+    radial-gradient(900px 600px at 90% 110%, #0aa3ff22, transparent 60%),
+    var(--gw-bg);
+  font-family: var(--font-sans);
+}
+.gw-panel {
+  background: linear-gradient(180deg, #ffffff08, #ffffff03);
+  border: 1px solid var(--gw-line);
+  border-radius: 18px;
+}
+.gw-accent-btn {
+  background: linear-gradient(135deg, var(--gw-accent), var(--gw-accent-2));
+  color: #04231b;
+  font-weight: 700;
+}
