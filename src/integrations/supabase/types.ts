@@ -288,6 +288,7 @@ export type Database = {
           id: string
           method: string | null
           note: string | null
+          proof_url: string | null
           reference: string | null
           status: Database["public"]["Enums"]["tx_status"]
           type: Database["public"]["Enums"]["tx_type"]
@@ -299,6 +300,7 @@ export type Database = {
           id?: string
           method?: string | null
           note?: string | null
+          proof_url?: string | null
           reference?: string | null
           status?: Database["public"]["Enums"]["tx_status"]
           type: Database["public"]["Enums"]["tx_type"]
@@ -310,6 +312,7 @@ export type Database = {
           id?: string
           method?: string | null
           note?: string | null
+          proof_url?: string | null
           reference?: string | null
           status?: Database["public"]["Enums"]["tx_status"]
           type?: Database["public"]["Enums"]["tx_type"]

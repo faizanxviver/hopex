@@ -10,9 +10,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/referrals")({
   head: () => ({
     meta: [
-      { title: "Referral Program — Aurum Capital" },
+      { title: "Referral Program — HopeX" },
       { name: "description", content: "Earn across 4 referral levels: 10%, 2%, 1% and 4% commission on downline investments." },
-      { property: "og:title", content: "Referral Program — Aurum Capital" },
+      { property: "og:title", content: "Referral Program — HopeX" },
       { property: "og:description", content: "Build a team and earn four levels deep." },
     ],
   }),

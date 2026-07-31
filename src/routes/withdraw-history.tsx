@@ -6,10 +6,10 @@ import { money, useStore } from "@/lib/store";
 export const Route = createFileRoute("/withdraw-history")({
   head: () => ({
     meta: [
-      { title: "Withdraw History — Aurum Capital" },
+      { title: "Withdraw History — HopeX" },
       { name: "description", content: "Track every payout request from pending to completed." },
-      { property: "og:title", content: "Withdraw History — Aurum Capital" },
-      { property: "og:description", content: "Payout status tracking for your Aurum Capital wallet." },
+      { property: "og:title", content: "Withdraw History — HopeX" },
+      { property: "og:description", content: "Payout status tracking for your HopeX wallet." },
     ],
   }),
   component: () => (

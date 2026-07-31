@@ -26,10 +26,10 @@ import { useState } from "react";
 export const Route = createFileRoute("/more")({
   head: () => ({
     meta: [
-      { title: "More — Aurum Capital" },
+      { title: "More — HopeX" },
       { name: "description", content: "Withdrawals, history, security, language, support and account tools in one place." },
-      { property: "og:title", content: "More — Aurum Capital" },
-      { property: "og:description", content: "All your Aurum Capital account tools." },
+      { property: "og:title", content: "More — HopeX" },
+      { property: "og:description", content: "All your HopeX account tools." },
     ],
   }),
   component: () => (
@@ -67,7 +67,7 @@ function More() {
 
   return (
     <div className="space-y-6">
-      <SectionTitle title="More" subtitle="Everything else in your Aurum Capital account." />
+      <SectionTitle title="More" subtitle="Everything else in your HopeX account." />
 
       <GlassCard className="flex flex-wrap items-center gap-4">
         <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl gradient-brand font-display text-xl font-black text-primary-foreground">
@@ -236,13 +236,13 @@ function More() {
             </span>
           </button>
 
-          <a href="mailto:support@aurum.io" className="glass flex items-center gap-3 rounded-2xl p-4">
+          <a href="mailto:support@hopex.io" className="glass flex items-center gap-3 rounded-2xl p-4">
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
               <LifeBuoy className="h-5 w-5" />
             </span>
             <span>
               <span className="block text-sm font-semibold">Help centre</span>
-              <span className="block text-xs text-muted-foreground">support@aurum.io</span>
+              <span className="block text-xs text-muted-foreground">support@hopex.io</span>
             </span>
           </a>
         </div>

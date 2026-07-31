@@ -12,9 +12,9 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
-      { title: "Profile & Settings — Aurum Capital" },
+      { title: "Profile & Settings — HopeX" },
       { name: "description", content: "Update your profile, complete KYC, manage security and notification preferences." },
-      { property: "og:title", content: "Profile & Settings — Aurum Capital" },
+      { property: "og:title", content: "Profile & Settings — HopeX" },
       { property: "og:description", content: "Account, KYC and security settings." },
     ],
   }),

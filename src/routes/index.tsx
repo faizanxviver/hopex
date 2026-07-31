@@ -22,13 +22,13 @@ import { useStore } from "@/lib/store";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Aurum Capital — Premium Investment Platform" },
+      { title: "HopeX — Premium Investment Platform" },
       {
         name: "description",
         content:
           "Grow capital with transparent daily ROI plans, instant deposits and withdrawals, and a 4-level referral program built for serious investors.",
       },
-      { property: "og:title", content: "Aurum Capital — Premium Investment Platform" },
+      { property: "og:title", content: "HopeX — Premium Investment Platform" },
       {
         property: "og:description",
         content: "Daily ROI plans, secure wallet, and a 4-level affiliate program.",
@@ -239,7 +239,7 @@ function Landing() {
               </a>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">© 2026 Aurum Capital. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground">© 2026 HopeX. All rights reserved.</p>
         </div>
       </footer>
     </div>

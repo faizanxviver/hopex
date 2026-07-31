@@ -32,7 +32,7 @@ export function Brand({ compact }: { compact?: boolean }) {
       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl gradient-brand font-display text-sm font-black text-primary-foreground">
         A
       </span>
-      {!compact ? <span className="font-display text-lg font-extrabold">Aurum Capital</span> : null}
+      {!compact ? <span className="font-display text-lg font-extrabold">HopeX</span> : null}
     </Link>
   );
 }

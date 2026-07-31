@@ -80,14 +80,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Aurum Capital — Premium Investment Platform" },
+      { title: "HopeX — Premium Investment Platform" },
       {
         name: "description",
         content:
-          "Aurum Capital is a premium investment platform with daily ROI plans, instant deposits, withdrawals and a 4-level referral program.",
+          "HopeX is a premium investment platform with daily ROI plans, instant deposits, withdrawals and a 4-level referral program.",
       },
-      { name: "author", content: "Aurum Capital" },
-      { property: "og:title", content: "Aurum Capital — Premium Investment Platform" },
+      { name: "author", content: "HopeX" },
+      { property: "og:title", content: "HopeX — Premium Investment Platform" },
       {
         property: "og:description",
         content: "Daily ROI investment plans, secure wallet and a 4-level affiliate program.",

@@ -16,10 +16,10 @@ export const Route = createFileRoute("/auth")({
   }),
   head: () => ({
     meta: [
-      { title: "Sign in or create an account — Aurum Capital" },
-      { name: "description", content: "Access your Aurum Capital investment wallet, plans and referral dashboard." },
-      { property: "og:title", content: "Sign in — Aurum Capital" },
-      { property: "og:description", content: "Secure access to your Aurum Capital investment account." },
+      { title: "Sign in or create an account — HopeX" },
+      { name: "description", content: "Access your HopeX investment wallet, plans and referral dashboard." },
+      { property: "og:title", content: "Sign in — HopeX" },
+      { property: "og:description", content: "Secure access to your HopeX investment account." },
     ],
   }),
   component: AuthPage,
@@ -67,7 +67,7 @@ function AuthPage() {
       : await login(form.email, form.password);
     setLoading(false);
     if (error) return toast.error(error);
-    if (isSignup) toast.success("Account created — welcome to Aurum Capital!");
+    if (isSignup) toast.success("Account created — welcome to HopeX!");
     else toast.success("Welcome back!");
     navigate({ to: "/dashboard" });
   };

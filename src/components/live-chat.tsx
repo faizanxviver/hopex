@@ -148,7 +148,7 @@ export function LiveChat() {
             A
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold">Aurum Support</p>
+            <p className="truncate text-sm font-semibold">HopeX Support</p>
             <p className="truncate text-[11px] opacity-90">{typing ? "typing…" : "online"}</p>
           </div>
           <button aria-label="Voice call" className="shrink-0 opacity-90">
@@ -240,7 +240,7 @@ export function LiveChat() {
                     {m.replyTo ? (
                       <div className="mb-1 rounded-md border-l-2 border-primary bg-primary/10 px-2 py-1 text-[11px] text-muted-foreground">
                         <span className="block font-semibold text-primary">
-                          {m.replyTo.from === "user" ? "You" : "Aurum Support"}
+                          {m.replyTo.from === "user" ? "You" : "HopeX Support"}
                         </span>
                         <span className="line-clamp-2">{m.replyTo.text}</span>
                       </div>
@@ -315,7 +315,7 @@ export function LiveChat() {
           <div className="flex items-center gap-2 border-t border-border bg-card px-3 py-2">
             <div className="min-w-0 flex-1 rounded-md border-l-2 border-primary bg-primary/10 px-2 py-1 text-[11px]">
               <span className="block font-semibold text-primary">
-                {reply.from === "user" ? "You" : "Aurum Support"}
+                {reply.from === "user" ? "You" : "HopeX Support"}
               </span>
               <span className="line-clamp-1 text-muted-foreground">{reply.text}</span>
             </div>
