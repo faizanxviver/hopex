@@ -69,24 +69,60 @@ function Admin() {
     toast.success(`Marked as ${status}.`);
   };
 
+  const pendingDeps = deposits.filter((t) => t.status === "pending").length;
+  const pendingWds = withdrawals.filter((t) => t.status === "pending").length;
+  const counts: Partial<Record<(typeof tabs)[number], number>> = {
+    Users: users.length,
+    Deposits: pendingDeps,
+    Withdrawals: pendingWds,
+    "Support Chat": db.chats.filter((c) => c.from === "user").length,
+  };
+
   return (
     <div>
       <SectionTitle title="Admin panel" subtitle="Full control over users, money flow and platform configuration." />
 
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
-        {tabs.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={cn(
-              "shrink-0 rounded-xl px-4 py-2 text-sm font-semibold transition",
-              tab === t ? "gradient-cool text-primary-foreground" : "glass-soft text-muted-foreground",
-            )}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
+      <div className="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)]">
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <div className="glass rounded-3xl p-3">
+            <p className="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Console
+            </p>
+            <nav className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+              {tabs.map((t) => {
+                const Icon = tabIcons[t];
+                return (
+                  <button
+                    key={t}
+                    onClick={() => setTab(t)}
+                    className={cn(
+                      "flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition lg:w-full",
+                      tab === t
+                        ? "gradient-cool text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                    )}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{t}</span>
+                    {counts[t] ? (
+                      <span
+                        className={cn(
+                          "ml-auto hidden rounded-full px-2 py-0.5 text-[10px] font-bold lg:inline",
+                          tab === t ? "bg-background/25" : "bg-primary/15 text-primary",
+                        )}
+                      >
+                        {counts[t]}
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </aside>
+
+        <div>
+
 
       {tab === "Overview" ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
