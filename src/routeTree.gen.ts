@@ -10,33 +10,193 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DepositRouteImport } from './routes/deposit'
+import { Route as DepositHistoryRouteImport } from './routes/deposit-history'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as PlansRouteImport } from './routes/plans'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ReferralsRouteImport } from './routes/referrals'
+import { Route as TransactionsRouteImport } from './routes/transactions'
+import { Route as WithdrawRouteImport } from './routes/withdraw'
+import { Route as WithdrawHistoryRouteImport } from './routes/withdraw-history'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DepositRoute = DepositRouteImport.update({
+  id: '/deposit',
+  path: '/deposit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DepositHistoryRoute = DepositHistoryRouteImport.update({
+  id: '/deposit-history',
+  path: '/deposit-history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlansRoute = PlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReferralsRoute = ReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TransactionsRoute = TransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WithdrawRoute = WithdrawRouteImport.update({
+  id: '/withdraw',
+  path: '/withdraw',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WithdrawHistoryRoute = WithdrawHistoryRouteImport.update({
+  id: '/withdraw-history',
+  path: '/withdraw-history',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof DashboardRoute
+  '/deposit': typeof DepositRoute
+  '/deposit-history': typeof DepositHistoryRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/plans': typeof PlansRoute
+  '/profile': typeof ProfileRoute
+  '/referrals': typeof ReferralsRoute
+  '/transactions': typeof TransactionsRoute
+  '/withdraw': typeof WithdrawRoute
+  '/withdraw-history': typeof WithdrawHistoryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof DashboardRoute
+  '/deposit': typeof DepositRoute
+  '/deposit-history': typeof DepositHistoryRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/plans': typeof PlansRoute
+  '/profile': typeof ProfileRoute
+  '/referrals': typeof ReferralsRoute
+  '/transactions': typeof TransactionsRoute
+  '/withdraw': typeof WithdrawRoute
+  '/withdraw-history': typeof WithdrawHistoryRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof DashboardRoute
+  '/deposit': typeof DepositRoute
+  '/deposit-history': typeof DepositHistoryRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/plans': typeof PlansRoute
+  '/profile': typeof ProfileRoute
+  '/referrals': typeof ReferralsRoute
+  '/transactions': typeof TransactionsRoute
+  '/withdraw': typeof WithdrawRoute
+  '/withdraw-history': typeof WithdrawHistoryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/dashboard'
+    | '/deposit'
+    | '/deposit-history'
+    | '/forgot-password'
+    | '/plans'
+    | '/profile'
+    | '/referrals'
+    | '/transactions'
+    | '/withdraw'
+    | '/withdraw-history'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/dashboard'
+    | '/deposit'
+    | '/deposit-history'
+    | '/forgot-password'
+    | '/plans'
+    | '/profile'
+    | '/referrals'
+    | '/transactions'
+    | '/withdraw'
+    | '/withdraw-history'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/dashboard'
+    | '/deposit'
+    | '/deposit-history'
+    | '/forgot-password'
+    | '/plans'
+    | '/profile'
+    | '/referrals'
+    | '/transactions'
+    | '/withdraw'
+    | '/withdraw-history'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  AuthRoute: typeof AuthRoute
+  DashboardRoute: typeof DashboardRoute
+  DepositRoute: typeof DepositRoute
+  DepositHistoryRoute: typeof DepositHistoryRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  PlansRoute: typeof PlansRoute
+  ProfileRoute: typeof ProfileRoute
+  ReferralsRoute: typeof ReferralsRoute
+  TransactionsRoute: typeof TransactionsRoute
+  WithdrawRoute: typeof WithdrawRoute
+  WithdrawHistoryRoute: typeof WithdrawHistoryRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +208,108 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/deposit': {
+      id: '/deposit'
+      path: '/deposit'
+      fullPath: '/deposit'
+      preLoaderRoute: typeof DepositRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/deposit-history': {
+      id: '/deposit-history'
+      path: '/deposit-history'
+      fullPath: '/deposit-history'
+      preLoaderRoute: typeof DepositHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plans': {
+      id: '/plans'
+      path: '/plans'
+      fullPath: '/plans'
+      preLoaderRoute: typeof PlansRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/referrals': {
+      id: '/referrals'
+      path: '/referrals'
+      fullPath: '/referrals'
+      preLoaderRoute: typeof ReferralsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/transactions': {
+      id: '/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof TransactionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/withdraw': {
+      id: '/withdraw'
+      path: '/withdraw'
+      fullPath: '/withdraw'
+      preLoaderRoute: typeof WithdrawRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/withdraw-history': {
+      id: '/withdraw-history'
+      path: '/withdraw-history'
+      fullPath: '/withdraw-history'
+      preLoaderRoute: typeof WithdrawHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  AuthRoute: AuthRoute,
+  DashboardRoute: DashboardRoute,
+  DepositRoute: DepositRoute,
+  DepositHistoryRoute: DepositHistoryRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  PlansRoute: PlansRoute,
+  ProfileRoute: ProfileRoute,
+  ReferralsRoute: ReferralsRoute,
+  TransactionsRoute: TransactionsRoute,
+  WithdrawRoute: WithdrawRoute,
+  WithdrawHistoryRoute: WithdrawHistoryRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
