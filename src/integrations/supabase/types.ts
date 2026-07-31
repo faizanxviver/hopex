@@ -353,7 +353,7 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       my_network_codes: { Args: never; Returns: string[] }
       redeem_promo: {
-        Args: { _code: string }
+        Args: { _amount?: number; _code: string }
         Returns: {
           bonus: number
           code: string
