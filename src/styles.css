@@ -363,3 +363,16 @@
 [dir="rtl"] body {
   letter-spacing: 0;
 }
+
+/* Hide the Lovable badge without affecting layout */
+#lovable-badge,
+#lovable-badge-close,
+a[href*="lovable.dev/projects"],
+a[href*="lovable.dev?utm"],
+[id^="lovable-badge"],
+[class*="lovable-badge"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
