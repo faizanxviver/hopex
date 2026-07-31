@@ -62,17 +62,16 @@ function AuthPage() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      const error = isSignup
-        ? signup(form.name.trim(), form.email.trim(), form.password, form.ref.trim())
-        : login(form.email, form.password);
-      setLoading(false);
-      if (error) return toast.error(error);
-      if (isSignup) toast.success("Account created — verification email simulated ✉️");
-      else toast.success("Welcome back!");
-      navigate({ to: "/dashboard" });
-    }, 750);
+    const error = isSignup
+      ? await signup(form.name.trim(), form.email.trim(), form.password, form.ref.trim())
+      : await login(form.email, form.password);
+    setLoading(false);
+    if (error) return toast.error(error);
+    if (isSignup) toast.success("Account created — welcome to Aurum Capital!");
+    else toast.success("Welcome back!");
+    navigate({ to: "/dashboard" });
   };
+
 
   return (
     <div className="relative grid min-h-screen place-items-center px-4 py-10">
