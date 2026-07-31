@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { statusLabel } from "@/lib/store";
 import type { ReactNode } from "react";
 
 export function GlassCard({
@@ -62,8 +63,8 @@ export function StatCard({
 
 export function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    pending: "bg-warning/15 text-warning border-warning/30",
-    processing: "bg-primary/15 text-primary border-primary/30",
+    pending: "bg-primary/12 text-primary border-primary/30",
+    processing: "bg-primary/12 text-primary border-primary/30",
     approved: "bg-success/15 text-success border-success/30",
     completed: "bg-success/15 text-success border-success/30",
     rejected: "bg-destructive/15 text-destructive border-destructive/30",
@@ -71,11 +72,12 @@ export function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold capitalize",
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold",
         map[status] ?? "bg-muted text-muted-foreground border-border",
       )}
     >
-      {status}
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      {statusLabel(status)}
     </span>
   );
 }

@@ -21,7 +21,6 @@ import { uploadProofImage } from "@/lib/uploads.functions";
 
 export interface GatewayResult {
   method: string;
-  reference: string;
   proof: string;
   proofUrl?: string;
 }
@@ -71,7 +70,6 @@ export function PaymentGateway({
 }) {
   const [step, setStep] = useState<Step>("connecting");
   const [method, setMethod] = useState<(typeof GW_METHODS)[number] | null>(null);
-  const [reference, setReference] = useState("");
   const [proof, setProof] = useState("");
   const [proofUrl, setProofUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -307,20 +305,14 @@ export function PaymentGateway({
           <div className="space-y-4">
             <div className="gw-panel p-5">
               <p className="text-sm font-bold">Confirm your payment</p>
-              <label className="mt-4 block text-xs" style={{ color: "var(--gw-dim)" }}>
-                Transaction ID / TRX hash
-              </label>
-              <input
-                value={reference}
-                onChange={(e) => setReference(e.target.value)}
-                placeholder="e.g. TXN-9F2K10AB"
-                className="mt-1.5 h-12 w-full rounded-xl px-4 text-sm outline-none"
-                style={{ background: "#ffffff0d", border: "1px solid var(--gw-line)", color: "var(--gw-text)" }}
-              />
+              <p className="mt-1 text-xs" style={{ color: "var(--gw-dim)" }}>
+                Just upload the payment screenshot — no transaction ID needed.
+              </p>
 
               <label className="mt-4 block text-xs" style={{ color: "var(--gw-dim)" }}>
                 Payment screenshot (required)
               </label>
+
               <label
                 className="mt-1.5 flex cursor-pointer items-center gap-3 rounded-xl px-4 py-5 text-sm"
                 style={{ border: "1px dashed var(--gw-line)", background: "#ffffff08" }}
@@ -363,11 +355,11 @@ export function PaymentGateway({
             </div>
 
             <button
-              disabled={!reference.trim() || !proofUrl || uploading}
+              disabled={!proofUrl || uploading}
               onClick={submit}
               className={cn(
                 "h-12 w-full rounded-xl gw-accent-btn",
-                (!reference.trim() || !proofUrl || uploading) && "opacity-40",
+                (!proofUrl || uploading) && "opacity-40",
               )}
             >
               {uploading ? "Uploading screenshot…" : "Submit payment"}
@@ -395,7 +387,7 @@ export function PaymentGateway({
               the funds are credited.
             </p>
             <button
-              onClick={() => onComplete({ method: method.id, reference: reference.trim(), proof, proofUrl })}
+              onClick={() => onComplete({ method: method.id, proof, proofUrl })}
               className="gw-accent-btn mt-3 h-12 w-full rounded-xl"
             >
               Exit gateway

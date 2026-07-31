@@ -40,8 +40,10 @@ export interface Investment {
   dailyRoi: number;
   durationDays: number;
   startedAt: string;
+  lastPayoutAt: string;
   earned: number;
 }
+
 
 export interface AppNotification {
   id: string;
@@ -210,6 +212,7 @@ const toInvestment = (r: Row): Investment => ({
   dailyRoi: num(r.daily_roi),
   durationDays: Number(r.duration_days),
   startedAt: r.started_at as string,
+  lastPayoutAt: (r.last_payout_at as string) ?? (r.started_at as string),
   earned: num(r.earned),
 });
 
@@ -223,7 +226,9 @@ const fromInvestment = (i: Investment): Row => ({
   duration_days: i.durationDays,
   earned: i.earned,
   started_at: i.startedAt,
+  last_payout_at: i.lastPayoutAt,
 });
+
 
 const toNotification = (r: Row): AppNotification => ({
   id: r.id as string,
@@ -327,6 +332,8 @@ interface Ctx {
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<string | null>;
   redeemPromo: (code: string, amount: number) => Promise<{ bonus: number; code: string } | null>;
+  claimEarnings: () => Promise<number>;
+
   addNotification: (userId: string, n: Omit<AppNotification, "id" | "userId" | "read" | "createdAt">) => void;
   theme: "dark" | "light";
   toggleTheme: () => void;
@@ -582,6 +589,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return { bonus: num(row.bonus), code: row.code as string };
   }, []);
 
+  /** Credits every completed 24-hour income cycle to the withdrawable balance. */
+  const claimEarnings = useCallback(async () => {
+    const { data, error } = await supabase.rpc("claim_earnings");
+    if (error) return 0;
+    const total = num(data);
+    if (total > 0) await load(sessionRef.current);
+    return total;
+  }, [load]);
+
+
   const toggleTheme = useCallback(() => setTheme((t) => (t === "dark" ? "light" : "dark")), []);
 
   const value: Ctx = {
@@ -596,6 +613,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     logout,
     resetPassword,
     redeemPromo,
+    claimEarnings,
+
     addNotification,
     theme,
     toggleTheme,
@@ -658,3 +677,50 @@ export function pendingDeposits(db: DB, userId: string) {
     .filter((t) => t.userId === userId && t.type === "deposit" && (t.status === "pending" || t.status === "processing"))
     .reduce((a, t) => a + t.amount, 0);
 }
+
+const DAY_MS = 86400000;
+
+/** Investments that still have income cycles remaining. */
+export function activeInvestments(db: DB, userId: string) {
+  return db.investments.filter((i) => {
+    const daily = (i.amount * i.dailyRoi) / 100;
+    if (daily <= 0) return false;
+    return Math.round(i.earned / daily) < i.durationDays;
+  });
+}
+
+/**
+ * Income accrued in real time since the last credited cycle.
+ * Displayed as a live ticker; the actual credit happens on the server every 24h.
+ */
+export function liveEarnings(db: DB, userId: string, atMs = Date.now()) {
+  return activeInvestments(db, userId).reduce((sum, i) => {
+    const daily = (i.amount * i.dailyRoi) / 100;
+    const elapsed = Math.max(0, atMs - new Date(i.lastPayoutAt).getTime());
+    return sum + daily * Math.min(1, elapsed / DAY_MS);
+  }, 0);
+}
+
+/** Milliseconds until the next automatic payout, or null when nothing is running. */
+export function nextPayoutIn(db: DB, userId: string, atMs = Date.now()) {
+  const times = activeInvestments(db, userId).map(
+    (i) => new Date(i.lastPayoutAt).getTime() + DAY_MS - atMs,
+  );
+  if (!times.length) return null;
+  return Math.max(0, Math.min(...times));
+}
+
+/** Total daily income across every running plan. */
+export function dailyIncome(db: DB, userId: string) {
+  return activeInvestments(db, userId).reduce((s, i) => s + (i.amount * i.dailyRoi) / 100, 0);
+}
+
+export const STATUS_LABEL: Record<string, string> = {
+  pending: "Processing",
+  processing: "Processing",
+  approved: "Successful",
+  completed: "Successful",
+  rejected: "Declined",
+};
+
+export const statusLabel = (s: string) => STATUS_LABEL[s] ?? s;

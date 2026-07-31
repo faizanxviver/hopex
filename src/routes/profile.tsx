@@ -1,21 +1,21 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { IdCard, Upload } from "lucide-react";
+import { Calculator, Languages, Moon, Sun } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { Switch } from "@/components/ui/switch";
-import { useStore } from "@/lib/store";
+import { money, useStore } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
       { title: "Profile & Settings — HopeX" },
-      { name: "description", content: "Update your profile, complete KYC, manage security and notification preferences." },
+      { name: "description", content: "Update your profile, manage security, language, theme and notification preferences." },
       { property: "og:title", content: "Profile & Settings — HopeX" },
-      { property: "og:description", content: "Account, KYC and security settings." },
+      { property: "og:description", content: "Account, security and preference settings." },
     ],
   }),
   component: () => (
@@ -28,13 +28,16 @@ export const Route = createFileRoute("/profile")({
 });
 
 function Profile() {
-  const { user, update } = useStore();
+  const { user, update, theme, toggleTheme } = useStore();
+  const { t } = useT();
   const [form, setForm] = useState({ name: user?.name ?? "", email: user?.email ?? "", phone: user?.phone ?? "" });
   const [pwd, setPwd] = useState({ current: "", next: "" });
   const [prefs, setPrefs] = useState({ email: true, push: true, marketing: false });
-  const [docs, setDocs] = useState({ front: "", back: "" });
+  const [calc, setCalc] = useState({ amount: "1000", roi: "2.4", days: "60" });
 
   if (!user) return null;
+
+  const profit = (Number(calc.amount) || 0) * ((Number(calc.roi) || 0) / 100) * (Number(calc.days) || 0);
 
   const save = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,11 +53,11 @@ function Profile() {
 
   return (
     <div>
-      <SectionTitle title="Profile & settings" subtitle="Manage your identity, security and preferences." />
+      <SectionTitle title={t("Profile & settings")} subtitle="Manage your identity, security and preferences." />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <GlassCard>
-          <h2 className="text-lg font-bold">Personal details</h2>
+          <h2 className="text-lg font-bold">{t("Personal details")}</h2>
           <form onSubmit={save} className="mt-4 space-y-3">
             {(["name", "email", "phone"] as const).map((k) => (
               <div key={k}>
@@ -66,56 +69,12 @@ function Profile() {
                 />
               </div>
             ))}
-            <button className="h-12 w-full rounded-xl gradient-brand font-semibold text-primary-foreground">
-              Save changes
-            </button>
+            <button className="btn-glass btn-glass-primary h-12 w-full font-semibold">{t("Save")}</button>
           </form>
         </GlassCard>
 
         <GlassCard>
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-lg font-bold">KYC verification</h2>
-            <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold capitalize text-primary">
-              {user.kyc.replace("_", " ")}
-            </span>
-          </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Upload a government ID (front and back) to unlock higher withdrawal limits.
-          </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {(["front", "back"] as const).map((side) => (
-              <label
-                key={side}
-                className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl border border-dashed border-border p-6 text-center text-xs text-muted-foreground"
-              >
-                <IdCard className="h-6 w-6" />
-                <span className="truncate">{docs[side] || `ID card ${side}`}</span>
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={(e) => setDocs((d) => ({ ...d, [side]: e.target.files?.[0]?.name ?? "" }))}
-                />
-              </label>
-            ))}
-          </div>
-          <button
-            onClick={() => {
-              if (!docs.front || !docs.back) return toast.error("Upload both sides of your ID.");
-              update((d) => {
-                const me = d.users.find((u) => u.id === user.id)!;
-                me.kyc = "pending";
-                return d;
-              });
-              toast.success("KYC documents submitted for review.");
-            }}
-            className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl gradient-cool font-semibold text-primary-foreground"
-          >
-            <Upload className="h-4 w-4" /> Submit for review
-          </button>
-        </GlassCard>
-
-        <GlassCard>
-          <h2 className="text-lg font-bold">Security</h2>
+          <h2 className="text-lg font-bold">{t("Security")}</h2>
           <div className="mt-4 space-y-3">
             <input
               type="password"
@@ -144,7 +103,7 @@ function Profile() {
                 setPwd({ current: "", next: "" });
                 toast.success("Password changed.");
               }}
-              className="h-12 w-full rounded-xl gradient-brand font-semibold text-primary-foreground"
+              className="btn-glass btn-glass-primary h-12 w-full font-semibold"
             >
               Change password
             </button>
@@ -170,22 +129,22 @@ function Profile() {
         </GlassCard>
 
         <GlassCard>
-          <h2 className="text-lg font-bold">Preferences</h2>
+          <h2 className="text-lg font-bold">{t("Preferences")}</h2>
           <div className="mt-4 space-y-3">
-            {(
-              [
-                ["email", "Email notifications"],
-                ["push", "In-app notifications"],
-                ["marketing", "Product & promo updates"],
-              ] as const
-            ).map(([k, label]) => (
-              <div key={k} className="flex items-center justify-between rounded-xl glass-soft px-4 py-3">
-                <p className="text-sm font-medium">{label}</p>
-                <Switch checked={prefs[k]} onCheckedChange={(v) => setPrefs((p) => ({ ...p, [k]: v }))} />
+            <div className="flex items-center justify-between rounded-xl glass-soft px-4 py-3">
+              <div className="flex items-center gap-3">
+                <span className="grid h-9 w-9 place-items-center rounded-lg bg-accent text-accent-foreground">
+                  {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </span>
+                <p className="text-sm font-semibold">{theme === "dark" ? t("Light mode") : t("Dark mode")}</p>
               </div>
-            ))}
+              <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
+            </div>
+
             <div className="rounded-xl glass-soft px-4 py-3">
-              <p className="mb-2 text-sm font-medium">Language</p>
+              <p className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                <Languages className="h-4 w-4" /> {t("Language")}
+              </p>
               <div className="flex gap-2">
                 {(["en", "ur"] as const).map((l) => (
                   <button
@@ -200,8 +159,8 @@ function Profile() {
                     }}
                     className={
                       user.language === l
-                        ? "rounded-lg gradient-cool px-4 py-1.5 text-xs font-semibold text-primary-foreground"
-                        : "rounded-lg glass-soft px-4 py-1.5 text-xs font-semibold text-muted-foreground"
+                        ? "btn-glass btn-glass-primary px-4 py-1.5 text-xs font-semibold"
+                        : "btn-glass px-4 py-1.5 text-xs font-semibold text-muted-foreground"
                     }
                   >
                     {l === "en" ? "English" : "اردو"}
@@ -209,7 +168,49 @@ function Profile() {
                 ))}
               </div>
             </div>
+
+            {(
+              [
+                ["email", "Email notifications"],
+                ["push", "In-app notifications"],
+                ["marketing", "Product & promo updates"],
+              ] as const
+            ).map(([k, label]) => (
+              <div key={k} className="flex items-center justify-between rounded-xl glass-soft px-4 py-3">
+                <p className="text-sm font-medium">{label}</p>
+                <Switch checked={prefs[k]} onCheckedChange={(v) => setPrefs((p) => ({ ...p, [k]: v }))} />
+              </div>
+            ))}
           </div>
+        </GlassCard>
+
+        <GlassCard>
+          <h2 className="flex items-center gap-2 text-lg font-bold">
+            <Calculator className="h-4 w-4 text-primary" /> {t("Profit calculator")}
+          </h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            {(
+              [
+                ["amount", "Amount (USD)"],
+                ["roi", "Daily ROI (%)"],
+                ["days", "Duration (days)"],
+              ] as const
+            ).map(([k, label]) => (
+              <label key={k} className="text-xs text-muted-foreground">
+                {label}
+                <input
+                  type="number"
+                  value={calc[k]}
+                  onChange={(e) => setCalc((c) => ({ ...c, [k]: e.target.value }))}
+                  className="mt-1 h-11 w-full rounded-xl border border-input bg-background/40 px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+                />
+              </label>
+            ))}
+          </div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Projected profit: <b className="text-success">{money(profit)}</b> · total return{" "}
+            <b className="text-gold">{money(profit + (Number(calc.amount) || 0))}</b>
+          </p>
         </GlassCard>
       </div>
     </div>

@@ -71,10 +71,11 @@ function Deposit() {
         type: "deposit",
         amount: value,
         method: r.method,
-        reference: r.reference || r.proof,
+        reference: r.proof || undefined,
         proofUrl: r.proofUrl,
         note: r.proof ? `Proof: ${r.proof}` : undefined,
-        status: "pending",
+        status: "processing",
+
         createdAt: timestamp(),
       });
       if (bonus > 0) {

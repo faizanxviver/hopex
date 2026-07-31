@@ -1,36 +1,37 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
-  Bell,
-  ArrowDownToLine,
+  BellRing,
+  CircleDollarSign,
   Gem,
-  Grid2x2,
-  LayoutDashboard,
+  LayoutGrid,
+  Headset,
   LogOut,
-  MessageCircle,
   Moon,
-  Shield,
+  ShieldHalf,
   Sun,
-  Users,
+  UsersRound,
+  House,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useStore } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 /** Primary navigation — Withdraw intentionally lives under "More". */
 export const primaryNav = [
-  { to: "/dashboard", label: "Dashboard", short: "Home", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Dashboard", short: "Home", icon: House },
   { to: "/plans", label: "Plans", short: "Plans", icon: Gem },
-  { to: "/deposit", label: "Deposit", short: "Deposit", icon: ArrowDownToLine },
-  { to: "/referrals", label: "Referrals", short: "Team", icon: Users },
-  { to: "/more", label: "More", short: "More", icon: Grid2x2 },
+  { to: "/deposit", label: "Deposit", short: "Deposit", icon: CircleDollarSign },
+  { to: "/referrals", label: "Referrals", short: "Team", icon: UsersRound },
+  { to: "/more", label: "More", short: "More", icon: LayoutGrid },
 ] as const;
 
 export function Brand({ compact }: { compact?: boolean }) {
   return (
     <Link to="/" className="flex items-center gap-2">
       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl gradient-brand font-display text-sm font-black text-primary-foreground">
-        A
+        H
       </span>
       {!compact ? <span className="font-display text-lg font-extrabold">HopeX</span> : null}
     </Link>
@@ -59,70 +60,76 @@ export function AuthGuard({ children, admin }: { children: ReactNode; admin?: bo
 
 function NotificationBell() {
   const { db, user, update } = useStore();
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const items = db.notifications.filter((n) => n.userId === user?.id);
   const unread = items.filter((n) => !n.read).length;
 
   return (
-    <div className="relative">
+    <>
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="Notifications"
         className="relative grid h-10 w-10 place-items-center rounded-xl glass-soft"
       >
-        <Bell className="h-4 w-4" />
+        <BellRing className="h-4 w-4" />
         {unread > 0 ? (
           <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
             {unread}
           </span>
         ) : null}
       </button>
+
       {open ? (
-        <div className="animate-rise absolute right-0 z-50 mt-2 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-2xl glass">
-          <div className="flex items-center justify-between gap-2 border-b border-border/60 px-4 py-3">
-            <p className="font-semibold">Notifications</p>
-            <button
-              className="text-xs text-primary"
-              onClick={() =>
-                update((d) => {
-                  d.notifications = d.notifications.map((n) =>
-                    n.userId === user?.id ? { ...n, read: true } : n,
-                  );
-                  return d;
-                })
-              }
-            >
-              Mark all read
-            </button>
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          {/* Anchored to the viewport so the panel can never overflow on mobile. */}
+          <div className="animate-rise fixed inset-x-3 top-[4.5rem] z-50 overflow-hidden rounded-2xl glass sm:inset-x-auto sm:right-4 sm:w-80">
+            <div className="flex items-center justify-between gap-2 border-b border-border/60 px-4 py-3">
+              <p className="font-semibold">{t("Notifications")}</p>
+              <button
+                className="text-xs text-primary"
+                onClick={() =>
+                  update((d) => {
+                    d.notifications = d.notifications.map((n) =>
+                      n.userId === user?.id ? { ...n, read: true } : n,
+                    );
+                    return d;
+                  })
+                }
+              >
+                {t("Mark all read")}
+              </button>
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto">
+              {items.length === 0 ? (
+                <p className="p-4 text-sm text-muted-foreground">{t("No notifications yet.")}</p>
+              ) : (
+                items.map((n) => (
+                  <button
+                    key={n.id}
+                    onClick={() =>
+                      update((d) => {
+                        const target = d.notifications.find((x) => x.id === n.id);
+                        if (target) target.read = true;
+                        return d;
+                      })
+                    }
+                    className={cn(
+                      "block w-full border-b border-border/40 p-4 text-left transition hover:bg-accent/40",
+                      !n.read && "bg-primary/5",
+                    )}
+                  >
+                    <p className="text-sm font-semibold">{n.title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{n.body}</p>
+                  </button>
+                ))
+              )}
+            </div>
           </div>
-          <div className="max-h-80 overflow-y-auto">
-            {items.length === 0 ? (
-              <p className="p-4 text-sm text-muted-foreground">No notifications yet.</p>
-            ) : (
-              items.map((n) => (
-                <button
-                  key={n.id}
-                  onClick={() =>
-                    update((d) => {
-                      const t = d.notifications.find((x) => x.id === n.id);
-                      if (t) t.read = true;
-                      return d;
-                    })
-                  }
-                  className={cn(
-                    "block w-full border-b border-border/40 p-4 text-left transition hover:bg-accent/40",
-                    !n.read && "bg-primary/5",
-                  )}
-                >
-                  <p className="text-sm font-semibold">{n.title}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{n.body}</p>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
+        </>
       ) : null}
-    </div>
+    </>
   );
 }
 
@@ -136,7 +143,7 @@ function ChatButton() {
       aria-label="Open live chat"
       className="relative grid h-10 w-10 place-items-center rounded-xl glass-soft"
     >
-      <MessageCircle className="h-4 w-4" />
+      <Headset className="h-4 w-4" />
       {unread > 0 ? (
         <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-success px-1 text-[10px] font-bold text-background">
           {unread}
@@ -148,6 +155,7 @@ function ChatButton() {
 
 export function DashboardLayout({ children, wide }: { children: ReactNode; wide?: boolean }) {
   const { user, logout, theme, toggleTheme } = useStore();
+  const { t } = useT();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
@@ -167,12 +175,12 @@ export function DashboardLayout({ children, wide }: { children: ReactNode; wide?
                 className={cn(
                   "flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition",
                   pathname === l.to
-                    ? "gradient-cool text-primary-foreground shadow-lg"
+                    ? "btn-glass btn-glass-primary"
                     : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
                 )}
               >
                 <l.icon className="h-4 w-4" />
-                {l.label}
+                {t(l.label)}
               </Link>
             ))}
             {user?.role === "admin" ? (
@@ -181,12 +189,12 @@ export function DashboardLayout({ children, wide }: { children: ReactNode; wide?
                 className={cn(
                   "flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition",
                   pathname === "/admin"
-                    ? "gradient-brand text-primary-foreground"
+                    ? "btn-glass btn-glass-gold"
                     : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
                 )}
               >
-                <Shield className="h-4 w-4" />
-                Admin
+                <ShieldHalf className="h-4 w-4" />
+                {t("Admin")}
               </Link>
             ) : null}
           </nav>
@@ -210,7 +218,7 @@ export function DashboardLayout({ children, wide }: { children: ReactNode; wide?
             </Link>
             <button
               onClick={() => {
-                logout();
+                void logout();
                 navigate({ to: "/", replace: true });
               }}
               aria-label="Sign out"
@@ -222,24 +230,27 @@ export function DashboardLayout({ children, wide }: { children: ReactNode; wide?
         </div>
       </header>
 
-      <main className={cn("mx-auto px-4 pb-28 pt-6 md:pb-12", wide ? "max-w-[100rem]" : "max-w-7xl")}>
+      <main className={cn("mx-auto px-4 pb-32 pt-6 md:pb-12", wide ? "max-w-[100rem]" : "max-w-7xl")}>
         {children}
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 glass-soft rounded-none px-2 py-2 md:hidden">
-        {primaryNav.map((l) => (
-          <Link
-            key={l.to}
-            to={l.to}
-            className={cn(
-              "flex flex-col items-center gap-1 rounded-xl py-1 text-[10px] font-medium",
-              pathname === l.to ? "text-primary" : "text-muted-foreground",
-            )}
-          >
-            <l.icon className="h-4 w-4" />
-            {l.short}
-          </Link>
-        ))}
+      <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 gap-1 rounded-3xl glass px-2 py-2 md:hidden">
+        {primaryNav.map((l) => {
+          const active = pathname === l.to;
+          return (
+            <Link
+              key={l.to}
+              to={l.to}
+              className={cn(
+                "flex flex-col items-center gap-1 rounded-2xl py-2 text-[10px] font-semibold transition",
+                active ? "btn-glass btn-glass-primary" : "text-muted-foreground",
+              )}
+            >
+              <l.icon className="h-[18px] w-[18px]" />
+              {t(l.short)}
+            </Link>
+          );
+        })}
       </nav>
     </div>
   );

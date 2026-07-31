@@ -290,3 +290,76 @@
   color: #04231b;
   font-weight: 700;
 }
+
+/* Glossy reflective action buttons */
+@utility btn-glass {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 1.25rem;
+  border: 1px solid var(--glass-border);
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--card) 92%, transparent), color-mix(in oklab, var(--card) 62%, transparent));
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 55%, transparent),
+    0 14px 30px -18px color-mix(in oklab, var(--primary) 60%, transparent);
+  backdrop-filter: blur(18px) saturate(150%);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 55% 0;
+    background: linear-gradient(180deg, color-mix(in oklab, white 42%, transparent), transparent);
+    pointer-events: none;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 40%;
+    height: 100%;
+    transform: skewX(-18deg);
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, white 45%, transparent), transparent);
+    transition: left 0.65s ease;
+    pointer-events: none;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &:hover::after {
+    left: 120%;
+  }
+}
+
+@utility btn-glass-primary {
+  color: var(--primary-foreground);
+  background: var(--gradient-cool);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 45%, transparent),
+    0 18px 38px -18px color-mix(in oklab, var(--primary) 85%, transparent);
+}
+
+@utility btn-glass-gold {
+  color: var(--gold-foreground);
+  background: linear-gradient(135deg, color-mix(in oklab, var(--gold) 92%, white), var(--gold));
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 55%, transparent),
+    0 18px 38px -18px color-mix(in oklab, var(--gold) 80%, transparent);
+}
+
+@keyframes tick-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.animate-tick {
+  animation: tick-pulse 1.6s ease-in-out infinite;
+}
+
+[dir="rtl"] body {
+  letter-spacing: 0;
+}

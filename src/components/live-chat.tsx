@@ -164,6 +164,14 @@ export function LiveChat() {
           >
             <Search className="h-4 w-4" />
           </button>
+          <button
+            aria-label="Exit chat"
+            onClick={() => setChatOpen(false)}
+            className="shrink-0 rounded-lg bg-primary-foreground/15 p-1.5"
+          >
+            <X className="h-4 w-4" />
+          </button>
+
           <div className="relative shrink-0">
             <button aria-label="Chat menu" onClick={() => setMenu((m) => !m)} className="opacity-90">
               <MoreVertical className="h-4 w-4" />
