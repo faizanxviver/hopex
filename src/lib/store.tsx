@@ -349,9 +349,18 @@ const TABLES: Record<Coll, { table: string; from: (x: never) => Row; insertable:
 
 type WithId = { id: string };
 
+/* Loosely typed handle: the sync layer writes to tables generically. */
+type LooseQuery = {
+  insert: (rows: Row[]) => PromiseLike<{ error: unknown }>;
+  update: (row: Row) => { eq: (col: string, val: unknown) => PromiseLike<{ error: unknown }> };
+  delete: () => { in: (col: string, vals: string[]) => PromiseLike<{ error: unknown }> };
+};
+const sb = supabase as unknown as { from: (table: string) => LooseQuery };
+
 /** Persists the difference between two in-memory snapshots to the database. */
 async function persistDiff(prev: DB, next: DB) {
-  const jobs: Promise<unknown>[] = [];
+  const jobs: PromiseLike<{ error: unknown }>[] = [];
+
 
   (Object.keys(TABLES) as Coll[]).forEach((key) => {
     const meta = TABLES[key];
