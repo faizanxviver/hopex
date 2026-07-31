@@ -307,20 +307,14 @@ export function PaymentGateway({
           <div className="space-y-4">
             <div className="gw-panel p-5">
               <p className="text-sm font-bold">Confirm your payment</p>
-              <label className="mt-4 block text-xs" style={{ color: "var(--gw-dim)" }}>
-                Transaction ID / TRX hash
-              </label>
-              <input
-                value={reference}
-                onChange={(e) => setReference(e.target.value)}
-                placeholder="e.g. TXN-9F2K10AB"
-                className="mt-1.5 h-12 w-full rounded-xl px-4 text-sm outline-none"
-                style={{ background: "#ffffff0d", border: "1px solid var(--gw-line)", color: "var(--gw-text)" }}
-              />
+              <p className="mt-1 text-xs" style={{ color: "var(--gw-dim)" }}>
+                Just upload the payment screenshot — no transaction ID needed.
+              </p>
 
               <label className="mt-4 block text-xs" style={{ color: "var(--gw-dim)" }}>
                 Payment screenshot (required)
               </label>
+
               <label
                 className="mt-1.5 flex cursor-pointer items-center gap-3 rounded-xl px-4 py-5 text-sm"
                 style={{ border: "1px dashed var(--gw-line)", background: "#ffffff08" }}
