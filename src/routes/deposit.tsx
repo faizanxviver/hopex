@@ -29,7 +29,7 @@ export const Route = createFileRoute("/deposit")({
 const QUICK = [100, 250, 500, 1000, 2500, 5000];
 
 function Deposit() {
-  const { db, user, update, addNotification } = useStore();
+  const { db, user, update, addNotification, redeemPromo } = useStore();
   const [amount, setAmount] = useState<string>("");
   const [promo, setPromo] = useState("");
   const [gateway, setGateway] = useState<number | null>(null);
