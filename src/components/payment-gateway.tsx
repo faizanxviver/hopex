@@ -21,7 +21,6 @@ import { uploadProofImage } from "@/lib/uploads.functions";
 
 export interface GatewayResult {
   method: string;
-  reference: string;
   proof: string;
   proofUrl?: string;
 }
@@ -71,7 +70,6 @@ export function PaymentGateway({
 }) {
   const [step, setStep] = useState<Step>("connecting");
   const [method, setMethod] = useState<(typeof GW_METHODS)[number] | null>(null);
-  const [reference, setReference] = useState("");
   const [proof, setProof] = useState("");
   const [proofUrl, setProofUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -357,11 +355,11 @@ export function PaymentGateway({
             </div>
 
             <button
-              disabled={!reference.trim() || !proofUrl || uploading}
+              disabled={!proofUrl || uploading}
               onClick={submit}
               className={cn(
                 "h-12 w-full rounded-xl gw-accent-btn",
-                (!reference.trim() || !proofUrl || uploading) && "opacity-40",
+                (!proofUrl || uploading) && "opacity-40",
               )}
             >
               {uploading ? "Uploading screenshot…" : "Submit payment"}
@@ -389,7 +387,7 @@ export function PaymentGateway({
               the funds are credited.
             </p>
             <button
-              onClick={() => onComplete({ method: method.id, reference: reference.trim(), proof, proofUrl })}
+              onClick={() => onComplete({ method: method.id, proof, proofUrl })}
               className="gw-accent-btn mt-3 h-12 w-full rounded-xl"
             >
               Exit gateway
