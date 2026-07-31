@@ -323,7 +323,7 @@ interface Ctx {
   login: (email: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<string | null>;
-  redeemPromo: (code: string) => Promise<{ bonus: number; code: string } | null>;
+  redeemPromo: (code: string, amount: number) => Promise<{ bonus: number; code: string } | null>;
   addNotification: (userId: string, n: Omit<AppNotification, "id" | "userId" | "read" | "createdAt">) => void;
   theme: "dark" | "light";
   toggleTheme: () => void;
@@ -572,8 +572,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return error ? error.message : null;
   }, []);
 
-  const redeemPromo = useCallback(async (code: string) => {
-    const { data, error } = await supabase.rpc("redeem_promo", { _code: code.trim() });
+  const redeemPromo = useCallback(async (code: string, amount: number) => {
+    const { data, error } = await supabase.rpc("redeem_promo", { _code: code.trim(), _amount: amount });
     if (error || !data || !(data as unknown[]).length) return null;
     const row = (data as Row[])[0];
     return { bonus: num(row.bonus), code: row.code as string };
