@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
+  Activity,
   ArrowDownToLine,
+  Clock,
+  ShieldCheck,
   CreditCard,
   ArrowUpFromLine,
   LayoutDashboard,
