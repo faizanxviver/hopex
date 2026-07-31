@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
+  Activity,
   ArrowDownToLine,
+  Clock,
+  ShieldCheck,
   CreditCard,
   ArrowUpFromLine,
   LayoutDashboard,
@@ -16,7 +19,8 @@ import {
 
 import { toast } from "sonner";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
-import { GlassCard, SectionTitle, StatCard, StatusBadge } from "@/components/glass";
+import { AdminChat } from "@/components/admin-chat";
+import { GlassCard, StatCard, StatusBadge } from "@/components/glass";
 import { money, newId, timestamp, useStore } from "@/lib/store";
 import { uploadProofImage } from "@/lib/uploads.functions";
 import type { TxStatus } from "@/lib/store";
@@ -126,70 +130,161 @@ function Admin() {
     "Support Chat": db.chats.filter((c) => c.from === "user").length,
   };
 
+  const groups: { label: string; items: (typeof tabs)[number][] }[] = [
+    { label: "Operations", items: ["Overview", "Users", "Support Chat"] },
+    { label: "Money flow", items: ["Deposits", "Withdrawals", "Methods"] },
+    { label: "Growth", items: ["Plans", "Promo Codes", "Broadcast"] },
+    { label: "System", items: ["Settings"] },
+  ];
+  const recent = db.transactions.slice(0, 6);
+
   return (
     <div>
-      <SectionTitle
-        title="Admin panel"
-        subtitle="Full control over users, money flow and platform configuration."
-      />
+      {/* Console header */}
+      <div className="glass relative mb-5 overflow-hidden rounded-3xl p-5 sm:p-6">
+        <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-primary/25 blur-3xl" />
+        <div className="relative flex flex-wrap items-center gap-4">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl gradient-brand text-primary-foreground">
+            <ShieldCheck className="h-6 w-6" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h1 className="font-display text-2xl font-extrabold sm:text-3xl">HopeX Console</h1>
+            <p className="text-sm text-muted-foreground">
+              Live control over users, money flow, plans and support.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setTab("Deposits")}
+              className={cn(
+                "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold",
+                pendingDeps ? "bg-destructive/15 text-destructive" : "glass-soft",
+              )}
+            >
+              <Clock className="h-3.5 w-3.5" /> {pendingDeps} deposits waiting
+            </button>
+            <button
+              onClick={() => setTab("Withdrawals")}
+              className={cn(
+                "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold",
+                pendingWds ? "bg-destructive/15 text-destructive" : "glass-soft",
+              )}
+            >
+              <Clock className="h-3.5 w-3.5" /> {pendingWds} withdrawals waiting
+            </button>
+          </div>
+        </div>
+      </div>
 
-      <div className="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <div className="grid gap-5 lg:grid-cols-[15.5rem_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="glass rounded-3xl p-3">
-            <p className="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              HopeX Console
-            </p>
-            <nav className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
-              {tabs.map((t) => {
-                const Icon = tabIcons[t];
-                return (
-                  <button
-                    key={t}
-                    onClick={() => setTab(t)}
-                    className={cn(
-                      "flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition lg:w-full",
-                      tab === t
-                        ? "gradient-cool text-primary-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
-                    )}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    <span className="truncate">{t}</span>
-                    {counts[t] ? (
-                      <span
+            <nav className="flex gap-2 overflow-x-auto pb-1 lg:block lg:space-y-3 lg:overflow-visible lg:pb-0">
+              {groups.map((g) => (
+                <div key={g.label} className="flex gap-2 lg:block">
+                  <p className="hidden px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground lg:block">
+                    {g.label}
+                  </p>
+                  {g.items.map((t) => {
+                    const Icon = tabIcons[t];
+                    return (
+                      <button
+                        key={t}
+                        onClick={() => setTab(t)}
                         className={cn(
-                          "ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold",
-                          tab === t ? "bg-background/25" : "bg-primary/15 text-primary",
+                          "flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition lg:w-full",
+                          tab === t
+                            ? "gradient-cool text-primary-foreground shadow-[var(--shadow-elegant)]"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground",
                         )}
                       >
-                        {counts[t]}
-                      </span>
-                    ) : null}
-                  </button>
-                );
-              })}
+                        <Icon className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{t}</span>
+                        {counts[t] ? (
+                          <span
+                            className={cn(
+                              "ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold",
+                              tab === t ? "bg-background/25" : "bg-primary/15 text-primary",
+                            )}
+                          >
+                            {counts[t]}
+                          </span>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
             </nav>
           </div>
         </aside>
 
         <div>
           {tab === "Overview" ? (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              <StatCard label="Total users" value={String(users.length)} />
-              <StatCard label="Total deposits" value={money(totalDeposits)} accent="success" />
-              <StatCard label="Total withdrawals" value={money(totalWithdrawals)} accent="gold" />
-              <StatCard label="Active investments" value={String(db.investments.length)} />
-              <StatCard
-                label="Capital invested"
-                value={money(db.investments.reduce((a, i) => a + i.amount, 0))}
-              />
-              <StatCard
-                label="Platform profit"
-                value={money(Math.max(0, totalDeposits - totalWithdrawals))}
-                accent="success"
-              />
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <StatCard label="Total users" value={String(users.length)} icon={<Users className="h-5 w-5" />} />
+                <StatCard
+                  label="Total deposits"
+                  value={money(totalDeposits)}
+                  accent="success"
+                  icon={<ArrowDownToLine className="h-5 w-5" />}
+                />
+                <StatCard
+                  label="Total withdrawals"
+                  value={money(totalWithdrawals)}
+                  accent="gold"
+                  icon={<ArrowUpFromLine className="h-5 w-5" />}
+                />
+                <StatCard
+                  label="Active investments"
+                  value={String(db.investments.length)}
+                  icon={<TrendingUp className="h-5 w-5" />}
+                />
+                <StatCard
+                  label="Capital invested"
+                  value={money(db.investments.reduce((a, i) => a + i.amount, 0))}
+                />
+                <StatCard
+                  label="Platform profit"
+                  value={money(Math.max(0, totalDeposits - totalWithdrawals))}
+                  accent="success"
+                />
+              </div>
+
+              <GlassCard>
+                <div className="mb-3 flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-primary" />
+                  <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                    Recent activity
+                  </h2>
+                </div>
+                <div className="space-y-2">
+                  {recent.map((t) => (
+                    <div
+                      key={t.id}
+                      className="flex items-center gap-3 rounded-2xl glass-soft px-3 py-2.5"
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold capitalize">
+                          {t.type} · {db.users.find((u) => u.id === t.userId)?.name ?? "—"}
+                        </span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {t.method ?? "—"}
+                        </span>
+                      </span>
+                      <span className="text-sm font-bold">{money(t.amount)}</span>
+                      <StatusBadge status={t.status} />
+                    </div>
+                  ))}
+                  {recent.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No activity yet.</p>
+                  ) : null}
+                </div>
+              </GlassCard>
             </div>
           ) : null}
+
 
           {tab === "Users" ? (
             <GlassCard className="overflow-x-auto p-0">
@@ -679,202 +774,8 @@ function BroadcastForm({
   );
 }
 
-function AdminChat() {
-  const { db, update } = useStore();
-  const chatUsers = Array.from(new Set(db.chats.map((c) => c.userId)));
-  const [selected, setSelected] = useState(chatUsers[0] ?? "");
-  const [text, setText] = useState("");
-  const messages = db.chats.filter((c) => c.userId === selected);
 
-  const person = db.users.find((u) => u.id === selected);
-  const acted = (msg: string) => toast.success(msg);
 
-  const adjust = (delta: number, label: string) =>
-    update((d) => {
-      const u = d.users.find((x) => x.id === selected);
-      if (u) u.balance = Math.max(0, u.balance + delta);
-      if (u)
-        d.transactions.unshift({
-          id: newId(),
-          userId: u.id,
-          type: delta >= 0 ? "bonus" : "withdraw",
-          amount: Math.abs(delta),
-          method: label,
-          status: "completed",
-          createdAt: timestamp(),
-        });
-      return d;
-    });
-
-  return (
-    <div className="grid gap-4 lg:grid-cols-[15rem_minmax(0,1fr)_17rem]">
-      <GlassCard className="p-3">
-        {chatUsers.map((id) => {
-          const u = db.users.find((x) => x.id === id);
-          return (
-            <button
-              key={id}
-              onClick={() => setSelected(id)}
-              className={cn(
-                "block w-full truncate rounded-xl px-3 py-2 text-left text-sm font-medium",
-                selected === id ? "gradient-cool text-primary-foreground" : "text-muted-foreground",
-              )}
-            >
-              {u?.name ?? id}
-            </button>
-          );
-        })}
-      </GlassCard>
-      <GlassCard className="flex h-[28rem] flex-col p-0">
-        <div className="flex-1 space-y-3 overflow-y-auto p-4">
-          {messages.map((m) => (
-            <div
-              key={m.id}
-              className={m.from === "support" ? "flex justify-end" : "flex justify-start"}
-            >
-              <p
-                className={
-                  m.from === "support"
-                    ? "max-w-[75%] rounded-2xl bg-primary px-3 py-2 text-sm text-primary-foreground"
-                    : "max-w-[75%] rounded-2xl bg-secondary px-3 py-2 text-sm text-secondary-foreground"
-                }
-              >
-                {m.text}
-              </p>
-            </div>
-          ))}
-          {messages.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No messages.</p>
-          ) : null}
-        </div>
-        <div className="flex gap-2 border-t border-border/60 p-3">
-          <input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Reply to user…"
-            className="h-11 flex-1 rounded-xl border border-input bg-background/40 px-3 text-sm outline-none"
-          />
-          <button
-            onClick={() => {
-              if (!text.trim() || !selected) return;
-              const value = text.trim();
-              setText("");
-              update((d) => {
-                d.chats.push({
-                  id: newId(),
-                  userId: selected,
-                  from: "support",
-                  text: value,
-                  createdAt: timestamp(),
-                });
-                return d;
-              });
-            }}
-            className="rounded-xl gradient-brand px-5 text-sm font-semibold text-primary-foreground"
-          >
-            Send
-          </button>
-        </div>
-      </GlassCard>
-
-      {person ? (
-        <GlassCard className="space-y-3">
-          <div>
-            <p className="font-display text-lg font-extrabold">{person.name}</p>
-            <p className="text-xs text-muted-foreground">{person.phone ?? person.email}</p>
-          </div>
-          <div className="space-y-1.5 rounded-2xl glass-soft p-3 text-sm">
-            <Line label="Balance" value={money(person.balance)} />
-            <Line label="Invested" value={money(person.invested)} />
-            <Line label="Earnings" value={money(person.earnings)} />
-            <Line label="Referral code" value={person.referralCode} />
-            <Line label="Referred by" value={person.referredBy ?? "—"} />
-            <Line
-              label="Active plans"
-              value={String(db.investments.filter((i) => i.userId === person.id).length)}
-            />
-            <Line label="Status" value={person.blocked ? "Frozen" : "Active"} />
-          </div>
-
-          <button
-            onClick={() => {
-              const v = prompt(`Add funds to ${person.name} (PKR)`, "1000");
-              if (!v || isNaN(Number(v))) return;
-              adjust(Number(v), "Admin credit");
-              acted("Funds added.");
-            }}
-            className="btn-glass btn-glass-primary flex h-11 w-full items-center justify-center text-xs font-bold"
-          >
-            Add funds
-          </button>
-          <button
-            onClick={() => {
-              const v = prompt(`Deduct funds from ${person.name} (PKR)`, "1000");
-              if (!v || isNaN(Number(v))) return;
-              adjust(-Number(v), "Admin adjustment");
-              acted("Funds deducted.");
-            }}
-            className="btn-glass flex h-11 w-full items-center justify-center text-xs font-semibold text-foreground"
-          >
-            Deduct funds
-          </button>
-          <button
-            onClick={() => {
-              update((d) => {
-                const u = d.users.find((x) => x.id === person.id);
-                if (u) u.blocked = !u.blocked;
-                return d;
-              });
-              acted(person.blocked ? "Account unfrozen." : "Account frozen.");
-            }}
-            className="w-full rounded-xl bg-destructive/15 py-2.5 text-xs font-bold text-destructive"
-          >
-            {person.blocked ? "Unfreeze account" : "Freeze account"}
-          </button>
-          <button
-            onClick={() => {
-              const plan = db.plans.find((p) => p.active);
-              if (!plan) return;
-              const v = prompt(
-                `Activate ${plan.name} for ${person.name} — amount (PKR)`,
-                String(plan.min),
-              );
-              if (!v || isNaN(Number(v))) return;
-              update((d) => {
-                d.investments.unshift({
-                  id: newId(),
-                  userId: person.id,
-                  planId: plan.id,
-                  planName: plan.name,
-                  amount: Number(v),
-                  dailyRoi: plan.dailyRoi,
-                  durationDays: plan.durationDays,
-                  earned: 0,
-                  startedAt: timestamp(),
-                  lastPayoutAt: timestamp(),
-                });
-                return d;
-              });
-              acted("Plan activated for user.");
-            }}
-            className="btn-glass flex h-11 w-full items-center justify-center text-xs font-semibold text-foreground"
-          >
-            Activate a plan
-          </button>
-        </GlassCard>
-      ) : null}
-    </div>
-  );
-}
-
-function Line({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-2">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="truncate font-semibold">{value}</span>
-    </div>
-  );
-}
 
 /* ---------------- Payment methods manager ---------------- */
 function MethodsManager() {
