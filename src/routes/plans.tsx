@@ -5,7 +5,9 @@ import { BadgeCheck } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { Progress } from "@/components/ui/progress";
-import { investmentProgress, money, newId, timestamp, useStore } from "@/lib/store";
+import { investmentProgress, money, useStore } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
+
 import type { Plan } from "@/lib/store";
 
 export const Route = createFileRoute("/plans")({
