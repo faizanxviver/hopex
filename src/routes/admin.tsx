@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle, StatCard, StatusBadge } from "@/components/glass";
 import { money, newId, timestamp, useStore } from "@/lib/store";
+import { uploadProofImage } from "@/lib/uploads.functions";
 import type { TxStatus } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -710,6 +711,145 @@ function AdminChat() {
           </button>
         </div>
       </GlassCard>
+    </div>
+  );
+}
+
+
+/* ---------------- Payment methods manager ---------------- */
+function MethodsManager() {
+  const { db, update } = useStore();
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const patch = (id: string, key: string, value: unknown) =>
+    update((d) => {
+      const m = d.methods.find((x) => x.id === id);
+      if (m) (m as unknown as Record<string, unknown>)[key] = value;
+      return d;
+    });
+
+  const pickLogo = async (id: string, file: File) => {
+    setBusy(id);
+    try {
+      const base64 = await new Promise<string>((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(String(r.result).split(",")[1] ?? "");
+        r.onerror = () => rej(new Error("Could not read file"));
+        r.readAsDataURL(file);
+      });
+      const { url } = await uploadProofImage({ data: { base64, name: file.name } });
+      patch(id, "imageUrl", url);
+      toast.success("Logo updated.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <button
+        onClick={() => {
+          const name = prompt("Method name (e.g. Easypaisa)");
+          if (!name) return;
+          update((d) => {
+            d.methods.push({
+              id: newId(),
+              name,
+              kind: "wallet",
+              accountName: "HopeX Payments",
+              accountNumber: "0000000000",
+              instructions: `Send the exact amount to the ${name} account above, then upload your screenshot.`,
+              active: true,
+              sortOrder: d.methods.length,
+            });
+            return d;
+          });
+          toast.success("Payment method added.");
+        }}
+        className="btn-glass btn-glass-primary inline-flex h-11 items-center px-5 text-sm font-bold"
+      >
+        + Add payment method
+      </button>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {db.methods.map((m) => (
+          <GlassCard key={m.id} className="space-y-3">
+            <div className="flex items-center gap-3">
+              {m.imageUrl ? (
+                <img src={m.imageUrl} alt={m.name} className="h-12 w-12 rounded-xl object-cover" />
+              ) : (
+                <span className="grid h-12 w-12 place-items-center rounded-xl gradient-cool text-sm font-black text-primary-foreground">
+                  {m.name[0]}
+                </span>
+              )}
+              <input
+                defaultValue={m.name}
+                onBlur={(e) => patch(m.id, "name", e.target.value)}
+                className="h-11 flex-1 rounded-xl border border-input bg-background/40 px-3 text-sm font-semibold outline-none"
+              />
+              <StatusBadge status={m.active ? "approved" : "rejected"} />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <input
+                defaultValue={m.accountName}
+                onBlur={(e) => patch(m.id, "accountName", e.target.value)}
+                placeholder="Account title"
+                className="h-11 rounded-xl border border-input bg-background/40 px-3 text-sm outline-none"
+              />
+              <input
+                defaultValue={m.accountNumber}
+                onBlur={(e) => patch(m.id, "accountNumber", e.target.value)}
+                placeholder="Account number"
+                className="h-11 rounded-xl border border-input bg-background/40 px-3 text-sm outline-none"
+              />
+            </div>
+
+            <textarea
+              defaultValue={m.instructions}
+              onBlur={(e) => patch(m.id, "instructions", e.target.value)}
+              rows={2}
+              placeholder="Instructions shown in the payment gateway"
+              className="w-full rounded-xl border border-input bg-background/40 p-3 text-sm outline-none"
+            />
+
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="cursor-pointer rounded-lg glass-soft px-3 py-2 text-xs font-semibold">
+                {busy === m.id ? "Uploading…" : "Upload logo"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void pickLogo(m.id, f);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              <button
+                onClick={() => patch(m.id, "active", !m.active)}
+                className="rounded-lg glass-soft px-3 py-2 text-xs font-semibold"
+              >
+                {m.active ? "Disable" : "Enable"}
+              </button>
+              <button
+                onClick={() =>
+                  update((d) => {
+                    d.methods = d.methods.filter((x) => x.id !== m.id);
+                    return d;
+                  })
+                }
+                className="rounded-lg bg-destructive/15 px-3 py-2 text-xs font-semibold text-destructive"
+              >
+                Delete
+              </button>
+            </div>
+          </GlassCard>
+        ))}
+      </div>
     </div>
   );
 }
