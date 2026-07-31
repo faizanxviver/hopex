@@ -646,8 +646,28 @@ function AdminChat() {
   const [text, setText] = useState("");
   const messages = db.chats.filter((c) => c.userId === selected);
 
+  const person = db.users.find((u) => u.id === selected);
+  const acted = (msg: string) => toast.success(msg);
+
+  const adjust = (delta: number, label: string) =>
+    update((d) => {
+      const u = d.users.find((x) => x.id === selected);
+      if (u) u.balance = Math.max(0, u.balance + delta);
+      if (u)
+        d.transactions.unshift({
+          id: newId(),
+          userId: u.id,
+          type: delta >= 0 ? "bonus" : "withdraw",
+          amount: Math.abs(delta),
+          method: label,
+          status: "completed",
+          createdAt: timestamp(),
+        });
+      return d;
+    });
+
   return (
-    <div className="grid gap-4 lg:grid-cols-[16rem_1fr]">
+    <div className="grid gap-4 lg:grid-cols-[15rem_minmax(0,1fr)_17rem]">
       <GlassCard className="p-3">
         {chatUsers.map((id) => {
           const u = db.users.find((x) => x.id === id);
@@ -711,6 +731,96 @@ function AdminChat() {
           </button>
         </div>
       </GlassCard>
+
+      {person ? (
+        <GlassCard className="space-y-3">
+          <div>
+            <p className="font-display text-lg font-extrabold">{person.name}</p>
+            <p className="text-xs text-muted-foreground">{person.phone ?? person.email}</p>
+          </div>
+          <div className="space-y-1.5 rounded-2xl glass-soft p-3 text-sm">
+            <Line label="Balance" value={money(person.balance)} />
+            <Line label="Invested" value={money(person.invested)} />
+            <Line label="Earnings" value={money(person.earnings)} />
+            <Line label="Referral code" value={person.referralCode} />
+            <Line label="Referred by" value={person.referredBy ?? "—"} />
+            <Line label="Active plans" value={String(db.investments.filter((i) => i.userId === person.id).length)} />
+            <Line label="Status" value={person.blocked ? "Frozen" : "Active"} />
+          </div>
+
+          <button
+            onClick={() => {
+              const v = prompt(`Add funds to ${person.name} (PKR)`, "1000");
+              if (!v || isNaN(Number(v))) return;
+              adjust(Number(v), "Admin credit");
+              acted("Funds added.");
+            }}
+            className="btn-glass btn-glass-primary flex h-11 w-full items-center justify-center text-xs font-bold"
+          >
+            Add funds
+          </button>
+          <button
+            onClick={() => {
+              const v = prompt(`Deduct funds from ${person.name} (PKR)`, "1000");
+              if (!v || isNaN(Number(v))) return;
+              adjust(-Number(v), "Admin adjustment");
+              acted("Funds deducted.");
+            }}
+            className="btn-glass flex h-11 w-full items-center justify-center text-xs font-semibold text-foreground"
+          >
+            Deduct funds
+          </button>
+          <button
+            onClick={() => {
+              update((d) => {
+                const u = d.users.find((x) => x.id === person.id);
+                if (u) u.blocked = !u.blocked;
+                return d;
+              });
+              acted(person.blocked ? "Account unfrozen." : "Account frozen.");
+            }}
+            className="w-full rounded-xl bg-destructive/15 py-2.5 text-xs font-bold text-destructive"
+          >
+            {person.blocked ? "Unfreeze account" : "Freeze account"}
+          </button>
+          <button
+            onClick={() => {
+              const plan = db.plans.find((p) => p.active);
+              if (!plan) return;
+              const v = prompt(`Activate ${plan.name} for ${person.name} — amount (PKR)`, String(plan.min));
+              if (!v || isNaN(Number(v))) return;
+              update((d) => {
+                d.investments.unshift({
+                  id: newId(),
+                  userId: person.id,
+                  planId: plan.id,
+                  planName: plan.name,
+                  amount: Number(v),
+                  dailyRoi: plan.dailyRoi,
+                  durationDays: plan.durationDays,
+                  earned: 0,
+                  startedAt: timestamp(),
+                  lastPayoutAt: timestamp(),
+                });
+                return d;
+              });
+              acted("Plan activated for user.");
+            }}
+            className="btn-glass flex h-11 w-full items-center justify-center text-xs font-semibold text-foreground"
+          >
+            Activate a plan
+          </button>
+        </GlassCard>
+      ) : null}
+    </div>
+  );
+}
+
+function Line({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="truncate font-semibold">{value}</span>
     </div>
   );
 }
