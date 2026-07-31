@@ -65,7 +65,7 @@ function Withdraw() {
         amount: value,
         method,
         reference: `${holder.trim()} · ${account.trim()}`,
-        status: "pending",
+        status: "processing",
         createdAt: timestamp(),
       });
       return d;
