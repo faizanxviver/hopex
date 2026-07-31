@@ -40,8 +40,10 @@ export interface Investment {
   dailyRoi: number;
   durationDays: number;
   startedAt: string;
+  lastPayoutAt: string;
   earned: number;
 }
+
 
 export interface AppNotification {
   id: string;
@@ -210,6 +212,7 @@ const toInvestment = (r: Row): Investment => ({
   dailyRoi: num(r.daily_roi),
   durationDays: Number(r.duration_days),
   startedAt: r.started_at as string,
+  lastPayoutAt: (r.last_payout_at as string) ?? (r.started_at as string),
   earned: num(r.earned),
 });
 
@@ -223,7 +226,9 @@ const fromInvestment = (i: Investment): Row => ({
   duration_days: i.durationDays,
   earned: i.earned,
   started_at: i.startedAt,
+  last_payout_at: i.lastPayoutAt,
 });
+
 
 const toNotification = (r: Row): AppNotification => ({
   id: r.id as string,
