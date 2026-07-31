@@ -12,6 +12,7 @@ import {
   Sun,
   UsersRound,
   House,
+  MessageCircle,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useStore } from "@/lib/store";
@@ -153,6 +154,27 @@ function ChatButton() {
   );
 }
 
+/** Floating WhatsApp-style support button, always reachable. */
+function ChatFab() {
+  const { db, user, setChatOpen, chatOpen } = useStore();
+  const unread = db.chats.filter((c) => c.userId === user?.id && c.from === "support" && !c.status).length;
+  if (!user || user.role === "admin" || chatOpen) return null;
+  return (
+    <button
+      onClick={() => setChatOpen(true)}
+      aria-label="Open live chat"
+      className="fixed bottom-24 right-4 z-40 grid h-14 w-14 place-items-center rounded-full bg-[#25D366] text-white shadow-[0_10px_30px_-8px_rgba(37,211,102,0.8)] transition hover:scale-105 md:bottom-8"
+    >
+      <MessageCircle className="h-6 w-6" fill="currentColor" strokeWidth={0} />
+      {unread > 0 ? (
+        <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+          {unread}
+        </span>
+      ) : null}
+    </button>
+  );
+}
+
 export function DashboardLayout({ children, wide }: { children: ReactNode; wide?: boolean }) {
   const { user, logout, theme, toggleTheme } = useStore();
   const { t } = useT();
@@ -233,6 +255,8 @@ export function DashboardLayout({ children, wide }: { children: ReactNode; wide?
       <main className={cn("mx-auto px-4 pb-32 pt-6 md:pb-12", wide ? "max-w-[100rem]" : "max-w-7xl")}>
         {children}
       </main>
+
+      <ChatFab />
 
       <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 gap-1 rounded-3xl glass px-2 py-2 md:hidden">
         {primaryNav.map((l) => {

@@ -122,6 +122,48 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_methods: {
+        Row: {
+          account_name: string
+          account_number: string
+          active: boolean
+          created_at: string
+          id: string
+          image_url: string | null
+          instructions: string
+          kind: string
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          account_name?: string
+          account_number?: string
+          active?: boolean
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          instructions?: string
+          kind?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          account_name?: string
+          account_number?: string
+          active?: boolean
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          instructions?: string
+          kind?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       plans: {
         Row: {
           active: boolean
@@ -130,6 +172,7 @@ export type Database = {
           duration_days: number
           features: string[]
           id: string
+          image_url: string | null
           max_amount: number
           min_amount: number
           name: string
@@ -142,6 +185,7 @@ export type Database = {
           duration_days: number
           features?: string[]
           id: string
+          image_url?: string | null
           max_amount: number
           min_amount: number
           name: string
@@ -154,6 +198,7 @@ export type Database = {
           duration_days?: number
           features?: string[]
           id?: string
+          image_url?: string | null
           max_amount?: number
           min_amount?: number
           name?: string
@@ -163,7 +208,10 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_name: string | null
+          account_number: string | null
           balance: number
+          bank_name: string | null
           blocked: boolean
           created_at: string
           earnings: number
@@ -182,7 +230,10 @@ export type Database = {
           verified: boolean
         }
         Insert: {
+          account_name?: string | null
+          account_number?: string | null
           balance?: number
+          bank_name?: string | null
           blocked?: boolean
           created_at?: string
           earnings?: number
@@ -201,7 +252,10 @@ export type Database = {
           verified?: boolean
         }
         Update: {
+          account_name?: string | null
+          account_number?: string | null
           balance?: number
+          bank_name?: string | null
           blocked?: boolean
           created_at?: string
           earnings?: number
@@ -263,6 +317,7 @@ export type Database = {
           levels: number[]
           min_deposit: number
           min_withdraw: number
+          quick_amounts: number[]
           site_name: string
           updated_at: string
         }
@@ -271,6 +326,7 @@ export type Database = {
           levels?: number[]
           min_deposit?: number
           min_withdraw?: number
+          quick_amounts?: number[]
           site_name?: string
           updated_at?: string
         }
@@ -279,6 +335,7 @@ export type Database = {
           levels?: number[]
           min_deposit?: number
           min_withdraw?: number
+          quick_amounts?: number[]
           site_name?: string
           updated_at?: string
         }

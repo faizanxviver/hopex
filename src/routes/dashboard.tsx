@@ -1,6 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Coins, Timer, Wallet2, PiggyBank, HandCoins, Ticket, UsersRound, Rocket } from "lucide-react";
+import {
+  Coins,
+  Timer,
+  Wallet2,
+  PiggyBank,
+  HandCoins,
+  Ticket,
+  UsersRound,
+  Rocket,
+  Gem,
+  Share2,
+  TicketPercent,
+} from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard } from "@/components/glass";
 import { useT } from "@/lib/i18n";
@@ -45,9 +57,15 @@ function Dashboard() {
   const { t } = useT();
   const [tick, setTick] = useState(() => Date.now());
 
+  // Smooth, fast-looking ticker: repaint on every animation frame.
   useEffect(() => {
-    const i = setInterval(() => setTick(Date.now()), 1000);
-    return () => clearInterval(i);
+    let raf = 0;
+    const loop = () => {
+      setTick(Date.now());
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   const running = useMemo(() => (user ? activeInvestments(db, user.id) : []), [db, user]);
@@ -105,15 +123,20 @@ function Dashboard() {
           </div>
 
           <div className="mt-3 grid grid-cols-3 gap-3">
-            <Link to="/plans" className="btn-glass grid h-12 place-items-center text-sm font-semibold text-foreground">
-              {t("Invest")}
-            </Link>
-            <Link to="/referrals" className="btn-glass grid h-12 place-items-center text-sm font-semibold text-foreground">
-              {t("Refer")}
-            </Link>
-            <Link to="/deposit" className="btn-glass grid h-12 place-items-center text-sm font-semibold text-foreground">
-              {t("Promo code")}
-            </Link>
+            {[
+              { to: "/plans", icon: Gem, label: "Invest" },
+              { to: "/referrals", icon: Share2, label: "Refer" },
+              { to: "/promo", icon: TicketPercent, label: "Promo code" },
+            ].map((a) => (
+              <Link
+                key={a.to}
+                to={a.to}
+                className="btn-glass flex h-[4.5rem] flex-col items-center justify-center gap-1.5 text-[11px] font-bold text-foreground"
+              >
+                <a.icon className="h-5 w-5 text-primary" />
+                {t(a.label)}
+              </Link>
+            ))}
           </div>
         </div>
       </GlassCard>
@@ -132,7 +155,7 @@ function Dashboard() {
               </span>
             </div>
 
-            <p className="mt-3 font-display text-3xl font-black tabular-nums text-success sm:text-4xl">
+            <p className="mt-3 font-display text-3xl font-black tabular-nums text-success transition-none sm:text-4xl">
               {live.toFixed(8)}
             </p>
 
