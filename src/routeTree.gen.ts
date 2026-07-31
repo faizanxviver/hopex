@@ -16,6 +16,7 @@ import { Route as DepositRouteImport } from './routes/deposit'
 import { Route as DepositHistoryRouteImport } from './routes/deposit-history'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as PlansRouteImport } from './routes/plans'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ReferralsRouteImport } from './routes/referrals'
 import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as WithdrawRouteImport } from './routes/withdraw'
@@ -56,6 +57,11 @@ const PlansRoute = PlansRouteImport.update({
   path: '/plans',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReferralsRoute = ReferralsRouteImport.update({
   id: '/referrals',
   path: '/referrals',
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/deposit-history': typeof DepositHistoryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/plans': typeof PlansRoute
+  '/profile': typeof ProfileRoute
   '/referrals': typeof ReferralsRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/deposit-history': typeof DepositHistoryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/plans': typeof PlansRoute
+  '/profile': typeof ProfileRoute
   '/referrals': typeof ReferralsRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/deposit-history': typeof DepositHistoryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/plans': typeof PlansRoute
+  '/profile': typeof ProfileRoute
   '/referrals': typeof ReferralsRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/deposit-history'
     | '/forgot-password'
     | '/plans'
+    | '/profile'
     | '/referrals'
     | '/transactions'
     | '/withdraw'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/deposit-history'
     | '/forgot-password'
     | '/plans'
+    | '/profile'
     | '/referrals'
     | '/transactions'
     | '/withdraw'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/deposit-history'
     | '/forgot-password'
     | '/plans'
+    | '/profile'
     | '/referrals'
     | '/transactions'
     | '/withdraw'
@@ -167,6 +179,7 @@ export interface RootRouteChildren {
   DepositHistoryRoute: typeof DepositHistoryRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   PlansRoute: typeof PlansRoute
+  ProfileRoute: typeof ProfileRoute
   ReferralsRoute: typeof ReferralsRoute
   TransactionsRoute: typeof TransactionsRoute
   WithdrawRoute: typeof WithdrawRoute
@@ -224,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlansRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/referrals': {
       id: '/referrals'
       path: '/referrals'
@@ -263,6 +283,7 @@ const rootRouteChildren: RootRouteChildren = {
   DepositHistoryRoute: DepositHistoryRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   PlansRoute: PlansRoute,
+  ProfileRoute: ProfileRoute,
   ReferralsRoute: ReferralsRoute,
   TransactionsRoute: TransactionsRoute,
   WithdrawRoute: WithdrawRoute,
