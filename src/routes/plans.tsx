@@ -159,8 +159,13 @@ function Plans() {
               <button onClick={() => setActive(null)} className="flex-1 rounded-xl glass-soft py-2.5 text-sm font-semibold">
                 Cancel
               </button>
-              <button onClick={invest} className="flex-1 rounded-xl gradient-brand py-2.5 text-sm font-semibold text-primary-foreground">
-                Confirm
+              <button
+                onClick={invest}
+                disabled={busy}
+                className="flex-1 rounded-xl gradient-brand py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+              >
+                {busy ? "Processing…" : "Confirm"}
+
               </button>
             </div>
           </GlassCard>
