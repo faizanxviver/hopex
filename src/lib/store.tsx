@@ -677,3 +677,50 @@ export function pendingDeposits(db: DB, userId: string) {
     .filter((t) => t.userId === userId && t.type === "deposit" && (t.status === "pending" || t.status === "processing"))
     .reduce((a, t) => a + t.amount, 0);
 }
+
+const DAY_MS = 86400000;
+
+/** Investments that still have income cycles remaining. */
+export function activeInvestments(db: DB, userId: string) {
+  return db.investments.filter((i) => {
+    const daily = (i.amount * i.dailyRoi) / 100;
+    if (daily <= 0) return false;
+    return Math.round(i.earned / daily) < i.durationDays;
+  });
+}
+
+/**
+ * Income accrued in real time since the last credited cycle.
+ * Displayed as a live ticker; the actual credit happens on the server every 24h.
+ */
+export function liveEarnings(db: DB, userId: string, atMs = Date.now()) {
+  return activeInvestments(db, userId).reduce((sum, i) => {
+    const daily = (i.amount * i.dailyRoi) / 100;
+    const elapsed = Math.max(0, atMs - new Date(i.lastPayoutAt).getTime());
+    return sum + daily * Math.min(1, elapsed / DAY_MS);
+  }, 0);
+}
+
+/** Milliseconds until the next automatic payout, or null when nothing is running. */
+export function nextPayoutIn(db: DB, userId: string, atMs = Date.now()) {
+  const times = activeInvestments(db, userId).map(
+    (i) => new Date(i.lastPayoutAt).getTime() + DAY_MS - atMs,
+  );
+  if (!times.length) return null;
+  return Math.max(0, Math.min(...times));
+}
+
+/** Total daily income across every running plan. */
+export function dailyIncome(db: DB, userId: string) {
+  return activeInvestments(db, userId).reduce((s, i) => s + (i.amount * i.dailyRoi) / 100, 0);
+}
+
+export const STATUS_LABEL: Record<string, string> = {
+  pending: "Processing",
+  processing: "Processing",
+  approved: "Successful",
+  completed: "Successful",
+  rejected: "Declined",
+};
+
+export const statusLabel = (s: string) => STATUS_LABEL[s] ?? s;
