@@ -16,6 +16,7 @@ import {
 
 import { toast } from "sonner";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
+import { AdminChat } from "@/components/admin-chat";
 import { GlassCard, SectionTitle, StatCard, StatusBadge } from "@/components/glass";
 import { money, newId, timestamp, useStore } from "@/lib/store";
 import { uploadProofImage } from "@/lib/uploads.functions";
