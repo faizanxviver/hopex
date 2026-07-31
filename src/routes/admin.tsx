@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowDownToLine,
+  CreditCard,
   ArrowUpFromLine,
   LayoutDashboard,
   Megaphone,
@@ -43,6 +44,7 @@ const tabs = [
   "Users",
   "Deposits",
   "Withdrawals",
+  "Methods",
   "Plans",
   "Promo Codes",
   "Support Chat",
@@ -55,6 +57,7 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
   Users: Users,
   Deposits: ArrowDownToLine,
   Withdrawals: ArrowUpFromLine,
+  Methods: CreditCard,
   Plans: TrendingUp,
   "Promo Codes": Ticket,
   "Support Chat": MessageSquare,
@@ -67,6 +70,7 @@ function Admin() {
   const { db, update, addNotification } = useStore();
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
   const [proof, setProof] = useState<string | null>(null);
+  const [bucket, setBucket] = useState<"Pending" | "Approved" | "Rejected">("Pending");
 
   const users = db.users.filter((u) => u.role === "user");
   const deposits = db.transactions.filter((t) => t.type === "deposit");
@@ -96,8 +100,13 @@ function Admin() {
     toast.success(`Marked as ${status}.`);
   };
 
-  const pendingDeps = deposits.filter((t) => t.status === "pending").length;
-  const pendingWds = withdrawals.filter((t) => t.status === "pending").length;
+  const isPending = (s: TxStatus) => s === "pending" || s === "processing";
+  const isDone = (s: TxStatus) => s === "approved" || s === "completed";
+  const pendingDeps = deposits.filter((t) => isPending(t.status)).length;
+  const pendingWds = withdrawals.filter((t) => isPending(t.status)).length;
+  const rows = (tab === "Deposits" ? deposits : withdrawals).filter((t) =>
+    bucket === "Pending" ? isPending(t.status) : bucket === "Approved" ? isDone(t.status) : t.status === "rejected",
+  );
   const counts: Partial<Record<(typeof tabs)[number], number>> = {
     Users: users.length,
     Deposits: pendingDeps,
@@ -230,6 +239,30 @@ function Admin() {
       ) : null}
 
       {tab === "Deposits" || tab === "Withdrawals" ? (
+        <>
+        <div className="mb-4 inline-flex gap-1 rounded-2xl glass-soft p-1">
+          {(["Pending", "Approved", "Rejected"] as const).map((b) => {
+            const count = (tab === "Deposits" ? deposits : withdrawals).filter((t) =>
+              b === "Pending" ? isPending(t.status) : b === "Approved" ? isDone(t.status) : t.status === "rejected",
+            ).length;
+            return (
+              <button
+                key={b}
+                onClick={() => setBucket(b)}
+                className={cn(
+                  "rounded-xl px-4 py-2 text-sm font-semibold transition",
+                  bucket === b
+                    ? b === "Pending"
+                      ? "bg-destructive text-destructive-foreground"
+                      : "gradient-cool text-primary-foreground"
+                    : "text-muted-foreground",
+                )}
+              >
+                {b === "Pending" ? "Pending" : b === "Approved" ? "Successful" : "Declined"} ({count})
+              </button>
+            );
+          })}
+        </div>
         <GlassCard className="overflow-x-auto p-0">
           <table className="w-full min-w-[46rem] text-sm">
             <thead className="border-b border-border/60 text-left text-xs uppercase tracking-widest text-muted-foreground">
@@ -244,7 +277,7 @@ function Admin() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
-              {(tab === "Deposits" ? deposits : withdrawals).map((t) => (
+              {rows.map((t) => (
                 <tr key={t.id}>
                   <td className="p-4">{db.users.find((u) => u.id === t.userId)?.name ?? "—"}</td>
                   <td className="p-4">{t.method}</td>
@@ -269,27 +302,35 @@ function Admin() {
                     <StatusBadge status={t.status} />
                   </td>
                   <td className="p-4">
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => setStatus(t.id, tab === "Deposits" ? "approved" : "completed", true)}
-                        className="rounded-lg bg-success/15 px-3 py-1 text-xs font-semibold text-success"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => setStatus(t.id, "rejected", false)}
-                        className="rounded-lg bg-destructive/15 px-3 py-1 text-xs font-semibold text-destructive"
-                      >
-                        Reject
-                      </button>
-                    </div>
+                    {isPending(t.status) ? (
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => setStatus(t.id, tab === "Deposits" ? "approved" : "completed", true)}
+                          className="rounded-lg bg-success/15 px-3 py-1 text-xs font-semibold text-success"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => setStatus(t.id, "rejected", false)}
+                          className="rounded-lg bg-destructive/15 px-3 py-1 text-xs font-semibold text-destructive"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Reviewed</span>
+                    )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          {rows.length === 0 ? <p className="p-6 text-sm text-muted-foreground">Nothing in this section.</p> : null}
         </GlassCard>
+        </>
       ) : null}
+
+      {tab === "Methods" ? <MethodsManager /> : null}
 
       {tab === "Plans" ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -465,6 +506,24 @@ function Admin() {
               />
             </div>
           ))}
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
+              Quick deposit amounts (comma separated)
+            </label>
+            <input
+              defaultValue={db.settings.quickAmounts.join(", ")}
+              onBlur={(e) =>
+                update((d) => {
+                  d.settings.quickAmounts = e.target.value
+                    .split(",")
+                    .map((x) => Number(x.trim()))
+                    .filter((n) => n > 0);
+                  return d;
+                })
+              }
+              className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none"
+            />
+          </div>
           <div>
             <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
               Referral commission levels (%)
