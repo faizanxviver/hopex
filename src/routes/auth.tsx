@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { ArrowLeft, Apple, Chrome, Loader2, Lock, Mail, User as UserIcon } from "lucide-react";
+import { ArrowLeft, Loader2, Lock, Mail, User as UserIcon } from "lucide-react";
 import { GlassCard } from "@/components/glass";
 import { Brand } from "@/components/dashboard-layout";
 import { useStore } from "@/lib/store";
