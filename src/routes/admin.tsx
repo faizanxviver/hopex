@@ -37,6 +37,19 @@ const tabs = [
   "Settings",
 ] as const;
 
+const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
+  Overview: LayoutDashboard,
+  Users: Users,
+  Deposits: ArrowDownToLine,
+  Withdrawals: ArrowUpFromLine,
+  Plans: TrendingUp,
+  "Promo Codes": Ticket,
+  "Support Chat": MessageSquare,
+  Broadcast: Megaphone,
+  Settings: Settings,
+};
+
+
 function Admin() {
   const { db, update, addNotification } = useStore();
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
