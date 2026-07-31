@@ -16,6 +16,7 @@ export interface Transaction {
   status: TxStatus;
   note?: string;
   reference?: string;
+  proofUrl?: string;
   createdAt: string;
 }
 
@@ -114,7 +115,7 @@ interface DB {
   sessionId: string | null;
 }
 
-const THEME_KEY = "aurum-theme";
+const THEME_KEY = "hopex-theme";
 const uid = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
@@ -130,7 +131,7 @@ const emptyDb = (): DB => ({
   chats: [],
   plans: [],
   promos: [],
-  settings: { siteName: "Aurum Capital", minDeposit: 50, minWithdraw: 25, levels: [10, 2, 1, 4] },
+  settings: { siteName: "HopeX", minDeposit: 50, minWithdraw: 25, levels: [10, 2, 1, 4] },
   sessionId: null,
 });
 
@@ -183,6 +184,7 @@ const toTx = (r: Row): Transaction => ({
   status: r.status as TxStatus,
   note: (r.note as string) ?? undefined,
   reference: (r.reference as string) ?? undefined,
+  proofUrl: (r.proof_url as string) ?? undefined,
   createdAt: r.created_at as string,
 });
 
@@ -195,6 +197,7 @@ const fromTx = (t: Transaction): Row => ({
   status: t.status,
   note: t.note ?? null,
   reference: t.reference ?? null,
+  proof_url: t.proofUrl ?? null,
   created_at: t.createdAt,
 });
 

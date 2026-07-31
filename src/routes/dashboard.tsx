@@ -35,9 +35,9 @@ import {
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Aurum Capital" },
+      { title: "Dashboard — HopeX" },
       { name: "description", content: "Track balances, active plans, earnings growth and referral income." },
-      { property: "og:title", content: "Dashboard — Aurum Capital" },
+      { property: "og:title", content: "Dashboard — HopeX" },
       { property: "og:description", content: "Your investment wallet at a glance." },
     ],
   }),

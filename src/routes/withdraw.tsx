@@ -11,9 +11,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/withdraw")({
   head: () => ({
     meta: [
-      { title: "Withdraw Funds — Aurum Capital" },
+      { title: "Withdraw Funds — HopeX" },
       { name: "description", content: "Withdraw your available balance to bank, USDT, JazzCash or EasyPaisa." },
-      { property: "og:title", content: "Withdraw Funds — Aurum Capital" },
+      { property: "og:title", content: "Withdraw Funds — HopeX" },
       { property: "og:description", content: "Fast payouts, typically under 2 hours." },
     ],
   }),

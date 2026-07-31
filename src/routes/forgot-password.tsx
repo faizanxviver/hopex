@@ -9,9 +9,9 @@ import { useStore } from "@/lib/store";
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
     meta: [
-      { title: "Reset your password — Aurum Capital" },
-      { name: "description", content: "Request a secure password reset link for your Aurum Capital account." },
-      { property: "og:title", content: "Reset your password — Aurum Capital" },
+      { title: "Reset your password — HopeX" },
+      { name: "description", content: "Request a secure password reset link for your HopeX account." },
+      { property: "og:title", content: "Reset your password — HopeX" },
       { property: "og:description", content: "Request a secure password reset link." },
     ],
   }),

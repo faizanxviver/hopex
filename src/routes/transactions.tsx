@@ -9,9 +9,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/transactions")({
   head: () => ({
     meta: [
-      { title: "All Transactions — Aurum Capital" },
+      { title: "All Transactions — HopeX" },
       { name: "description", content: "Filter and search every deposit, withdrawal, investment, commission and bonus." },
-      { property: "og:title", content: "All Transactions — Aurum Capital" },
+      { property: "og:title", content: "All Transactions — HopeX" },
       { property: "og:description", content: "Complete ledger of your account activity." },
     ],
   }),

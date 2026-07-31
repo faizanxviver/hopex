@@ -13,9 +13,9 @@ import type { Plan } from "@/lib/store";
 export const Route = createFileRoute("/plans")({
   head: () => ({
     meta: [
-      { title: "Investment Plans — Aurum Capital" },
+      { title: "Investment Plans — HopeX" },
       { name: "description", content: "Compare Starter, Growth, Premium and VIP plans and invest from your wallet balance." },
-      { property: "og:title", content: "Investment Plans — Aurum Capital" },
+      { property: "og:title", content: "Investment Plans — HopeX" },
       { property: "og:description", content: "Daily ROI plans from 1.2% to 3.1%." },
     ],
   }),

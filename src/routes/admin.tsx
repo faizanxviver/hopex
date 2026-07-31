@@ -23,9 +23,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin Panel — Aurum Capital" },
+      { title: "Admin Panel — HopeX" },
       { name: "description", content: "Manage users, deposits, withdrawals, plans, promo codes, chat and broadcasts." },
-      { property: "og:title", content: "Admin Panel — Aurum Capital" },
+      { property: "og:title", content: "Admin Panel — HopeX" },
       { property: "og:description", content: "Full platform administration console." },
     ],
   }),
@@ -66,6 +66,7 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
 function Admin() {
   const { db, update, addNotification } = useStore();
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
+  const [proof, setProof] = useState<string | null>(null);
 
   const users = db.users.filter((u) => u.role === "user");
   const deposits = db.transactions.filter((t) => t.type === "deposit");
@@ -112,7 +113,7 @@ function Admin() {
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="glass rounded-3xl p-3">
             <p className="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Console
+              HopeX Console
             </p>
             <nav className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
               {tabs.map((t) => {
@@ -133,7 +134,7 @@ function Admin() {
                     {counts[t] ? (
                       <span
                         className={cn(
-                          "ml-auto hidden rounded-full px-2 py-0.5 text-[10px] font-bold lg:inline",
+                          "ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold",
                           tab === t ? "bg-background/25" : "bg-primary/15 text-primary",
                         )}
                       >
@@ -236,6 +237,7 @@ function Admin() {
                 <th className="p-4">User</th>
                 <th className="p-4">Method</th>
                 <th className="p-4">Reference</th>
+                <th className="p-4">Proof</th>
                 <th className="p-4">Amount</th>
                 <th className="p-4">Status</th>
                 <th className="p-4">Actions</th>
@@ -247,6 +249,21 @@ function Admin() {
                   <td className="p-4">{db.users.find((u) => u.id === t.userId)?.name ?? "—"}</td>
                   <td className="p-4">{t.method}</td>
                   <td className="p-4 text-muted-foreground">{t.reference ?? "—"}</td>
+                  <td className="p-4">
+                    {t.proofUrl ? (
+                      <button onClick={() => setProof(t.proofUrl!)} className="group inline-flex items-center gap-2">
+                        <img
+                          src={t.proofUrl}
+                          alt="Payment proof"
+                          loading="lazy"
+                          className="h-10 w-10 rounded-lg border border-border/60 object-cover transition group-hover:scale-105"
+                        />
+                        <span className="text-xs font-semibold text-primary">View</span>
+                      </button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </td>
                   <td className="p-4 font-semibold">{money(t.amount)}</td>
                   <td className="p-4">
                     <StatusBadge status={t.status} />
@@ -473,8 +490,39 @@ function Admin() {
       ) : null}
         </div>
       </div>
+
+      {proof ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-background/80 p-4 backdrop-blur-md"
+          onClick={() => setProof(null)}
+        >
+          <div className="glass max-h-full w-full max-w-lg overflow-auto rounded-3xl p-4" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-bold">Payment proof</p>
+              <div className="flex items-center gap-2">
+                <a
+                  href={proof}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-lg bg-primary/15 px-3 py-1 text-xs font-semibold text-primary"
+                >
+                  Open
+                </a>
+                <button
+                  onClick={() => setProof(null)}
+                  className="rounded-lg bg-accent px-3 py-1 text-xs font-semibold"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+            <img src={proof} alt="Payment proof" className="w-full rounded-2xl" />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
+
 }
 
 

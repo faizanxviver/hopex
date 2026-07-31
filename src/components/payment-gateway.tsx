@@ -15,19 +15,24 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { uploadProofImage } from "@/lib/uploads.functions";
+
+
 
 export interface GatewayResult {
   method: string;
   reference: string;
   proof: string;
+  proofUrl?: string;
 }
+
 
 const GW_METHODS = [
   {
     id: "Bank Transfer",
     icon: Building2,
     account: "PK36 MEZN 0001 2345 6789 0123",
-    holder: "Aurum Capital Ltd · Meezan Bank",
+    holder: "HopeX Ltd · Meezan Bank",
     note: "Credited in 1–24 hours · no fee",
   },
   {
@@ -41,14 +46,14 @@ const GW_METHODS = [
     id: "JazzCash",
     icon: Smartphone,
     account: "0300 1234567",
-    holder: "Aurum Capital · JazzCash",
+    holder: "HopeX · JazzCash",
     note: "Instant · 1% fee",
   },
   {
     id: "EasyPaisa",
     icon: Banknote,
     account: "0345 7654321",
-    holder: "Aurum Capital · EasyPaisa",
+    holder: "HopeX · EasyPaisa",
     note: "Instant · 1% fee",
   },
 ];
@@ -68,6 +73,10 @@ export function PaymentGateway({
   const [method, setMethod] = useState<(typeof GW_METHODS)[number] | null>(null);
   const [reference, setReference] = useState("");
   const [proof, setProof] = useState("");
+  const [proofUrl, setProofUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+
   const [copied, setCopied] = useState("");
   const [confirmExit, setConfirmExit] = useState(false);
   const [seconds, setSeconds] = useState(900);
@@ -97,10 +106,42 @@ export function PaymentGateway({
     setTimeout(() => setCopied(""), 1600);
   };
 
+  const pickFile = async (file: File | undefined) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Please choose an image file.");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setUploadError("Image must be under 8MB.");
+      return;
+    }
+    setUploadError("");
+    setUploading(true);
+    setProof(file.name);
+    setProofUrl("");
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(",")[1] ?? "");
+        reader.onerror = () => reject(new Error("Could not read the file"));
+        reader.readAsDataURL(file);
+      });
+      const res = await uploadProofImage({ data: { base64, name: file.name } });
+      setProofUrl(res.url);
+    } catch (err) {
+      setProof("");
+      setUploadError(err instanceof Error ? err.message : "Upload failed. Try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const submit = () => {
     setStep("processing");
     setTimeout(() => setStep("done"), 2200);
   };
+
 
   const mmss = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 
@@ -161,7 +202,7 @@ export function PaymentGateway({
           </p>
           <p className="mt-1 text-4xl font-black">${amount.toLocaleString()}</p>
           <p className="mt-1 text-xs" style={{ color: "var(--gw-dim)" }}>
-            Merchant: Aurum Capital · Order #{String(Math.abs(amount * 7919)).slice(0, 8)}
+            Merchant: HopeX · Order #{String(Math.abs(amount * 7919)).slice(0, 8)}
           </p>
         </div>
 
@@ -284,29 +325,54 @@ export function PaymentGateway({
                 className="mt-1.5 flex cursor-pointer items-center gap-3 rounded-xl px-4 py-5 text-sm"
                 style={{ border: "1px dashed var(--gw-line)", background: "#ffffff08" }}
               >
-                <Upload className="h-4 w-4 shrink-0" style={{ color: "var(--gw-accent)" }} />
-                <span className="truncate">{proof || "Tap to upload proof of payment"}</span>
+                {uploading ? (
+                  <Loader2 className="h-4 w-4 shrink-0 animate-spin" style={{ color: "var(--gw-accent)" }} />
+                ) : (
+                  <Upload className="h-4 w-4 shrink-0" style={{ color: "var(--gw-accent)" }} />
+                )}
+                <span className="truncate">
+                  {uploading ? "Uploading screenshot…" : proof || "Tap to upload proof of payment"}
+                </span>
                 <input
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) => setProof(e.target.files?.[0]?.name ?? "")}
+                  disabled={uploading}
+                  onChange={(e) => void pickFile(e.target.files?.[0])}
                 />
               </label>
-              {proof ? (
-                <p className="mt-2 flex items-center gap-1 text-xs" style={{ color: "var(--gw-accent)" }}>
-                  <Check className="h-3.5 w-3.5" /> Screenshot attached
+              {proofUrl ? (
+                <div className="mt-3 flex items-center gap-3">
+                  <img
+                    src={proofUrl}
+                    alt="Payment screenshot preview"
+                    className="h-16 w-16 rounded-lg object-cover"
+                    style={{ border: "1px solid var(--gw-line)" }}
+                  />
+                  <p className="flex items-center gap-1 text-xs" style={{ color: "var(--gw-accent)" }}>
+                    <Check className="h-3.5 w-3.5" /> Screenshot uploaded
+                  </p>
+                </div>
+              ) : null}
+              {uploadError ? (
+                <p className="mt-2 text-xs" style={{ color: "#ff8a8a" }}>
+                  {uploadError}
                 </p>
               ) : null}
+
             </div>
 
             <button
-              disabled={!reference.trim() || !proof}
+              disabled={!reference.trim() || !proofUrl || uploading}
               onClick={submit}
-              className={cn("h-12 w-full rounded-xl gw-accent-btn", (!reference.trim() || !proof) && "opacity-40")}
+              className={cn(
+                "h-12 w-full rounded-xl gw-accent-btn",
+                (!reference.trim() || !proofUrl || uploading) && "opacity-40",
+              )}
             >
-              Submit payment
+              {uploading ? "Uploading screenshot…" : "Submit payment"}
             </button>
+
           </div>
         ) : null}
 
@@ -329,7 +395,7 @@ export function PaymentGateway({
               the funds are credited.
             </p>
             <button
-              onClick={() => onComplete({ method: method.id, reference: reference.trim(), proof })}
+              onClick={() => onComplete({ method: method.id, reference: reference.trim(), proof, proofUrl })}
               className="gw-accent-btn mt-3 h-12 w-full rounded-xl"
             >
               Exit gateway

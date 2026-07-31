@@ -11,9 +11,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/deposit")({
   head: () => ({
     meta: [
-      { title: "Deposit Funds — Aurum Capital" },
+      { title: "Deposit Funds — HopeX" },
       { name: "description", content: "Fund your wallet through the secure SecurePay gateway with bank transfer, USDT, JazzCash or EasyPaisa." },
-      { property: "og:title", content: "Deposit Funds — Aurum Capital" },
+      { property: "og:title", content: "Deposit Funds — HopeX" },
       { property: "og:description", content: "Fast, secure deposits with multiple payment methods." },
     ],
   }),
@@ -72,6 +72,7 @@ function Deposit() {
         amount: value,
         method: r.method,
         reference: r.reference || r.proof,
+        proofUrl: r.proofUrl,
         note: r.proof ? `Proof: ${r.proof}` : undefined,
         status: "pending",
         createdAt: timestamp(),
