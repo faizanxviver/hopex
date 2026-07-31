@@ -34,7 +34,7 @@ function Plans() {
   if (!user) return null;
   const investments = db.investments.filter((i) => i.userId === user.id);
 
-  const invest = () => {
+  const invest = async () => {
     if (!active) return;
     const value = Number(amount);
     if (!value || value < active.min || value > active.max) {
@@ -42,72 +42,25 @@ function Plans() {
     }
     if (value > user.balance) return toast.error("Insufficient available balance. Please deposit first.");
 
-    update((d) => {
-      const me = d.users.find((u) => u.id === user.id)!;
-      me.balance -= value;
-      me.invested += value;
-      d.investments.unshift({
-        id: newId(),
-        userId: me.id,
-        planId: active.id,
-        planName: active.name,
-        amount: value,
-        dailyRoi: active.dailyRoi,
-        durationDays: active.durationDays,
-        startedAt: timestamp(),
-        earned: 0,
-      });
-      d.transactions.unshift({
-        id: newId(),
-        userId: me.id,
-        type: "investment",
-        amount: value,
-        method: `${active.name} Plan`,
-        status: "completed",
-        createdAt: timestamp(),
-      });
-
-      // 4-level upline commissions
-      const rates = d.settings.levels;
-      let code = me.referredBy;
-      for (let lvl = 0; lvl < 4 && code; lvl++) {
-        const upline = d.users.find((u) => u.referralCode === code);
-        if (!upline) break;
-        const commission = (value * rates[lvl]) / 100;
-        upline.balance += commission;
-        upline.referralEarnings += commission;
-        d.transactions.unshift({
-          id: newId(),
-          userId: upline.id,
-          type: "commission",
-          amount: commission,
-          method: `Level ${lvl + 1} — ${me.name}`,
-          status: "completed",
-          createdAt: timestamp(),
-        });
-        d.notifications.unshift({
-          id: newId(),
-          userId: upline.id,
-          title: "Commission received",
-          body: `You earned ${money(commission)} from a Level ${lvl + 1} investment.`,
-          kind: "success",
-          read: false,
-          createdAt: timestamp(),
-        });
-        code = upline.referredBy;
-      }
-      return d;
-    });
+    setBusy(true);
+    const { error } = await supabase.rpc("buy_plan", { _plan_id: active.id, _amount: value });
+    if (error) {
+      setBusy(false);
+      return toast.error(error.message.replace(/^.*?:\s*/, ""));
+    }
 
     addNotification(user.id, {
       title: "Investment activated",
       body: `${money(value)} allocated to the ${active.name} plan.`,
       kind: "success",
     });
+    await refresh();
+    setBusy(false);
     toast.success(`Invested ${money(value)} in ${active.name}.`);
     setActive(null);
     setAmount("");
   };
+
 
   return (
     <div>
