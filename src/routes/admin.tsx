@@ -445,9 +445,12 @@ function Admin() {
           </div>
         </GlassCard>
       ) : null}
+        </div>
+      </div>
     </div>
   );
 }
+
 
 function BroadcastForm({
   onSend,
