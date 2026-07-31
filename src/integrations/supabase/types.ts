@@ -55,6 +55,7 @@ export type Database = {
           duration_days: number
           earned: number
           id: string
+          last_payout_at: string
           plan_id: string
           plan_name: string
           started_at: string
@@ -67,6 +68,7 @@ export type Database = {
           duration_days: number
           earned?: number
           id?: string
+          last_payout_at?: string
           plan_id: string
           plan_name: string
           started_at?: string
@@ -79,6 +81,7 @@ export type Database = {
           duration_days?: number
           earned?: number
           id?: string
+          last_payout_at?: string
           plan_id?: string
           plan_name?: string
           started_at?: string
@@ -347,6 +350,7 @@ export type Database = {
     }
     Functions: {
       buy_plan: { Args: { _amount: number; _plan_id: string }; Returns: string }
+      claim_earnings: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
