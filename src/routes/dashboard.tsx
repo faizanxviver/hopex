@@ -121,7 +121,7 @@ function Dashboard() {
       {/* Live earnings */}
       {running.length > 0 ? (
         <GlassCard className="relative overflow-hidden">
-          <div className="pointer-events-none absolute -left-14 bottom--10 h-40 w-40 rounded-full bg-success/25 blur-3xl" />
+          <div className="pointer-events-none absolute -left-14 -bottom-10 h-40 w-40 rounded-full bg-success/25 blur-3xl" />
           <div className="relative">
             <div className="flex items-center justify-between gap-3">
               <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
