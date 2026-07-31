@@ -1,5 +1,18 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  LayoutDashboard,
+  Megaphone,
+  MessageSquare,
+  Settings,
+  Ticket,
+  TrendingUp,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
+
 import { toast } from "sonner";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle, StatCard, StatusBadge } from "@/components/glass";
