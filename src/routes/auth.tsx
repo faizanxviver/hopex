@@ -80,7 +80,7 @@ function AuthPage() {
     if (error) {
       return toast.error(
         error.toLowerCase().includes("invalid login")
-          ? "Wrong mobile number or password."
+          ? "Wrong mobile number / email or password."
           : error.replace(/email/gi, "mobile number"),
       );
     }
@@ -128,7 +128,7 @@ function AuthPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {isSignup
               ? "Just your name and mobile number — your account is verified instantly."
-              : "Sign in with your mobile number."}
+              : "Sign in with your mobile number or email."}
           </p>
 
           <form key={mode + "-form"} onSubmit={submit} className="animate-rise mt-6 space-y-3">
@@ -142,9 +142,9 @@ function AuthPage() {
             ) : null}
             <Field
               icon={Phone}
-              type="tel"
-              inputMode="tel"
-              placeholder="Mobile number (03XX XXXXXXX)"
+              type="text"
+              inputMode={isSignup ? "tel" : "text"}
+              placeholder={isSignup ? "Mobile number (03XX XXXXXXX)" : "Mobile number or email"}
               value={form.phone}
               onChange={set("phone")}
             />
