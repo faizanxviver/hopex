@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { uploadProofImage } from "@/lib/uploads.functions";
+import { useStore, type PaymentMethod } from "@/lib/store";
 
 
 
@@ -25,37 +26,6 @@ export interface GatewayResult {
   proofUrl?: string;
 }
 
-
-const GW_METHODS = [
-  {
-    id: "Bank Transfer",
-    icon: Building2,
-    account: "PK36 MEZN 0001 2345 6789 0123",
-    holder: "HopeX Ltd · Meezan Bank",
-    note: "Credited in 1–24 hours · no fee",
-  },
-  {
-    id: "USDT (TRC20)",
-    icon: Bitcoin,
-    account: "TQx8f4Kd9WmY2ZpLn3Ra7Vc1Hs6Bt5Uj0N",
-    holder: "Tron network (TRC20) only",
-    note: "Instant · network fee applies",
-  },
-  {
-    id: "JazzCash",
-    icon: Smartphone,
-    account: "0300 1234567",
-    holder: "HopeX · JazzCash",
-    note: "Instant · 1% fee",
-  },
-  {
-    id: "EasyPaisa",
-    icon: Banknote,
-    account: "0345 7654321",
-    holder: "HopeX · EasyPaisa",
-    note: "Instant · 1% fee",
-  },
-];
 
 type Step = "connecting" | "method" | "pay" | "proof" | "processing" | "done";
 
@@ -69,7 +39,9 @@ export function PaymentGateway({
   onComplete: (r: GatewayResult) => void;
 }) {
   const [step, setStep] = useState<Step>("connecting");
-  const [method, setMethod] = useState<(typeof GW_METHODS)[number] | null>(null);
+  const { db } = useStore();
+  const gwMethods = db.methods.filter((m) => m.active);
+  const [method, setMethod] = useState<PaymentMethod | null>(null);
   const [proof, setProof] = useState("");
   const [proofUrl, setProofUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -198,7 +170,7 @@ export function PaymentGateway({
           <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: "var(--gw-dim)" }}>
             Amount to pay
           </p>
-          <p className="mt-1 text-4xl font-black">${amount.toLocaleString()}</p>
+          <p className="mt-1 text-4xl font-black">Rs {amount.toLocaleString("en-PK")}</p>
           <p className="mt-1 text-xs" style={{ color: "var(--gw-dim)" }}>
             Merchant: HopeX · Order #{String(Math.abs(amount * 7919)).slice(0, 8)}
           </p>
@@ -217,7 +189,12 @@ export function PaymentGateway({
         {step === "method" ? (
           <div className="space-y-3">
             <p className="text-sm font-semibold">Select a payment method</p>
-            {GW_METHODS.map((m) => (
+            {gwMethods.length === 0 ? (
+              <p className="gw-panel p-5 text-sm" style={{ color: "var(--gw-dim)" }}>
+                No payment methods are available right now. Please try again shortly.
+              </p>
+            ) : null}
+            {gwMethods.map((m) => (
               <button
                 key={m.id}
                 onClick={() => {
@@ -230,12 +207,16 @@ export function PaymentGateway({
                   className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
                   style={{ background: "#ffffff10", color: "var(--gw-accent)" }}
                 >
-                  <m.icon className="h-5 w-5" />
+                  {m.imageUrl ? (
+                    <img src={m.imageUrl} alt={m.name} className="h-11 w-11 rounded-xl object-cover" />
+                  ) : (
+                    <span className="text-sm font-black">{m.name[0]}</span>
+                  )}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-bold">{m.id}</span>
+                  <span className="block truncate text-sm font-bold">{m.name}</span>
                   <span className="block truncate text-xs" style={{ color: "var(--gw-dim)" }}>
-                    {m.note}
+                    {m.instructions}
                   </span>
                 </span>
                 <ChevronLeft className="h-4 w-4 rotate-180" style={{ color: "var(--gw-dim)" }} />
@@ -248,22 +229,22 @@ export function PaymentGateway({
           <div className="space-y-4">
             <div className="gw-panel p-5">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-bold">{method.id}</p>
+                <p className="text-sm font-bold">{method.name}</p>
                 <span className="rounded-full px-3 py-1 text-[11px]" style={{ background: "#ffffff10" }}>
                   expires in {mmss}
                 </span>
               </div>
               <p className="mt-1 text-xs" style={{ color: "var(--gw-dim)" }}>
-                {method.holder}
+                {method.accountName}
               </p>
 
               <div
                 className="mt-4 flex items-center gap-2 rounded-xl px-3 py-3"
                 style={{ background: "#ffffff0d", border: "1px dashed var(--gw-line)" }}
               >
-                <p className="min-w-0 flex-1 break-all font-mono text-sm">{method.account}</p>
+                <p className="min-w-0 flex-1 break-all font-mono text-sm">{method.accountNumber}</p>
                 <button
-                  onClick={() => copy(method.account, "acct")}
+                  onClick={() => copy(method.accountNumber, "acct")}
                   className="flex shrink-0 items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold"
                   style={{ background: "#ffffff14", color: "var(--gw-accent)" }}
                 >
@@ -276,7 +257,7 @@ export function PaymentGateway({
                 className="mt-3 flex items-center gap-2 rounded-xl px-3 py-3"
                 style={{ background: "#ffffff0d", border: "1px dashed var(--gw-line)" }}
               >
-                <p className="min-w-0 flex-1 font-mono text-sm">${amount.toLocaleString()}</p>
+                <p className="min-w-0 flex-1 font-mono text-sm">Rs {amount.toLocaleString("en-PK")}</p>
                 <button
                   onClick={() => copy(String(amount), "amt")}
                   className="flex shrink-0 items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold"
@@ -289,7 +270,7 @@ export function PaymentGateway({
 
               <ol className="mt-4 space-y-1.5 text-xs" style={{ color: "var(--gw-dim)" }}>
                 <li>1. Copy the account number above and open your payment app.</li>
-                <li>2. Send exactly ${amount.toLocaleString()} to that account.</li>
+                <li>2. Send exactly Rs {amount.toLocaleString("en-PK")} to that account.</li>
                 <li>3. Take a screenshot of the successful payment.</li>
                 <li>4. Continue and upload the screenshot to confirm.</li>
               </ol>
@@ -383,11 +364,11 @@ export function PaymentGateway({
             <CheckCircle2 className="h-14 w-14" style={{ color: "var(--gw-accent)" }} />
             <p className="text-xl font-black">Payment submitted</p>
             <p className="text-sm" style={{ color: "var(--gw-dim)" }}>
-              ${amount.toLocaleString()} via {method.id} has been sent for verification. You will be notified once
+              Rs {amount.toLocaleString("en-PK")} via {method.name} has been sent for verification. You will be notified once
               the funds are credited.
             </p>
             <button
-              onClick={() => onComplete({ method: method.id, proof, proofUrl })}
+              onClick={() => onComplete({ method: method.name, proof, proofUrl })}
               className="gw-accent-btn mt-3 h-12 w-full rounded-xl"
             >
               Exit gateway
