@@ -6,6 +6,8 @@ import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { Switch } from "@/components/ui/switch";
 import { useStore } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
