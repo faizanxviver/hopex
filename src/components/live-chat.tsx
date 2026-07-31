@@ -19,7 +19,24 @@ import { useStore, newId, timestamp } from "@/lib/store";
 import type { ChatMessage } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-const EMOJIS = ["😀", "😂", "🥰", "😎", "🤝", "👍", "🙏", "🔥", "💰", "📈", "✅", "❓", "😢", "😡", "🎉", "💎"];
+const EMOJIS = [
+  "😀",
+  "😂",
+  "🥰",
+  "😎",
+  "🤝",
+  "👍",
+  "🙏",
+  "🔥",
+  "💰",
+  "📈",
+  "✅",
+  "❓",
+  "😢",
+  "😡",
+  "🎉",
+  "💎",
+];
 
 const AUTO_REPLIES = [
   "Thanks for reaching out! A support specialist is reviewing this right now.",
@@ -45,7 +62,9 @@ function dayLabel(iso: string) {
   const yest = new Date(Date.now() - 86400000);
   if (d.toDateString() === today.toDateString()) return "TODAY";
   if (d.toDateString() === yest.toDateString()) return "YESTERDAY";
-  return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }).toUpperCase();
+  return d
+    .toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })
+    .toUpperCase();
 }
 
 export function LiveChat() {
@@ -101,7 +120,13 @@ export function LiveChat() {
     setEmoji(false);
     const replyTo = reply ?? undefined;
     setReply(null);
-    push({ from: "user", text: body || (attachment?.name ?? ""), status: "sent", attachment, replyTo });
+    push({
+      from: "user",
+      text: body || (attachment?.name ?? ""),
+      status: "sent",
+      attachment,
+      replyTo,
+    });
 
     setTimeout(() => setTyping(true), 500);
     setTimeout(() => {
@@ -173,7 +198,11 @@ export function LiveChat() {
           </button>
 
           <div className="relative shrink-0">
-            <button aria-label="Chat menu" onClick={() => setMenu((m) => !m)} className="opacity-90">
+            <button
+              aria-label="Chat menu"
+              onClick={() => setMenu((m) => !m)}
+              className="opacity-90"
+            >
               <MoreVertical className="h-4 w-4" />
             </button>
             {menu ? (
@@ -227,7 +256,12 @@ export function LiveChat() {
                     {label}
                   </p>
                 ) : null}
-                <div className={cn("group flex items-end gap-1", mine ? "justify-end" : "justify-start")}>
+                <div
+                  className={cn(
+                    "group flex items-end gap-1",
+                    mine ? "justify-end" : "justify-start",
+                  )}
+                >
                   {mine ? (
                     <button
                       onClick={() => setReply({ from: m.from, text: m.text })}
@@ -337,7 +371,11 @@ export function LiveChat() {
         {emoji ? (
           <div className="grid grid-cols-8 gap-1 border-t border-border bg-card px-3 py-2 text-xl">
             {EMOJIS.map((e) => (
-              <button key={e} onClick={() => setText((t) => t + e)} className="rounded hover:bg-accent">
+              <button
+                key={e}
+                onClick={() => setText((t) => t + e)}
+                className="rounded hover:bg-accent"
+              >
                 {e}
               </button>
             ))}
@@ -347,7 +385,11 @@ export function LiveChat() {
         {/* Composer */}
         <div className="flex items-end gap-2 border-t border-border bg-card p-2">
           <div className="flex min-w-0 flex-1 items-end gap-1 rounded-3xl border border-input bg-background px-3 py-1.5">
-            <button onClick={() => setEmoji((e) => !e)} aria-label="Emoji" className="pb-1.5 text-muted-foreground">
+            <button
+              onClick={() => setEmoji((e) => !e)}
+              aria-label="Emoji"
+              className="pb-1.5 text-muted-foreground"
+            >
               <Smile className="h-5 w-5" />
             </button>
             <textarea
@@ -376,7 +418,8 @@ export function LiveChat() {
               className="hidden"
               onChange={(e) => {
                 const f = e.target.files?.[0];
-                if (f) send("", { name: f.name, kind: f.type.startsWith("image") ? "image" : "file" });
+                if (f)
+                  send("", { name: f.name, kind: f.type.startsWith("image") ? "image" : "file" });
                 e.target.value = "";
               }}
             />

@@ -92,6 +92,6 @@ export function useT() {
     };
   }, [lang]);
 
-  const t = useCallback((key: string) => (lang === "ur" ? DICT.ur[key] ?? key : key), [lang]);
+  const t = useCallback((key: string) => (lang === "ur" ? (DICT.ur[key] ?? key) : key), [lang]);
   return { t, lang, rtl: lang === "ur" };
 }

@@ -11,7 +11,10 @@ export const Route = createFileRoute("/deposit-history")({
       { title: "Deposit History — HopeX" },
       { name: "description", content: "Review every deposit with status, method and timestamps." },
       { property: "og:title", content: "Deposit History — HopeX" },
-      { property: "og:description", content: "Processing, successful and declined deposits in one place." },
+      {
+        property: "og:description",
+        content: "Processing, successful and declined deposits in one place.",
+      },
     ],
   }),
   component: () => (
@@ -32,17 +35,24 @@ function DepositHistory() {
 
   return (
     <div>
-      <SectionTitle title={t("Deposit history")} subtitle="Every deposit request and its current status." />
+      <SectionTitle
+        title={t("Deposit history")}
+        subtitle="Every deposit request and its current status."
+      />
 
       <div className="mb-4 grid grid-cols-2 gap-3">
         <GlassCard className="p-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("Successful")}</p>
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            {t("Successful")}
+          </p>
           <p className="mt-1 font-display text-xl font-extrabold text-success">
             {money(successful.reduce((a, r) => a + r.amount, 0))}
           </p>
         </GlassCard>
         <GlassCard className="p-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("Processing")}</p>
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            {t("Processing")}
+          </p>
           <p className="mt-1 font-display text-xl font-extrabold text-primary">
             {money(processing.reduce((a, r) => a + r.amount, 0))}
           </p>

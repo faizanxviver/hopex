@@ -47,7 +47,9 @@ export function StatCard({
       />
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{label}</p>
+          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            {label}
+          </p>
           <p className="mt-2 truncate font-display text-2xl font-extrabold sm:text-3xl">{value}</p>
           {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
         </div>

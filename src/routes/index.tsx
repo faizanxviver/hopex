@@ -61,7 +61,11 @@ function Landing() {
             >
               {user ? "Dashboard" : "Sign in"}
             </Link>
-            <Link to="/auth" search={{ mode: "signup" }} className="btn-glass btn-glass-primary px-5 py-2 text-sm font-bold">
+            <Link
+              to="/auth"
+              search={{ mode: "signup" }}
+              className="btn-glass btn-glass-primary px-5 py-2 text-sm font-bold"
+            >
               Get started
             </Link>
           </div>
@@ -77,7 +81,8 @@ function Landing() {
           Capital that compounds <span className="text-gradient">every single day.</span>
         </h1>
         <p className="animate-rise mx-auto mt-4 max-w-lg text-base text-muted-foreground">
-          Daily ROI credited automatically every 24 hours, fast payouts and four levels of affiliate income.
+          Daily ROI credited automatically every 24 hours, fast payouts and four levels of affiliate
+          income.
         </p>
         <div className="animate-rise mt-7 flex flex-wrap items-center justify-center gap-3">
           <Link
@@ -115,7 +120,9 @@ function Landing() {
                 <s.icon className="h-5 w-5" />
               </span>
               <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gold">Step {i + 1}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gold">
+                  Step {i + 1}
+                </p>
                 <h2 className="text-sm font-bold">{s.title}</h2>
                 <p className="mt-1 text-xs text-muted-foreground">{s.body}</p>
               </div>
@@ -139,7 +146,10 @@ function Landing() {
               <p className="mt-2 text-xs text-muted-foreground">
                 ${p.min.toLocaleString()} – ${p.max.toLocaleString()}
               </p>
-              <Link to="/plans" className="btn-glass btn-glass-primary mt-4 block px-4 py-2.5 text-center text-sm font-bold">
+              <Link
+                to="/plans"
+                className="btn-glass btn-glass-primary mt-4 block px-4 py-2.5 text-center text-sm font-bold"
+              >
                 Invest now
               </Link>
             </GlassCard>
@@ -158,7 +168,12 @@ function Landing() {
               Commission is paid the moment anyone in your network activates a plan.
             </p>
             <div className="mt-5 grid grid-cols-4 gap-2">
-              {[["L1", "10%"], ["L2", "2%"], ["L3", "1%"], ["L4", "4%"]].map(([l, v]) => (
+              {[
+                ["L1", "10%"],
+                ["L2", "2%"],
+                ["L3", "1%"],
+                ["L4", "4%"],
+              ].map(([l, v]) => (
                 <div key={l} className="rounded-2xl glass-soft p-3 text-center">
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{l}</p>
                   <p className="mt-1 font-display text-lg font-black text-gold">{v}</p>
@@ -182,13 +197,27 @@ function Landing() {
             <h2 className="font-display text-2xl font-black">FAQ</h2>
             <Accordion type="single" collapsible className="mt-3 rounded-3xl glass px-6">
               {[
-                ["When do I get my first income?", "Immediately — day 1 income is credited the moment your plan activates, then every 24 hours automatically."],
-                ["How fast are payouts?", "Most payouts settle within 2 hours. An active plan is required to withdraw."],
-                ["Is my principal returned?", "Yes — principal returns to your balance when the plan matures."],
-                ["Which payment methods work?", "Bank transfer, USDT (TRC20/ERC20), JazzCash and EasyPaisa."],
+                [
+                  "When do I get my first income?",
+                  "Immediately — day 1 income is credited the moment your plan activates, then every 24 hours automatically.",
+                ],
+                [
+                  "How fast are payouts?",
+                  "Most payouts settle within 2 hours. An active plan is required to withdraw.",
+                ],
+                [
+                  "Is my principal returned?",
+                  "Yes — principal returns to your balance when the plan matures.",
+                ],
+                [
+                  "Which payment methods work?",
+                  "Bank transfer, USDT (TRC20/ERC20), JazzCash and EasyPaisa.",
+                ],
               ].map(([q, a]) => (
                 <AccordionItem key={q} value={q}>
-                  <AccordionTrigger className="text-left text-sm font-semibold">{q}</AccordionTrigger>
+                  <AccordionTrigger className="text-left text-sm font-semibold">
+                    {q}
+                  </AccordionTrigger>
                   <AccordionContent className="text-sm text-muted-foreground">{a}</AccordionContent>
                 </AccordionItem>
               ))}

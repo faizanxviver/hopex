@@ -19,6 +19,7 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as MoreRouteImport } from './routes/more'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PromoRouteImport } from './routes/promo'
 import { Route as ReferralsRouteImport } from './routes/referrals'
 import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as WithdrawRouteImport } from './routes/withdraw'
@@ -74,6 +75,11 @@ const ProfileRoute = ProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PromoRoute = PromoRouteImport.update({
+  id: '/promo',
+  path: '/promo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReferralsRoute = ReferralsRouteImport.update({
   id: '/referrals',
   path: '/referrals',
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/more': typeof MoreRoute
   '/plans': typeof PlansRoute
   '/profile': typeof ProfileRoute
+  '/promo': typeof PromoRoute
   '/referrals': typeof ReferralsRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/more': typeof MoreRoute
   '/plans': typeof PlansRoute
   '/profile': typeof ProfileRoute
+  '/promo': typeof PromoRoute
   '/referrals': typeof ReferralsRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/more': typeof MoreRoute
   '/plans': typeof PlansRoute
   '/profile': typeof ProfileRoute
+  '/promo': typeof PromoRoute
   '/referrals': typeof ReferralsRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/more'
     | '/plans'
     | '/profile'
+    | '/promo'
     | '/referrals'
     | '/transactions'
     | '/withdraw'
@@ -173,6 +183,7 @@ export interface FileRouteTypes {
     | '/more'
     | '/plans'
     | '/profile'
+    | '/promo'
     | '/referrals'
     | '/transactions'
     | '/withdraw'
@@ -189,6 +200,7 @@ export interface FileRouteTypes {
     | '/more'
     | '/plans'
     | '/profile'
+    | '/promo'
     | '/referrals'
     | '/transactions'
     | '/withdraw'
@@ -206,6 +218,7 @@ export interface RootRouteChildren {
   MoreRoute: typeof MoreRoute
   PlansRoute: typeof PlansRoute
   ProfileRoute: typeof ProfileRoute
+  PromoRoute: typeof PromoRoute
   ReferralsRoute: typeof ReferralsRoute
   TransactionsRoute: typeof TransactionsRoute
   WithdrawRoute: typeof WithdrawRoute
@@ -284,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/promo': {
+      id: '/promo'
+      path: '/promo'
+      fullPath: '/promo'
+      preLoaderRoute: typeof PromoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/referrals': {
       id: '/referrals'
       path: '/referrals'
@@ -326,6 +346,7 @@ const rootRouteChildren: RootRouteChildren = {
   MoreRoute: MoreRoute,
   PlansRoute: PlansRoute,
   ProfileRoute: ProfileRoute,
+  PromoRoute: PromoRoute,
   ReferralsRoute: ReferralsRoute,
   TransactionsRoute: TransactionsRoute,
   WithdrawRoute: WithdrawRoute,

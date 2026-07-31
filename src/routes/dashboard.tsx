@@ -1,6 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Coins, Timer, Wallet2, PiggyBank, HandCoins, Ticket, UsersRound, Rocket } from "lucide-react";
+import {
+  Coins,
+  Timer,
+  Wallet2,
+  PiggyBank,
+  HandCoins,
+  Ticket,
+  UsersRound,
+  Rocket,
+  Gem,
+  Share2,
+  TicketPercent,
+} from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard } from "@/components/glass";
 import { useT } from "@/lib/i18n";
@@ -18,7 +30,10 @@ export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — HopeX" },
-      { name: "description", content: "Track your live investment income, balances and daily payouts in one place." },
+      {
+        name: "description",
+        content: "Track your live investment income, balances and daily payouts in one place.",
+      },
       { property: "og:title", content: "Dashboard — HopeX" },
       { property: "og:description", content: "Live earnings, balances and instant actions." },
     ],
@@ -45,9 +60,15 @@ function Dashboard() {
   const { t } = useT();
   const [tick, setTick] = useState(() => Date.now());
 
+  // Smooth, fast-looking ticker: repaint on every animation frame.
   useEffect(() => {
-    const i = setInterval(() => setTick(Date.now()), 1000);
-    return () => clearInterval(i);
+    let raf = 0;
+    const loop = () => {
+      setTick(Date.now());
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   const running = useMemo(() => (user ? activeInvestments(db, user.id) : []), [db, user]);
@@ -81,7 +102,9 @@ function Dashboard() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             {t("Withdrawable balance")}
           </p>
-          <p className="mt-2 font-display text-4xl font-black tracking-tight sm:text-5xl">{money(user.balance)}</p>
+          <p className="mt-2 font-display text-4xl font-black tracking-tight sm:text-5xl">
+            {money(user.balance)}
+          </p>
 
           <div className="mt-4 inline-flex items-center gap-2 rounded-2xl glass-soft px-3 py-2">
             <PiggyBank className="h-4 w-4 shrink-0 text-gold" />
@@ -105,15 +128,20 @@ function Dashboard() {
           </div>
 
           <div className="mt-3 grid grid-cols-3 gap-3">
-            <Link to="/plans" className="btn-glass grid h-12 place-items-center text-sm font-semibold text-foreground">
-              {t("Invest")}
-            </Link>
-            <Link to="/referrals" className="btn-glass grid h-12 place-items-center text-sm font-semibold text-foreground">
-              {t("Refer")}
-            </Link>
-            <Link to="/deposit" className="btn-glass grid h-12 place-items-center text-sm font-semibold text-foreground">
-              {t("Promo code")}
-            </Link>
+            {[
+              { to: "/plans", icon: Gem, label: "Invest" },
+              { to: "/referrals", icon: Share2, label: "Refer" },
+              { to: "/promo", icon: TicketPercent, label: "Promo code" },
+            ].map((a) => (
+              <Link
+                key={a.to}
+                to={a.to}
+                className="btn-glass flex h-[4.5rem] flex-col items-center justify-center gap-1.5 text-[11px] font-bold text-foreground"
+              >
+                <a.icon className="h-5 w-5 text-primary" />
+                {t(a.label)}
+              </Link>
+            ))}
           </div>
         </div>
       </GlassCard>
@@ -132,7 +160,7 @@ function Dashboard() {
               </span>
             </div>
 
-            <p className="mt-3 font-display text-3xl font-black tabular-nums text-success sm:text-4xl">
+            <p className="mt-3 font-display text-3xl font-black tabular-nums text-success transition-none sm:text-4xl">
               {live.toFixed(8)}
             </p>
 
@@ -149,7 +177,9 @@ function Dashboard() {
                 <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
                   <HandCoins className="h-3.5 w-3.5" /> {t("Daily income")}
                 </p>
-                <p className="mt-1 font-display text-xl font-extrabold">{money(dailyIncome(db, user.id))}</p>
+                <p className="mt-1 font-display text-xl font-extrabold">
+                  {money(dailyIncome(db, user.id))}
+                </p>
               </div>
             </div>
 
@@ -164,12 +194,17 @@ function Dashboard() {
             <Rocket className="h-5 w-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-display text-base font-extrabold">{t("Activate a plan to start earning")}</p>
+            <p className="font-display text-base font-extrabold">
+              {t("Activate a plan to start earning")}
+            </p>
             <p className="mt-1 text-xs text-muted-foreground">
               {t("Your income ticker starts the moment your first plan goes live.")}
             </p>
           </div>
-          <Link to="/plans" className="btn-glass btn-glass-gold grid h-12 shrink-0 place-items-center px-6 text-sm font-bold">
+          <Link
+            to="/plans"
+            className="btn-glass btn-glass-gold grid h-12 shrink-0 place-items-center px-6 text-sm font-bold"
+          >
             {t("Invest")}
           </Link>
         </GlassCard>
@@ -181,7 +216,9 @@ function Dashboard() {
           <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
             <UsersRound className="h-3.5 w-3.5" /> {t("Referral income")}
           </p>
-          <p className="mt-1 truncate font-display text-xl font-extrabold text-gold">{money(user.referralEarnings)}</p>
+          <p className="mt-1 truncate font-display text-xl font-extrabold text-gold">
+            {money(user.referralEarnings)}
+          </p>
         </GlassCard>
         <GlassCard className="p-4">
           <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">

@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -29,6 +37,7 @@ export interface Plan {
   durationDays: number;
   features: string[];
   active: boolean;
+  imageUrl?: string;
 }
 
 export interface Investment {
@@ -43,7 +52,6 @@ export interface Investment {
   lastPayoutAt: string;
   earned: number;
 }
-
 
 export interface AppNotification {
   id: string;
@@ -67,6 +75,18 @@ export interface ChatMessage {
   replyTo?: { from: "user" | "support"; text: string } | null;
 }
 
+export interface PaymentMethod {
+  id: string;
+  name: string;
+  kind: string;
+  accountName: string;
+  accountNumber: string;
+  imageUrl?: string;
+  instructions: string;
+  active: boolean;
+  sortOrder: number;
+}
+
 export interface PromoCode {
   id: string;
   code: string;
@@ -83,6 +103,9 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
+  bankName?: string;
+  accountName?: string;
+  accountNumber?: string;
   role: "user" | "admin";
   verified: boolean;
   blocked: boolean;
@@ -103,6 +126,7 @@ interface Settings {
   minDeposit: number;
   minWithdraw: number;
   levels: [number, number, number, number];
+  quickAmounts: number[];
 }
 
 interface DB {
@@ -113,6 +137,7 @@ interface DB {
   chats: ChatMessage[];
   plans: Plan[];
   promos: PromoCode[];
+  methods: PaymentMethod[];
   settings: Settings;
   sessionId: string | null;
 }
@@ -125,6 +150,16 @@ const uid = () =>
 const now = () => new Date().toISOString();
 const num = (v: unknown) => Number(v ?? 0);
 
+/**
+ * HopeX signs users in with a phone number. Supabase auth requires an email, so
+ * we derive a deterministic address from the digits of the number.
+ */
+export const authEmail = (identifier: string) => {
+  const raw = identifier.trim();
+  if (raw.includes("@")) return raw.toLowerCase();
+  return `${raw.replace(/\D/g, "")}@hopex.pk`;
+};
+
 const emptyDb = (): DB => ({
   users: [],
   transactions: [],
@@ -133,7 +168,14 @@ const emptyDb = (): DB => ({
   chats: [],
   plans: [],
   promos: [],
-  settings: { siteName: "HopeX", minDeposit: 50, minWithdraw: 25, levels: [10, 2, 1, 4] },
+  methods: [],
+  settings: {
+    siteName: "HopeX",
+    minDeposit: 1000,
+    minWithdraw: 500,
+    levels: [10, 2, 1, 4],
+    quickAmounts: [1000, 3000, 5000, 10000, 25000, 50000],
+  },
   sessionId: null,
 });
 
@@ -146,6 +188,9 @@ const toUser = (r: Row, roles: Set<string>): User => ({
   name: r.name as string,
   email: r.email as string,
   phone: (r.phone as string) ?? undefined,
+  bankName: (r.bank_name as string) ?? undefined,
+  accountName: (r.account_name as string) ?? undefined,
+  accountNumber: (r.account_number as string) ?? undefined,
   role: roles.has(r.id as string) ? "admin" : "user",
   verified: Boolean(r.verified),
   blocked: Boolean(r.blocked),
@@ -165,6 +210,9 @@ const fromUser = (u: User): Row => ({
   name: u.name,
   email: u.email,
   phone: u.phone ?? null,
+  bank_name: u.bankName ?? null,
+  account_name: u.accountName ?? null,
+  account_number: u.accountNumber ?? null,
   verified: u.verified,
   blocked: u.blocked,
   kyc: u.kyc,
@@ -229,7 +277,6 @@ const fromInvestment = (i: Investment): Row => ({
   last_payout_at: i.lastPayoutAt,
 });
 
-
 const toNotification = (r: Row): AppNotification => ({
   id: r.id as string,
   userId: r.user_id as string,
@@ -283,6 +330,7 @@ const toPlan = (r: Row): Plan => ({
   durationDays: Number(r.duration_days),
   features: (r.features as string[]) ?? [],
   active: Boolean(r.active),
+  imageUrl: (r.image_url as string) ?? undefined,
 });
 
 const fromPlan = (p: Plan): Row => ({
@@ -294,6 +342,7 @@ const fromPlan = (p: Plan): Row => ({
   duration_days: p.durationDays,
   features: p.features,
   active: p.active,
+  image_url: p.imageUrl ?? null,
 });
 
 const toPromo = (r: Row): PromoCode => ({
@@ -318,6 +367,30 @@ const fromPromo = (p: PromoCode): Row => ({
   active: p.active,
 });
 
+const toMethod = (r: Row): PaymentMethod => ({
+  id: r.id as string,
+  name: r.name as string,
+  kind: (r.kind as string) ?? "wallet",
+  accountName: (r.account_name as string) ?? "",
+  accountNumber: (r.account_number as string) ?? "",
+  imageUrl: (r.image_url as string) ?? undefined,
+  instructions: (r.instructions as string) ?? "",
+  active: Boolean(r.active),
+  sortOrder: Number(r.sort_order ?? 0),
+});
+
+const fromMethod = (m: PaymentMethod): Row => ({
+  id: m.id,
+  name: m.name,
+  kind: m.kind,
+  account_name: m.accountName,
+  account_number: m.accountNumber,
+  image_url: m.imageUrl ?? null,
+  instructions: m.instructions,
+  active: m.active,
+  sort_order: m.sortOrder,
+});
+
 /* ---------------- context ---------------- */
 
 interface Ctx {
@@ -327,14 +400,17 @@ interface Ctx {
   user: User | null;
   update: (fn: (d: DB) => DB) => void;
   refresh: () => Promise<void>;
-  signup: (name: string, email: string, password: string, ref?: string) => Promise<string | null>;
-  login: (email: string, password: string) => Promise<string | null>;
+  signup: (name: string, phone: string, password: string, ref?: string) => Promise<string | null>;
+  login: (phone: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<string | null>;
   redeemPromo: (code: string, amount: number) => Promise<{ bonus: number; code: string } | null>;
   claimEarnings: () => Promise<number>;
 
-  addNotification: (userId: string, n: Omit<AppNotification, "id" | "userId" | "read" | "createdAt">) => void;
+  addNotification: (
+    userId: string,
+    n: Omit<AppNotification, "id" | "userId" | "read" | "createdAt">,
+  ) => void;
   theme: "dark" | "light";
   toggleTheme: () => void;
   chatOpen: boolean;
@@ -345,16 +421,63 @@ const StoreContext = createContext<Ctx | null>(null);
 
 /* ---------------- persistence ---------------- */
 
-type Coll = "users" | "transactions" | "investments" | "notifications" | "chats" | "plans" | "promos";
+type Coll =
+  | "users"
+  | "transactions"
+  | "investments"
+  | "notifications"
+  | "chats"
+  | "plans"
+  | "promos"
+  | "methods";
 
-const TABLES: Record<Coll, { table: string; from: (x: never) => Row; insertable: boolean; deletable: boolean }> = {
-  users: { table: "profiles", from: fromUser as (x: never) => Row, insertable: false, deletable: false },
-  transactions: { table: "transactions", from: fromTx as (x: never) => Row, insertable: true, deletable: true },
-  investments: { table: "investments", from: fromInvestment as (x: never) => Row, insertable: true, deletable: true },
-  notifications: { table: "notifications", from: fromNotification as (x: never) => Row, insertable: true, deletable: true },
-  chats: { table: "chat_messages", from: fromChat as (x: never) => Row, insertable: true, deletable: true },
+const TABLES: Record<
+  Coll,
+  { table: string; from: (x: never) => Row; insertable: boolean; deletable: boolean }
+> = {
+  users: {
+    table: "profiles",
+    from: fromUser as (x: never) => Row,
+    insertable: false,
+    deletable: false,
+  },
+  transactions: {
+    table: "transactions",
+    from: fromTx as (x: never) => Row,
+    insertable: true,
+    deletable: true,
+  },
+  investments: {
+    table: "investments",
+    from: fromInvestment as (x: never) => Row,
+    insertable: true,
+    deletable: true,
+  },
+  notifications: {
+    table: "notifications",
+    from: fromNotification as (x: never) => Row,
+    insertable: true,
+    deletable: true,
+  },
+  chats: {
+    table: "chat_messages",
+    from: fromChat as (x: never) => Row,
+    insertable: true,
+    deletable: true,
+  },
   plans: { table: "plans", from: fromPlan as (x: never) => Row, insertable: true, deletable: true },
-  promos: { table: "promo_codes", from: fromPromo as (x: never) => Row, insertable: true, deletable: true },
+  promos: {
+    table: "promo_codes",
+    from: fromPromo as (x: never) => Row,
+    insertable: true,
+    deletable: true,
+  },
+  methods: {
+    table: "payment_methods",
+    from: fromMethod as (x: never) => Row,
+    insertable: true,
+    deletable: true,
+  },
 };
 
 type WithId = { id: string };
@@ -370,7 +493,6 @@ const sb = supabase as unknown as { from: (table: string) => LooseQuery };
 /** Persists the difference between two in-memory snapshots to the database. */
 async function persistDiff(prev: DB, next: DB) {
   const jobs: PromiseLike<{ error: unknown }>[] = [];
-
 
   (Object.keys(TABLES) as Coll[]).forEach((key) => {
     const meta = TABLES[key];
@@ -411,11 +533,11 @@ async function persistDiff(prev: DB, next: DB) {
           min_deposit: next.settings.minDeposit,
           min_withdraw: next.settings.minWithdraw,
           levels: next.settings.levels,
+          quick_amounts: next.settings.quickAmounts,
         })
         .eq("id", 1),
     );
   }
-
 
   const results = await Promise.all(jobs);
   const failed = results.find((r) => (r as { error?: unknown } | null)?.error);
@@ -435,14 +557,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const load = useCallback(async (sessionId: string | null) => {
     sessionRef.current = sessionId;
 
-    const [plansRes, settingsRes] = await Promise.all([
+    const [plansRes, settingsRes, methodsRes] = await Promise.all([
       supabase.from("plans").select("*").order("sort_order"),
       supabase.from("settings").select("*").eq("id", 1).maybeSingle(),
+      supabase.from("payment_methods").select("*").order("sort_order"),
     ]);
 
     const base = emptyDb();
     base.sessionId = sessionId;
     base.plans = ((plansRes.data as Row[]) ?? []).map(toPlan);
+    base.methods = ((methodsRes.data as Row[]) ?? []).map(toMethod);
     const s = settingsRes.data as Row | null;
     if (s) {
       base.settings = {
@@ -450,6 +574,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         minDeposit: num(s.min_deposit),
         minWithdraw: num(s.min_withdraw),
         levels: (s.levels as [number, number, number, number]) ?? [10, 2, 1, 4],
+        quickAmounts: ((s.quick_amounts as unknown[]) ?? []).map(num).filter((n) => n > 0),
       };
     }
 
@@ -471,7 +596,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     ]);
 
     const adminIds = new Set(
-      ((roles.data as Row[]) ?? []).filter((r) => r.role === "admin").map((r) => r.user_id as string),
+      ((roles.data as Row[]) ?? [])
+        .filter((r) => r.role === "admin")
+        .map((r) => r.user_id as string),
     );
 
     base.users = ((profiles.data as Row[]) ?? []).map((r) => toUser(r, adminIds));
@@ -503,6 +630,36 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
     return () => sub.subscription.unsubscribe();
   }, [load]);
+
+  /* Live sync — admin actions and new rows land in the UI immediately. */
+  useEffect(() => {
+    if (!hydrated) return;
+    let queued: ReturnType<typeof setTimeout> | null = null;
+    const ping = () => {
+      if (queued) return;
+      queued = setTimeout(() => {
+        queued = null;
+        void load(sessionRef.current);
+      }, 400);
+    };
+    const channel = supabase.channel("hopex-live");
+    [
+      "transactions",
+      "notifications",
+      "chat_messages",
+      "investments",
+      "profiles",
+      "plans",
+      "payment_methods",
+    ].forEach((table) => {
+      channel.on("postgres_changes", { event: "*", schema: "public", table }, ping);
+    });
+    channel.subscribe();
+    return () => {
+      if (queued) clearTimeout(queued);
+      void supabase.removeChannel(channel);
+    };
+  }, [hydrated, load]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
@@ -536,38 +693,51 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [update],
   );
 
-  const signup: Ctx["signup"] = useCallback(async (name, email, password, ref) => {
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { name: name.trim(), referred_by: ref?.trim().toUpperCase() || null },
-      },
-    });
-    if (error) return error.message;
-    if (!data.session) return null;
-    setLoading(true);
-    await load(data.session.user.id);
-    return null;
-  }, [load]);
+  const signup: Ctx["signup"] = useCallback(
+    async (name, phone, password, ref) => {
+      const { data, error } = await supabase.auth.signUp({
+        email: authEmail(phone),
+        password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: {
+            name: name.trim(),
+            phone: phone.trim(),
+            referred_by: ref?.trim().toUpperCase() || null,
+          },
+        },
+      });
+      if (error) return error.message;
+      if (!data.session) return null;
+      setLoading(true);
+      await load(data.session.user.id);
+      return null;
+    },
+    [load],
+  );
 
-  const login: Ctx["login"] = useCallback(async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    if (error) return error.message;
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("blocked")
-      .eq("id", data.user.id)
-      .maybeSingle();
-    if ((profile as Row | null)?.blocked) {
-      await supabase.auth.signOut();
-      return "This account has been suspended. Contact support.";
-    }
-    setLoading(true);
-    await load(data.user.id);
-    return null;
-  }, [load]);
+  const login: Ctx["login"] = useCallback(
+    async (phone, password) => {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: authEmail(phone),
+        password,
+      });
+      if (error) return error.message;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("blocked")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      if ((profile as Row | null)?.blocked) {
+        await supabase.auth.signOut();
+        return "This account has been suspended. Contact support.";
+      }
+      setLoading(true);
+      await load(data.user.id);
+      return null;
+    },
+    [load],
+  );
 
   const logout = useCallback(async () => {
     await supabase.auth.signOut();
@@ -583,7 +753,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const redeemPromo = useCallback(async (code: string, amount: number) => {
-    const { data, error } = await supabase.rpc("redeem_promo", { _code: code.trim(), _amount: amount });
+    const { data, error } = await supabase.rpc("redeem_promo", {
+      _code: code.trim(),
+      _amount: amount,
+    });
     if (error || !data || !(data as unknown[]).length) return null;
     const row = (data as Row[])[0];
     return { bonus: num(row.bonus), code: row.code as string };
@@ -597,7 +770,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (total > 0) await load(sessionRef.current);
     return total;
   }, [load]);
-
 
   const toggleTheme = useCallback(() => setTheme((t) => (t === "dark" ? "light" : "dark")), []);
 
@@ -633,8 +805,10 @@ export function useStore() {
 
 /* ---------------- helpers ---------------- */
 
+/** Every amount in HopeX is Pakistani Rupees. */
 export const money = (n: number) =>
-  "$" + Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  "Rs " +
+  Number(n || 0).toLocaleString("en-PK", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export const newId = uid;
 export const timestamp = now;
@@ -668,13 +842,23 @@ export function hasActivePlan(db: DB, userId: string) {
 /** Total funds the user has deposited and that were approved by an admin. */
 export function depositBalance(db: DB, userId: string) {
   return db.transactions
-    .filter((t) => t.userId === userId && t.type === "deposit" && (t.status === "approved" || t.status === "completed"))
+    .filter(
+      (t) =>
+        t.userId === userId &&
+        t.type === "deposit" &&
+        (t.status === "approved" || t.status === "completed"),
+    )
     .reduce((a, t) => a + t.amount, 0);
 }
 
 export function pendingDeposits(db: DB, userId: string) {
   return db.transactions
-    .filter((t) => t.userId === userId && t.type === "deposit" && (t.status === "pending" || t.status === "processing"))
+    .filter(
+      (t) =>
+        t.userId === userId &&
+        t.type === "deposit" &&
+        (t.status === "pending" || t.status === "processing"),
+    )
     .reduce((a, t) => a + t.amount, 0);
 }
 
