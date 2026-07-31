@@ -56,9 +56,16 @@ function AuthPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const digits = form.phone.replace(/\D/g, "");
-    if (digits.length < 10 || form.password.length < 6) {
-      toast.error("Enter a valid mobile number and a password of at least 6 characters.");
+    const identifier = form.phone.trim();
+    const isEmail = identifier.includes("@");
+    const digits = identifier.replace(/\D/g, "");
+    const validId = isSignup ? digits.length >= 10 : isEmail ? /\S+@\S+\.\S+/.test(identifier) : digits.length >= 10;
+    if (!validId || form.password.length < 6) {
+      toast.error(
+        isSignup
+          ? "Enter a valid mobile number and a password of at least 6 characters."
+          : "Enter a valid mobile number or email and a password of at least 6 characters.",
+      );
       return;
     }
     if (isSignup && form.name.trim().length < 2) {
@@ -73,7 +80,7 @@ function AuthPage() {
     if (error) {
       return toast.error(
         error.toLowerCase().includes("invalid login")
-          ? "Wrong mobile number or password."
+          ? "Wrong mobile number / email or password."
           : error.replace(/email/gi, "mobile number"),
       );
     }
@@ -121,7 +128,7 @@ function AuthPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {isSignup
               ? "Just your name and mobile number — your account is verified instantly."
-              : "Sign in with your mobile number."}
+              : "Sign in with your mobile number or email."}
           </p>
 
           <form key={mode + "-form"} onSubmit={submit} className="animate-rise mt-6 space-y-3">
@@ -135,9 +142,9 @@ function AuthPage() {
             ) : null}
             <Field
               icon={Phone}
-              type="tel"
-              inputMode="tel"
-              placeholder="Mobile number (03XX XXXXXXX)"
+              type="text"
+              inputMode={isSignup ? "tel" : "text"}
+              placeholder={isSignup ? "Mobile number (03XX XXXXXXX)" : "Mobile number or email"}
               value={form.phone}
               onChange={set("phone")}
             />
