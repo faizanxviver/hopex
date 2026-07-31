@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DepositRouteImport } from './routes/deposit'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as PlansRouteImport } from './routes/plans'
 
@@ -30,6 +31,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DepositRoute = DepositRouteImport.update({
+  id: '/deposit',
+  path: '/deposit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/deposit': typeof DepositRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/plans': typeof PlansRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/deposit': typeof DepositRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/plans': typeof PlansRoute
 }
@@ -60,21 +68,31 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/deposit': typeof DepositRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/plans': typeof PlansRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard' | '/forgot-password' | '/plans'
+  fullPaths:
+    '/' | '/auth' | '/dashboard' | '/deposit' | '/forgot-password' | '/plans'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/forgot-password' | '/plans'
-  id: '__root__' | '/' | '/auth' | '/dashboard' | '/forgot-password' | '/plans'
+  to: '/' | '/auth' | '/dashboard' | '/deposit' | '/forgot-password' | '/plans'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/deposit'
+    | '/forgot-password'
+    | '/plans'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
+  DepositRoute: typeof DepositRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   PlansRoute: typeof PlansRoute
 }
@@ -102,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/deposit': {
+      id: '/deposit'
+      path: '/deposit'
+      fullPath: '/deposit'
+      preLoaderRoute: typeof DepositRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forgot-password': {
       id: '/forgot-password'
       path: '/forgot-password'
@@ -123,6 +148,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
+  DepositRoute: DepositRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   PlansRoute: PlansRoute,
 }
