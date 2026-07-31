@@ -51,7 +51,7 @@ function AuthPage() {
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.email.includes("@") || form.password.length < 6) {
       toast.error("Enter a valid email and a password of at least 6 characters.");
