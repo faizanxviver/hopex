@@ -27,9 +27,11 @@ export const Route = createFileRoute("/plans")({
 });
 
 function Plans() {
-  const { db, user, update, addNotification } = useStore();
+  const { db, user, addNotification, refresh } = useStore();
   const [active, setActive] = useState<Plan | null>(null);
   const [amount, setAmount] = useState("");
+  const [busy, setBusy] = useState(false);
+
 
   if (!user) return null;
   const investments = db.investments.filter((i) => i.userId === user.id);
