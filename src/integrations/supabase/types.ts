@@ -352,6 +352,13 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       my_network_codes: { Args: never; Returns: string[] }
+      redeem_promo: {
+        Args: { _code: string }
+        Returns: {
+          bonus: number
+          code: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"
