@@ -49,16 +49,20 @@ function Deposit() {
     setGateway(value);
   };
 
-  const complete = (r: GatewayResult) => {
+  const complete = async (r: GatewayResult) => {
     const value = gateway!;
     setGateway(null);
 
     let bonus = 0;
-    const promoCode = db.promos.find(
-      (p) => p.code.toLowerCase() === promo.trim().toLowerCase() && p.active && p.used < p.usageLimit,
-    );
-    if (promo.trim() && !promoCode) toast.error("Promo code is invalid or expired.");
-    if (promoCode) bonus = promoCode.type === "percent" ? (value * promoCode.value) / 100 : promoCode.value;
+    let bonusCode = "";
+    if (promo.trim()) {
+      const redeemed = await redeemPromo(promo.trim(), value);
+      if (!redeemed) toast.error("Promo code is invalid or expired.");
+      else {
+        bonus = redeemed.bonus;
+        bonusCode = redeemed.code;
+      }
+    }
 
     update((d) => {
       d.transactions.unshift({
@@ -72,9 +76,7 @@ function Deposit() {
         status: "pending",
         createdAt: timestamp(),
       });
-      if (promoCode) {
-        const p = d.promos.find((x) => x.id === promoCode.id);
-        if (p) p.used += 1;
+      if (bonus > 0) {
         const me = d.users.find((u) => u.id === user.id)!;
         me.balance += bonus;
         d.transactions.unshift({
@@ -82,7 +84,7 @@ function Deposit() {
           userId: user.id,
           type: "bonus",
           amount: bonus,
-          method: `Promo ${promoCode.code}`,
+          method: `Promo ${bonusCode}`,
           status: "completed",
           createdAt: timestamp(),
         });
