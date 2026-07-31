@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Building2, Banknote, Bitcoin, Smartphone } from "lucide-react";
+import { Building2, Banknote, Bitcoin, Smartphone, Lock } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
-import { money, newId, timestamp, useStore } from "@/lib/store";
+import { hasActivePlan, money, newId, timestamp, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/withdraw")({
   head: () => ({
@@ -41,14 +42,18 @@ function Withdraw() {
 
   if (!user) return null;
 
+  const planActive = hasActivePlan(db, user.id);
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!planActive) return toast.error("You must purchase an investment plan before withdrawing.");
     const value = Number(amount);
     if (!value || value < db.settings.minWithdraw) {
       return toast.error(`Minimum withdrawal is ${money(db.settings.minWithdraw)}.`);
     }
     if (value > user.balance) return toast.error("Amount exceeds your available balance.");
     if (!account.trim() || !holder.trim()) return toast.error("Enter your account details.");
+
 
     update((d) => {
       const me = d.users.find((u) => u.id === user.id)!;
@@ -76,10 +81,38 @@ function Withdraw() {
     setHolder("");
   };
 
+  if (!planActive) {
+    return (
+      <div>
+        <SectionTitle title="Withdraw funds" subtitle="Withdrawals unlock once you own an investment plan." />
+        <GlassCard className="mx-auto max-w-lg text-center" glow>
+          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl gradient-brand text-primary-foreground">
+            <Lock className="h-7 w-7" />
+          </span>
+          <h2 className="mt-5 font-display text-2xl font-extrabold">Withdrawals are locked</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            To protect the platform from abuse, you must purchase at least one investment plan before you can
+            request a payout. Your balance of {money(user.balance)} stays safe in your wallet.
+          </p>
+          <Link
+            to="/plans"
+            className="mt-6 block rounded-xl gradient-brand py-3 text-sm font-bold text-primary-foreground"
+          >
+            Browse investment plans
+          </Link>
+          <Link to="/deposit" className="mt-3 block rounded-xl glass-soft py-3 text-sm font-semibold">
+            Deposit funds first
+          </Link>
+        </GlassCard>
+      </div>
+    );
+  }
+
   return (
     <div>
       <SectionTitle title="Withdraw funds" subtitle={`Available balance: ${money(user.balance)}`} />
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+
         <GlassCard>
           <form onSubmit={submit} className="space-y-5">
             <div>

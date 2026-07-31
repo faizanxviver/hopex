@@ -22,7 +22,15 @@ import {
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, StatCard, StatusBadge } from "@/components/glass";
 import { Progress } from "@/components/ui/progress";
-import { investmentProgress, money, referralTree, useStore } from "@/lib/store";
+import {
+  depositBalance,
+  hasActivePlan,
+  investmentProgress,
+  money,
+  pendingDeposits,
+  referralTree,
+  useStore,
+} from "@/lib/store";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -126,14 +134,29 @@ function Dashboard() {
       <GlassCard className="relative overflow-hidden p-8" glow>
         <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full gradient-brand opacity-25 blur-3xl" />
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          Total balance
+          Total balance · withdrawable
         </p>
-        <p className="mt-3 font-display text-5xl font-black sm:text-6xl">
-          {money(user.balance + user.invested + user.earnings)}
-        </p>
-        <p className="mt-2 inline-flex items-center gap-1 text-sm text-success">
-          <TrendingUp className="h-4 w-4" /> +{((user.earnings / Math.max(1, user.invested)) * 100).toFixed(2)}% all-time return
-        </p>
+        <p className="mt-3 font-display text-5xl font-black sm:text-6xl">{money(user.balance)}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            <ArrowDownToLine className="h-3.5 w-3.5" /> Deposit balance {money(depositBalance(db, user.id))}
+          </span>
+          {pendingDeposits(db, user.id) > 0 ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-3 py-1 text-xs font-semibold text-warning">
+              {money(pendingDeposits(db, user.id))} pending
+            </span>
+          ) : null}
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs font-semibold text-success">
+            <TrendingUp className="h-3.5 w-3.5" /> +
+            {((user.earnings / Math.max(1, user.invested)) * 100).toFixed(2)}% all-time
+          </span>
+        </div>
+        {!hasActivePlan(db, user.id) ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Buy an investment plan to unlock withdrawals and referral commissions.
+          </p>
+        ) : null}
+
         <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {actions.map((a) => (
             <Link
