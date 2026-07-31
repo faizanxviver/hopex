@@ -127,70 +127,161 @@ function Admin() {
     "Support Chat": db.chats.filter((c) => c.from === "user").length,
   };
 
+  const groups: { label: string; items: (typeof tabs)[number][] }[] = [
+    { label: "Operations", items: ["Overview", "Users", "Support Chat"] },
+    { label: "Money flow", items: ["Deposits", "Withdrawals", "Methods"] },
+    { label: "Growth", items: ["Plans", "Promo Codes", "Broadcast"] },
+    { label: "System", items: ["Settings"] },
+  ];
+  const recent = db.transactions.slice(0, 6);
+
   return (
     <div>
-      <SectionTitle
-        title="Admin panel"
-        subtitle="Full control over users, money flow and platform configuration."
-      />
+      {/* Console header */}
+      <div className="glass relative mb-5 overflow-hidden rounded-3xl p-5 sm:p-6">
+        <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-primary/25 blur-3xl" />
+        <div className="relative flex flex-wrap items-center gap-4">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl gradient-brand text-primary-foreground">
+            <ShieldCheck className="h-6 w-6" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h1 className="font-display text-2xl font-extrabold sm:text-3xl">HopeX Console</h1>
+            <p className="text-sm text-muted-foreground">
+              Live control over users, money flow, plans and support.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setTab("Deposits")}
+              className={cn(
+                "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold",
+                pendingDeps ? "bg-destructive/15 text-destructive" : "glass-soft",
+              )}
+            >
+              <Clock className="h-3.5 w-3.5" /> {pendingDeps} deposits waiting
+            </button>
+            <button
+              onClick={() => setTab("Withdrawals")}
+              className={cn(
+                "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold",
+                pendingWds ? "bg-destructive/15 text-destructive" : "glass-soft",
+              )}
+            >
+              <Clock className="h-3.5 w-3.5" /> {pendingWds} withdrawals waiting
+            </button>
+          </div>
+        </div>
+      </div>
 
-      <div className="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <div className="grid gap-5 lg:grid-cols-[15.5rem_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="glass rounded-3xl p-3">
-            <p className="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              HopeX Console
-            </p>
-            <nav className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
-              {tabs.map((t) => {
-                const Icon = tabIcons[t];
-                return (
-                  <button
-                    key={t}
-                    onClick={() => setTab(t)}
-                    className={cn(
-                      "flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition lg:w-full",
-                      tab === t
-                        ? "gradient-cool text-primary-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
-                    )}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    <span className="truncate">{t}</span>
-                    {counts[t] ? (
-                      <span
+            <nav className="flex gap-2 overflow-x-auto pb-1 lg:block lg:space-y-3 lg:overflow-visible lg:pb-0">
+              {groups.map((g) => (
+                <div key={g.label} className="flex gap-2 lg:block">
+                  <p className="hidden px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground lg:block">
+                    {g.label}
+                  </p>
+                  {g.items.map((t) => {
+                    const Icon = tabIcons[t];
+                    return (
+                      <button
+                        key={t}
+                        onClick={() => setTab(t)}
                         className={cn(
-                          "ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold",
-                          tab === t ? "bg-background/25" : "bg-primary/15 text-primary",
+                          "flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition lg:w-full",
+                          tab === t
+                            ? "gradient-cool text-primary-foreground shadow-[var(--shadow-elegant)]"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground",
                         )}
                       >
-                        {counts[t]}
-                      </span>
-                    ) : null}
-                  </button>
-                );
-              })}
+                        <Icon className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{t}</span>
+                        {counts[t] ? (
+                          <span
+                            className={cn(
+                              "ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold",
+                              tab === t ? "bg-background/25" : "bg-primary/15 text-primary",
+                            )}
+                          >
+                            {counts[t]}
+                          </span>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
             </nav>
           </div>
         </aside>
 
         <div>
           {tab === "Overview" ? (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              <StatCard label="Total users" value={String(users.length)} />
-              <StatCard label="Total deposits" value={money(totalDeposits)} accent="success" />
-              <StatCard label="Total withdrawals" value={money(totalWithdrawals)} accent="gold" />
-              <StatCard label="Active investments" value={String(db.investments.length)} />
-              <StatCard
-                label="Capital invested"
-                value={money(db.investments.reduce((a, i) => a + i.amount, 0))}
-              />
-              <StatCard
-                label="Platform profit"
-                value={money(Math.max(0, totalDeposits - totalWithdrawals))}
-                accent="success"
-              />
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <StatCard label="Total users" value={String(users.length)} icon={<Users className="h-5 w-5" />} />
+                <StatCard
+                  label="Total deposits"
+                  value={money(totalDeposits)}
+                  accent="success"
+                  icon={<ArrowDownToLine className="h-5 w-5" />}
+                />
+                <StatCard
+                  label="Total withdrawals"
+                  value={money(totalWithdrawals)}
+                  accent="gold"
+                  icon={<ArrowUpFromLine className="h-5 w-5" />}
+                />
+                <StatCard
+                  label="Active investments"
+                  value={String(db.investments.length)}
+                  icon={<TrendingUp className="h-5 w-5" />}
+                />
+                <StatCard
+                  label="Capital invested"
+                  value={money(db.investments.reduce((a, i) => a + i.amount, 0))}
+                />
+                <StatCard
+                  label="Platform profit"
+                  value={money(Math.max(0, totalDeposits - totalWithdrawals))}
+                  accent="success"
+                />
+              </div>
+
+              <GlassCard>
+                <div className="mb-3 flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-primary" />
+                  <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                    Recent activity
+                  </h2>
+                </div>
+                <div className="space-y-2">
+                  {recent.map((t) => (
+                    <div
+                      key={t.id}
+                      className="flex items-center gap-3 rounded-2xl glass-soft px-3 py-2.5"
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold capitalize">
+                          {t.type} · {db.users.find((u) => u.id === t.userId)?.name ?? "—"}
+                        </span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {t.method ?? "—"}
+                        </span>
+                      </span>
+                      <span className="text-sm font-bold">{money(t.amount)}</span>
+                      <StatusBadge status={t.status} />
+                    </div>
+                  ))}
+                  {recent.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No activity yet.</p>
+                  ) : null}
+                </div>
+              </GlassCard>
             </div>
           ) : null}
+
 
           {tab === "Users" ? (
             <GlassCard className="overflow-x-auto p-0">
