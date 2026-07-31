@@ -5,7 +5,9 @@ import { BadgeCheck } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { Progress } from "@/components/ui/progress";
-import { investmentProgress, money, newId, timestamp, useStore } from "@/lib/store";
+import { investmentProgress, money, useStore } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
+
 import type { Plan } from "@/lib/store";
 
 export const Route = createFileRoute("/plans")({
@@ -27,14 +29,16 @@ export const Route = createFileRoute("/plans")({
 });
 
 function Plans() {
-  const { db, user, update, addNotification } = useStore();
+  const { db, user, addNotification, refresh } = useStore();
   const [active, setActive] = useState<Plan | null>(null);
   const [amount, setAmount] = useState("");
+  const [busy, setBusy] = useState(false);
+
 
   if (!user) return null;
   const investments = db.investments.filter((i) => i.userId === user.id);
 
-  const invest = () => {
+  const invest = async () => {
     if (!active) return;
     const value = Number(amount);
     if (!value || value < active.min || value > active.max) {
@@ -42,72 +46,25 @@ function Plans() {
     }
     if (value > user.balance) return toast.error("Insufficient available balance. Please deposit first.");
 
-    update((d) => {
-      const me = d.users.find((u) => u.id === user.id)!;
-      me.balance -= value;
-      me.invested += value;
-      d.investments.unshift({
-        id: newId(),
-        userId: me.id,
-        planId: active.id,
-        planName: active.name,
-        amount: value,
-        dailyRoi: active.dailyRoi,
-        durationDays: active.durationDays,
-        startedAt: timestamp(),
-        earned: 0,
-      });
-      d.transactions.unshift({
-        id: newId(),
-        userId: me.id,
-        type: "investment",
-        amount: value,
-        method: `${active.name} Plan`,
-        status: "completed",
-        createdAt: timestamp(),
-      });
-
-      // 4-level upline commissions
-      const rates = d.settings.levels;
-      let code = me.referredBy;
-      for (let lvl = 0; lvl < 4 && code; lvl++) {
-        const upline = d.users.find((u) => u.referralCode === code);
-        if (!upline) break;
-        const commission = (value * rates[lvl]) / 100;
-        upline.balance += commission;
-        upline.referralEarnings += commission;
-        d.transactions.unshift({
-          id: newId(),
-          userId: upline.id,
-          type: "commission",
-          amount: commission,
-          method: `Level ${lvl + 1} — ${me.name}`,
-          status: "completed",
-          createdAt: timestamp(),
-        });
-        d.notifications.unshift({
-          id: newId(),
-          userId: upline.id,
-          title: "Commission received",
-          body: `You earned ${money(commission)} from a Level ${lvl + 1} investment.`,
-          kind: "success",
-          read: false,
-          createdAt: timestamp(),
-        });
-        code = upline.referredBy;
-      }
-      return d;
-    });
+    setBusy(true);
+    const { error } = await supabase.rpc("buy_plan", { _plan_id: active.id, _amount: value });
+    if (error) {
+      setBusy(false);
+      return toast.error(error.message.replace(/^.*?:\s*/, ""));
+    }
 
     addNotification(user.id, {
       title: "Investment activated",
       body: `${money(value)} allocated to the ${active.name} plan.`,
       kind: "success",
     });
+    await refresh();
+    setBusy(false);
     toast.success(`Invested ${money(value)} in ${active.name}.`);
     setActive(null);
     setAmount("");
   };
+
 
   return (
     <div>
@@ -202,8 +159,13 @@ function Plans() {
               <button onClick={() => setActive(null)} className="flex-1 rounded-xl glass-soft py-2.5 text-sm font-semibold">
                 Cancel
               </button>
-              <button onClick={invest} className="flex-1 rounded-xl gradient-brand py-2.5 text-sm font-semibold text-primary-foreground">
-                Confirm
+              <button
+                onClick={invest}
+                disabled={busy}
+                className="flex-1 rounded-xl gradient-brand py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+              >
+                {busy ? "Processing…" : "Confirm"}
+
               </button>
             </div>
           </GlassCard>

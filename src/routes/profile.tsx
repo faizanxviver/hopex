@@ -6,6 +6,8 @@ import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { Switch } from "@/components/ui/switch";
 import { useStore } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -130,14 +132,15 @@ function Profile() {
               className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
             <button
-              onClick={() => {
-                if (pwd.current !== user.password) return toast.error("Current password is incorrect.");
+              onClick={async () => {
                 if (pwd.next.length < 6) return toast.error("New password must be at least 6 characters.");
-                update((d) => {
-                  const me = d.users.find((u) => u.id === user.id)!;
-                  me.password = pwd.next;
-                  return d;
+                const { error: signInError } = await supabase.auth.signInWithPassword({
+                  email: user.email,
+                  password: pwd.current,
                 });
+                if (signInError) return toast.error("Current password is incorrect.");
+                const { error } = await supabase.auth.updateUser({ password: pwd.next });
+                if (error) return toast.error(error.message);
                 setPwd({ current: "", next: "" });
                 toast.success("Password changed.");
               }}
@@ -145,6 +148,7 @@ function Profile() {
             >
               Change password
             </button>
+
             <div className="flex items-center justify-between rounded-xl glass-soft px-4 py-3">
               <div className="min-w-0">
                 <p className="text-sm font-semibold">Two-factor authentication</p>

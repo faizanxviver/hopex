@@ -1,5 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 /* ---------------- types ---------------- */
 
@@ -59,10 +60,9 @@ export interface ChatMessage {
   text: string;
   createdAt: string;
   status?: "sent" | "delivered" | "read";
-  attachment?: { name: string; kind: "image" | "file"; url?: string };
-  replyTo?: { from: "user" | "support"; text: string };
+  attachment?: { name: string; kind: "image" | "file"; url?: string } | null;
+  replyTo?: { from: "user" | "support"; text: string } | null;
 }
-
 
 export interface PromoCode {
   id: string;
@@ -79,7 +79,6 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  password: string;
   phone?: string;
   role: "user" | "admin";
   verified: boolean;
@@ -115,278 +114,402 @@ interface DB {
   sessionId: string | null;
 }
 
-const KEY = "aurum-invest-db-v1";
-const uid = () => Math.random().toString(36).slice(2, 10);
+const THEME_KEY = "aurum-theme";
+const uid = () =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2) + Date.now().toString(36);
 const now = () => new Date().toISOString();
-const code = () => "AUR" + Math.random().toString(36).slice(2, 7).toUpperCase();
+const num = (v: unknown) => Number(v ?? 0);
 
-const defaultPlans: Plan[] = [
-  {
-    id: "starter",
-    name: "Starter",
-    min: 50,
-    max: 999,
-    dailyRoi: 1.2,
-    durationDays: 30,
-    features: ["Daily payouts", "Principal returned", "Email support"],
-    active: true,
-  },
-  {
-    id: "growth",
-    name: "Growth",
-    min: 1000,
-    max: 4999,
-    dailyRoi: 1.8,
-    durationDays: 45,
-    features: ["Daily payouts", "Priority support", "Referral boost 5%"],
-    active: true,
-  },
-  {
-    id: "premium",
-    name: "Premium",
-    min: 5000,
-    max: 19999,
-    dailyRoi: 2.4,
-    durationDays: 60,
-    features: ["Daily payouts", "Dedicated manager", "Referral boost 10%"],
-    active: true,
-  },
-  {
-    id: "vip",
-    name: "VIP",
-    min: 20000,
-    max: 250000,
-    dailyRoi: 3.1,
-    durationDays: 90,
-    features: ["Daily payouts", "Private desk", "Custom exit terms", "VIP events"],
-    active: true,
-  },
-];
+const emptyDb = (): DB => ({
+  users: [],
+  transactions: [],
+  investments: [],
+  notifications: [],
+  chats: [],
+  plans: [],
+  promos: [],
+  settings: { siteName: "Aurum Capital", minDeposit: 50, minWithdraw: 25, levels: [10, 2, 1, 4] },
+  sessionId: null,
+});
 
-function seed(): DB {
-  const admin: User = {
-    id: "admin",
-    name: "Platform Admin",
-    email: "admin@aurum.io",
-    password: "admin123",
-    role: "admin",
-    verified: true,
-    blocked: false,
-    kyc: "verified",
-    twoFactor: true,
-    language: "en",
-    referralCode: "ADMIN01",
-    balance: 0,
-    invested: 0,
-    earnings: 0,
-    referralEarnings: 0,
-    createdAt: now(),
-  };
-  const demo: User = {
-    id: "demo",
-    name: "Ayaan Malik",
-    email: "demo@aurum.io",
-    password: "demo123",
-    phone: "+92 300 1234567",
-    role: "user",
-    verified: true,
-    blocked: false,
-    kyc: "pending",
-    twoFactor: false,
-    language: "en",
-    referralCode: "AURDEMO",
-    balance: 4820.5,
-    invested: 12500,
-    earnings: 3260.75,
-    referralEarnings: 940.2,
-    createdAt: now(),
-  };
-  const downline: User[] = ["Hina Raza", "Bilal Ahmed", "Sara Khan", "Omar Farooq", "Zara Sheikh"].map(
-    (name, i) => ({
-      id: "u" + i,
-      name,
-      email: name.split(" ")[0].toLowerCase() + "@mail.com",
-      password: "pass1234",
-      role: "user" as const,
-      verified: true,
-      blocked: false,
-      kyc: "verified" as const,
-      twoFactor: false,
-      language: "en" as const,
-      referralCode: code(),
-      referredBy: i < 3 ? "AURDEMO" : "AURDEMO2",
-      balance: 300 + i * 120,
-      invested: 800 + i * 450,
-      earnings: 120 + i * 60,
-      referralEarnings: i * 25,
-      createdAt: now(),
-    }),
-  );
-  const tx: Transaction[] = [
-    { type: "deposit", amount: 5000, method: "USDT (TRC20)", status: "approved" },
-    { type: "investment", amount: 5000, method: "Premium Plan", status: "completed" },
-    { type: "commission", amount: 500, method: "Level 1", status: "completed" },
-    { type: "withdraw", amount: 1200, method: "Bank Transfer", status: "pending" },
-    { type: "bonus", amount: 100, method: "Welcome bonus", status: "completed" },
-    { type: "payout", amount: 120, method: "Daily ROI", status: "completed" },
-  ].map((t, i) => ({
-    id: uid(),
-    userId: "demo",
-    ...(t as { type: TxType; amount: number; method: string; status: TxStatus }),
-    createdAt: new Date(Date.now() - i * 86400000 * 1.4).toISOString(),
-  }));
+/* ---------------- row <-> model mappers ---------------- */
 
-  return {
-    users: [admin, demo, ...downline],
-    transactions: tx,
-    investments: [
-      {
-        id: uid(),
-        userId: "demo",
-        planId: "premium",
-        planName: "Premium",
-        amount: 7500,
-        dailyRoi: 2.4,
-        durationDays: 60,
-        startedAt: new Date(Date.now() - 18 * 86400000).toISOString(),
-        earned: 3240,
-      },
-      {
-        id: uid(),
-        userId: "demo",
-        planId: "growth",
-        planName: "Growth",
-        amount: 5000,
-        dailyRoi: 1.8,
-        durationDays: 45,
-        startedAt: new Date(Date.now() - 6 * 86400000).toISOString(),
-        earned: 540,
-      },
-    ],
-    notifications: [
-      {
-        id: uid(),
-        userId: "demo",
-        title: "Welcome bonus credited",
-        body: "$100 welcome bonus has been added to your wallet.",
-        kind: "success",
-        read: false,
-        popup: true,
-        createdAt: now(),
-      },
-      {
-        id: uid(),
-        userId: "demo",
-        title: "New VIP plan live",
-        body: "3.1% daily ROI for 90 days. Limited allocation.",
-        kind: "info",
-        read: false,
-        popup: true,
-        createdAt: now(),
-      },
-      {
-        id: uid(),
-        userId: "demo",
-        title: "Referral commission received",
-        body: "You earned $52.00 from Level 1 referral Hina Raza.",
-        kind: "success",
-        read: true,
-        createdAt: now(),
-      },
-    ],
-    chats: [
-      {
-        id: uid(),
-        userId: "demo",
-        from: "support",
-        text: "Hi 👋 Welcome to Aurum Capital support. How can we help today?",
-        createdAt: now(),
-      },
-    ],
-    plans: defaultPlans,
-    promos: [
-      {
-        id: uid(),
-        code: "WELCOME10",
-        type: "percent",
-        value: 10,
-        usageLimit: 500,
-        used: 34,
-        expiresAt: "2026-12-31",
-        active: true,
-      },
-      {
-        id: uid(),
-        code: "BOOST50",
-        type: "fixed",
-        value: 50,
-        usageLimit: 100,
-        used: 12,
-        expiresAt: "2026-10-01",
-        active: true,
-      },
-    ],
-    settings: {
-      siteName: "Aurum Capital",
-      minDeposit: 50,
-      minWithdraw: 25,
-      levels: [10, 2, 1, 4],
-    },
-    sessionId: null,
-  };
-}
+type Row = Record<string, unknown>;
+
+const toUser = (r: Row, roles: Set<string>): User => ({
+  id: r.id as string,
+  name: r.name as string,
+  email: r.email as string,
+  phone: (r.phone as string) ?? undefined,
+  role: roles.has(r.id as string) ? "admin" : "user",
+  verified: Boolean(r.verified),
+  blocked: Boolean(r.blocked),
+  kyc: r.kyc as User["kyc"],
+  twoFactor: Boolean(r.two_factor),
+  language: (r.language as "en" | "ur") ?? "en",
+  referralCode: r.referral_code as string,
+  referredBy: (r.referred_by as string) ?? undefined,
+  balance: num(r.balance),
+  invested: num(r.invested),
+  earnings: num(r.earnings),
+  referralEarnings: num(r.referral_earnings),
+  createdAt: r.created_at as string,
+});
+
+const fromUser = (u: User): Row => ({
+  name: u.name,
+  email: u.email,
+  phone: u.phone ?? null,
+  verified: u.verified,
+  blocked: u.blocked,
+  kyc: u.kyc,
+  two_factor: u.twoFactor,
+  language: u.language,
+  referred_by: u.referredBy ?? null,
+  balance: u.balance,
+  invested: u.invested,
+  earnings: u.earnings,
+  referral_earnings: u.referralEarnings,
+});
+
+const toTx = (r: Row): Transaction => ({
+  id: r.id as string,
+  userId: r.user_id as string,
+  type: r.type as TxType,
+  amount: num(r.amount),
+  method: (r.method as string) ?? undefined,
+  status: r.status as TxStatus,
+  note: (r.note as string) ?? undefined,
+  reference: (r.reference as string) ?? undefined,
+  createdAt: r.created_at as string,
+});
+
+const fromTx = (t: Transaction): Row => ({
+  id: t.id,
+  user_id: t.userId,
+  type: t.type,
+  amount: t.amount,
+  method: t.method ?? null,
+  status: t.status,
+  note: t.note ?? null,
+  reference: t.reference ?? null,
+  created_at: t.createdAt,
+});
+
+const toInvestment = (r: Row): Investment => ({
+  id: r.id as string,
+  userId: r.user_id as string,
+  planId: r.plan_id as string,
+  planName: r.plan_name as string,
+  amount: num(r.amount),
+  dailyRoi: num(r.daily_roi),
+  durationDays: Number(r.duration_days),
+  startedAt: r.started_at as string,
+  earned: num(r.earned),
+});
+
+const fromInvestment = (i: Investment): Row => ({
+  id: i.id,
+  user_id: i.userId,
+  plan_id: i.planId,
+  plan_name: i.planName,
+  amount: i.amount,
+  daily_roi: i.dailyRoi,
+  duration_days: i.durationDays,
+  earned: i.earned,
+  started_at: i.startedAt,
+});
+
+const toNotification = (r: Row): AppNotification => ({
+  id: r.id as string,
+  userId: r.user_id as string,
+  title: r.title as string,
+  body: r.body as string,
+  kind: r.kind as AppNotification["kind"],
+  read: Boolean(r.read),
+  popup: Boolean(r.popup),
+  createdAt: r.created_at as string,
+});
+
+const fromNotification = (n: AppNotification): Row => ({
+  id: n.id,
+  user_id: n.userId,
+  title: n.title,
+  body: n.body,
+  kind: n.kind,
+  read: n.read,
+  popup: n.popup ?? false,
+  created_at: n.createdAt,
+});
+
+const toChat = (r: Row): ChatMessage => ({
+  id: r.id as string,
+  userId: r.user_id as string,
+  from: r.sender as "user" | "support",
+  text: r.text as string,
+  status: (r.status as ChatMessage["status"]) ?? "sent",
+  attachment: (r.attachment as ChatMessage["attachment"]) ?? null,
+  replyTo: (r.reply_to as ChatMessage["replyTo"]) ?? null,
+  createdAt: r.created_at as string,
+});
+
+const fromChat = (c: ChatMessage): Row => ({
+  id: c.id,
+  user_id: c.userId,
+  sender: c.from,
+  text: c.text,
+  status: c.status ?? "sent",
+  attachment: c.attachment ?? null,
+  reply_to: c.replyTo ?? null,
+  created_at: c.createdAt,
+});
+
+const toPlan = (r: Row): Plan => ({
+  id: r.id as string,
+  name: r.name as string,
+  min: num(r.min_amount),
+  max: num(r.max_amount),
+  dailyRoi: num(r.daily_roi),
+  durationDays: Number(r.duration_days),
+  features: (r.features as string[]) ?? [],
+  active: Boolean(r.active),
+});
+
+const fromPlan = (p: Plan): Row => ({
+  id: p.id,
+  name: p.name,
+  min_amount: p.min,
+  max_amount: p.max,
+  daily_roi: p.dailyRoi,
+  duration_days: p.durationDays,
+  features: p.features,
+  active: p.active,
+});
+
+const toPromo = (r: Row): PromoCode => ({
+  id: r.id as string,
+  code: r.code as string,
+  type: r.type as "percent" | "fixed",
+  value: num(r.value),
+  usageLimit: Number(r.usage_limit),
+  used: Number(r.used),
+  expiresAt: (r.expires_at as string) ?? "",
+  active: Boolean(r.active),
+});
+
+const fromPromo = (p: PromoCode): Row => ({
+  id: p.id,
+  code: p.code.toUpperCase(),
+  type: p.type,
+  value: p.value,
+  usage_limit: p.usageLimit,
+  used: p.used,
+  expires_at: p.expiresAt || null,
+  active: p.active,
+});
 
 /* ---------------- context ---------------- */
 
 interface Ctx {
   db: DB;
   hydrated: boolean;
+  loading: boolean;
   user: User | null;
   update: (fn: (d: DB) => DB) => void;
-  signup: (name: string, email: string, password: string, ref?: string) => string | null;
-  login: (email: string, password: string) => string | null;
-  logout: () => void;
-  resetPassword: (email: string) => boolean;
+  refresh: () => Promise<void>;
+  signup: (name: string, email: string, password: string, ref?: string) => Promise<string | null>;
+  login: (email: string, password: string) => Promise<string | null>;
+  logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<string | null>;
+  redeemPromo: (code: string, amount: number) => Promise<{ bonus: number; code: string } | null>;
   addNotification: (userId: string, n: Omit<AppNotification, "id" | "userId" | "read" | "createdAt">) => void;
   theme: "dark" | "light";
   toggleTheme: () => void;
   chatOpen: boolean;
   setChatOpen: (v: boolean) => void;
-
 }
 
 const StoreContext = createContext<Ctx | null>(null);
 
+/* ---------------- persistence ---------------- */
+
+type Coll = "users" | "transactions" | "investments" | "notifications" | "chats" | "plans" | "promos";
+
+const TABLES: Record<Coll, { table: string; from: (x: never) => Row; insertable: boolean; deletable: boolean }> = {
+  users: { table: "profiles", from: fromUser as (x: never) => Row, insertable: false, deletable: false },
+  transactions: { table: "transactions", from: fromTx as (x: never) => Row, insertable: true, deletable: true },
+  investments: { table: "investments", from: fromInvestment as (x: never) => Row, insertable: true, deletable: true },
+  notifications: { table: "notifications", from: fromNotification as (x: never) => Row, insertable: true, deletable: true },
+  chats: { table: "chat_messages", from: fromChat as (x: never) => Row, insertable: true, deletable: true },
+  plans: { table: "plans", from: fromPlan as (x: never) => Row, insertable: true, deletable: true },
+  promos: { table: "promo_codes", from: fromPromo as (x: never) => Row, insertable: true, deletable: true },
+};
+
+type WithId = { id: string };
+
+/* Loosely typed handle: the sync layer writes to tables generically. */
+type LooseQuery = {
+  insert: (rows: Row[]) => PromiseLike<{ error: unknown }>;
+  update: (row: Row) => { eq: (col: string, val: unknown) => PromiseLike<{ error: unknown }> };
+  delete: () => { in: (col: string, vals: string[]) => PromiseLike<{ error: unknown }> };
+};
+const sb = supabase as unknown as { from: (table: string) => LooseQuery };
+
+/** Persists the difference between two in-memory snapshots to the database. */
+async function persistDiff(prev: DB, next: DB) {
+  const jobs: PromiseLike<{ error: unknown }>[] = [];
+
+
+  (Object.keys(TABLES) as Coll[]).forEach((key) => {
+    const meta = TABLES[key];
+    const before = prev[key] as unknown as WithId[];
+    const after = next[key] as unknown as WithId[];
+    const beforeMap = new Map(before.map((r) => [r.id, r]));
+    const afterMap = new Map(after.map((r) => [r.id, r]));
+
+    const inserts: Row[] = [];
+    const updates: { id: string; row: Row }[] = [];
+
+    after.forEach((row) => {
+      const old = beforeMap.get(row.id);
+      if (!old) {
+        if (meta.insertable) inserts.push({ id: row.id, ...meta.from(row as never) });
+        return;
+      }
+      if (JSON.stringify(old) !== JSON.stringify(row)) {
+        const payload = meta.from(row as never);
+        delete payload.id;
+        updates.push({ id: row.id, row: payload });
+      }
+    });
+
+    const removed = before.filter((row) => !afterMap.has(row.id)).map((r) => r.id);
+
+    if (inserts.length) jobs.push(sb.from(meta.table).insert(inserts));
+    updates.forEach((u) => jobs.push(sb.from(meta.table).update(u.row).eq("id", u.id)));
+    if (removed.length && meta.deletable) jobs.push(sb.from(meta.table).delete().in("id", removed));
+  });
+
+  if (JSON.stringify(prev.settings) !== JSON.stringify(next.settings)) {
+    jobs.push(
+      sb
+        .from("settings")
+        .update({
+          site_name: next.settings.siteName,
+          min_deposit: next.settings.minDeposit,
+          min_withdraw: next.settings.minWithdraw,
+          levels: next.settings.levels,
+        })
+        .eq("id", 1),
+    );
+  }
+
+
+  const results = await Promise.all(jobs);
+  const failed = results.find((r) => (r as { error?: unknown } | null)?.error);
+  if (failed) console.error("Sync error", (failed as { error: unknown }).error);
+}
+
+/* ---------------- provider ---------------- */
+
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [db, setDb] = useState<DB>(() => seed());
+  const [db, setDb] = useState<DB>(emptyDb);
   const [hydrated, setHydrated] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState<"dark" | "light">("light");
   const [chatOpen, setChatOpen] = useState(false);
+  const sessionRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) setDb(JSON.parse(raw) as DB);
-      const t = (localStorage.getItem(KEY + "-theme") as "dark" | "light") || "light";
-      setTheme(t);
+  const load = useCallback(async (sessionId: string | null) => {
+    sessionRef.current = sessionId;
 
-    } catch {
-      /* ignore */
+    const [plansRes, settingsRes] = await Promise.all([
+      supabase.from("plans").select("*").order("sort_order"),
+      supabase.from("settings").select("*").eq("id", 1).maybeSingle(),
+    ]);
+
+    const base = emptyDb();
+    base.sessionId = sessionId;
+    base.plans = ((plansRes.data as Row[]) ?? []).map(toPlan);
+    const s = settingsRes.data as Row | null;
+    if (s) {
+      base.settings = {
+        siteName: s.site_name as string,
+        minDeposit: num(s.min_deposit),
+        minWithdraw: num(s.min_withdraw),
+        levels: (s.levels as [number, number, number, number]) ?? [10, 2, 1, 4],
+      };
     }
+
+    if (!sessionId) {
+      setDb(base);
+      setLoading(false);
+      setHydrated(true);
+      return;
+    }
+
+    const [profiles, roles, txs, invs, notifs, chats, promos] = await Promise.all([
+      supabase.from("profiles").select("*").order("created_at"),
+      supabase.from("user_roles").select("user_id, role"),
+      supabase.from("transactions").select("*").order("created_at", { ascending: false }),
+      supabase.from("investments").select("*").order("started_at", { ascending: false }),
+      supabase.from("notifications").select("*").order("created_at", { ascending: false }),
+      supabase.from("chat_messages").select("*").order("created_at"),
+      supabase.from("promo_codes").select("*").order("created_at"),
+    ]);
+
+    const adminIds = new Set(
+      ((roles.data as Row[]) ?? []).filter((r) => r.role === "admin").map((r) => r.user_id as string),
+    );
+
+    base.users = ((profiles.data as Row[]) ?? []).map((r) => toUser(r, adminIds));
+    base.transactions = ((txs.data as Row[]) ?? []).map(toTx);
+    base.investments = ((invs.data as Row[]) ?? []).map(toInvestment);
+    base.notifications = ((notifs.data as Row[]) ?? []).map(toNotification);
+    base.chats = ((chats.data as Row[]) ?? []).map(toChat);
+    base.promos = ((promos.data as Row[]) ?? []).map(toPromo);
+
+    setDb(base);
+    setLoading(false);
     setHydrated(true);
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
-    localStorage.setItem(KEY, JSON.stringify(db));
-  }, [db, hydrated]);
+    const stored = (localStorage.getItem(THEME_KEY) as "dark" | "light") || "light";
+    setTheme(stored);
+
+    supabase.auth.getSession().then(({ data }) => {
+      void load(data.session?.user.id ?? null);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      const id = session?.user.id ?? null;
+      if (id === sessionRef.current) return;
+      setLoading(true);
+      void load(id);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [load]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
-    if (hydrated) localStorage.setItem(KEY + "-theme", theme);
-  }, [theme, hydrated]);
+    localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
 
-  const update = useCallback((fn: (d: DB) => DB) => setDb((prev) => fn(structuredClone(prev))), []);
+  const update = useCallback((fn: (d: DB) => DB) => {
+    setDb((prev) => {
+      const next = fn(structuredClone(prev));
+      void persistDiff(prev, next);
+      return next;
+    });
+  }, []);
+
+  const refresh = useCallback(async () => {
+    await load(sessionRef.current);
+  }, [load]);
 
   const user = useMemo(
     () => db.users.find((u) => u.id === db.sessionId) ?? null,
@@ -403,109 +526,73 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [update],
   );
 
-  const signup: Ctx["signup"] = useCallback(
-    (name, email, password, ref) => {
-      let error: string | null = null;
-      update((d) => {
-        if (d.users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
-          error = "An account with this email already exists.";
-          return d;
-        }
-        const u: User = {
-          id: uid(),
-          name,
-          email,
-          password,
-          role: "user",
-          verified: true,
-          blocked: false,
-          kyc: "not_submitted",
-          twoFactor: false,
-          language: "en",
-          referralCode: code(),
-          referredBy: ref || undefined,
-          balance: 100,
-          invested: 0,
-          earnings: 0,
-          referralEarnings: 0,
-          createdAt: now(),
-        };
-        d.users.push(u);
-        d.sessionId = u.id;
-        d.transactions.unshift({
-          id: uid(),
-          userId: u.id,
-          type: "bonus",
-          amount: 100,
-          method: "Welcome bonus",
-          status: "completed",
-          createdAt: now(),
-        });
-        d.notifications.unshift({
-          id: uid(),
-          userId: u.id,
-          title: "Welcome to Aurum Capital 🎉",
-          body: "Your $100 welcome bonus is ready. Pick a plan to start earning daily.",
-          kind: "success",
-          read: false,
-          popup: true,
-          createdAt: now(),
-        });
-        d.chats.push({
-          id: uid(),
-          userId: u.id,
-          from: "support",
-          text: "Hi 👋 Welcome to Aurum Capital support. How can we help today?",
-          createdAt: now(),
-        });
-        return d;
-      });
-      return error;
-    },
-    [update],
-  );
+  const signup: Ctx["signup"] = useCallback(async (name, email, password, ref) => {
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: { name: name.trim(), referred_by: ref?.trim().toUpperCase() || null },
+      },
+    });
+    if (error) return error.message;
+    if (!data.session) return null;
+    setLoading(true);
+    await load(data.session.user.id);
+    return null;
+  }, [load]);
 
-  const login: Ctx["login"] = useCallback(
-    (email, password) => {
-      const found = db.users.find(
-        (u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password,
-      );
-      if (!found) return "Invalid email or password.";
-      if (found.blocked) return "This account has been suspended. Contact support.";
-      update((d) => {
-        d.sessionId = found.id;
-        return d;
-      });
-      return null;
-    },
-    [db.users, update],
-  );
+  const login: Ctx["login"] = useCallback(async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) return error.message;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("blocked")
+      .eq("id", data.user.id)
+      .maybeSingle();
+    if ((profile as Row | null)?.blocked) {
+      await supabase.auth.signOut();
+      return "This account has been suspended. Contact support.";
+    }
+    setLoading(true);
+    await load(data.user.id);
+    return null;
+  }, [load]);
 
-  const logout = useCallback(
-    () =>
-      update((d) => {
-        d.sessionId = null;
-        return d;
-      }),
-    [update],
-  );
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
+    sessionRef.current = null;
+    await load(null);
+  }, [load]);
 
-  const resetPassword = useCallback(
-    (email: string) => db.users.some((u) => u.email.toLowerCase() === email.toLowerCase()),
-    [db.users],
-  );
+  const resetPassword = useCallback(async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    return error ? error.message : null;
+  }, []);
+
+  const redeemPromo = useCallback(async (code: string, amount: number) => {
+    const { data, error } = await supabase.rpc("redeem_promo", { _code: code.trim(), _amount: amount });
+    if (error || !data || !(data as unknown[]).length) return null;
+    const row = (data as Row[])[0];
+    return { bonus: num(row.bonus), code: row.code as string };
+  }, []);
 
   const toggleTheme = useCallback(() => setTheme((t) => (t === "dark" ? "light" : "dark")), []);
 
   const value: Ctx = {
     db,
     hydrated,
+    loading,
     user,
     update,
+    refresh,
     signup,
     login,
     logout,
     resetPassword,
+    redeemPromo,
     addNotification,
     theme,
     toggleTheme,
@@ -525,7 +612,7 @@ export function useStore() {
 /* ---------------- helpers ---------------- */
 
 export const money = (n: number) =>
-  "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  "$" + Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export const newId = uid;
 export const timestamp = now;

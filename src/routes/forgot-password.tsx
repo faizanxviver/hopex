@@ -42,7 +42,7 @@ function ForgotPassword() {
               <h1 className="mt-4 font-display text-2xl font-extrabold">Check your inbox</h1>
               <p className="mt-2 text-sm text-muted-foreground">
                 If an account exists for <b>{email}</b>, a reset link is on its way. (Email delivery is
-                simulated in this demo.)
+                
               </p>
             </div>
           ) : (
@@ -53,12 +53,13 @@ function ForgotPassword() {
               </p>
               <form
                 className="mt-6 space-y-3"
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
                   if (!email.includes("@")) return toast.error("Enter a valid email address.");
-                  resetPassword(email);
+                  const error = await resetPassword(email);
+                  if (error) return toast.error(error);
                   setSent(true);
-                  toast.success("Reset link sent (simulated).");
+                  toast.success("Reset link sent — check your inbox.");
                 }}
               >
                 <div className="relative">

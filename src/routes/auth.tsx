@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { ArrowLeft, Apple, Chrome, Loader2, Lock, Mail, User as UserIcon } from "lucide-react";
+import { ArrowLeft, Loader2, Lock, Mail, User as UserIcon } from "lucide-react";
 import { GlassCard } from "@/components/glass";
 import { Brand } from "@/components/dashboard-layout";
 import { useStore } from "@/lib/store";
@@ -51,7 +51,7 @@ function AuthPage() {
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.email.includes("@") || form.password.length < 6) {
       toast.error("Enter a valid email and a password of at least 6 characters.");
@@ -62,17 +62,16 @@ function AuthPage() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      const error = isSignup
-        ? signup(form.name.trim(), form.email.trim(), form.password, form.ref.trim())
-        : login(form.email, form.password);
-      setLoading(false);
-      if (error) return toast.error(error);
-      if (isSignup) toast.success("Account created — verification email simulated ✉️");
-      else toast.success("Welcome back!");
-      navigate({ to: "/dashboard" });
-    }, 750);
+    const error = isSignup
+      ? await signup(form.name.trim(), form.email.trim(), form.password, form.ref.trim())
+      : await login(form.email, form.password);
+    setLoading(false);
+    if (error) return toast.error(error);
+    if (isSignup) toast.success("Account created — welcome to Aurum Capital!");
+    else toast.success("Welcome back!");
+    navigate({ to: "/dashboard" });
   };
+
 
   return (
     <div className="relative grid min-h-screen place-items-center px-4 py-10">
@@ -133,27 +132,10 @@ function AuthPage() {
             </button>
           </form>
 
-          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" /> or continue with <span className="h-px flex-1 bg-border" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => toast.info("Google sign-in is UI-only in this demo.")}
-              className="flex h-11 items-center justify-center gap-2 rounded-xl glass-soft text-sm font-medium"
-            >
-              <Chrome className="h-4 w-4" /> Google
-            </button>
-            <button
-              onClick={() => toast.info("Apple sign-in is UI-only in this demo.")}
-              className="flex h-11 items-center justify-center gap-2 rounded-xl glass-soft text-sm font-medium"
-            >
-              <Apple className="h-4 w-4" /> Apple
-            </button>
-          </div>
-
-          <p className="mt-6 rounded-xl bg-secondary/40 p-3 text-center text-xs text-muted-foreground">
-            Demo user: <b>demo@aurum.io / demo123</b> · Admin: <b>admin@aurum.io / admin123</b>
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            Protected by bank-grade encryption. By continuing you agree to our terms and privacy policy.
           </p>
+
         </GlassCard>
       </div>
     </div>
