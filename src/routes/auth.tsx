@@ -133,27 +133,10 @@ function AuthPage() {
             </button>
           </form>
 
-          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" /> or continue with <span className="h-px flex-1 bg-border" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => toast.info("Google sign-in is UI-only in this demo.")}
-              className="flex h-11 items-center justify-center gap-2 rounded-xl glass-soft text-sm font-medium"
-            >
-              <Chrome className="h-4 w-4" /> Google
-            </button>
-            <button
-              onClick={() => toast.info("Apple sign-in is UI-only in this demo.")}
-              className="flex h-11 items-center justify-center gap-2 rounded-xl glass-soft text-sm font-medium"
-            >
-              <Apple className="h-4 w-4" /> Apple
-            </button>
-          </div>
-
-          <p className="mt-6 rounded-xl bg-secondary/40 p-3 text-center text-xs text-muted-foreground">
-            Demo user: <b>demo@aurum.io / demo123</b> · Admin: <b>admin@aurum.io / admin123</b>
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            Protected by bank-grade encryption. By continuing you agree to our terms and privacy policy.
           </p>
+
         </GlassCard>
       </div>
     </div>
