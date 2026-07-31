@@ -387,24 +387,25 @@ async function persistDiff(prev: DB, next: DB) {
 
     const removed = before.filter((row) => !afterMap.has(row.id)).map((r) => r.id);
 
-    if (inserts.length) jobs.push(supabase.from(meta.table).insert(inserts as never));
-    updates.forEach((u) => jobs.push(supabase.from(meta.table).update(u.row as never).eq("id", u.id)));
-    if (removed.length && meta.deletable) jobs.push(supabase.from(meta.table).delete().in("id", removed));
+    if (inserts.length) jobs.push(sb.from(meta.table).insert(inserts));
+    updates.forEach((u) => jobs.push(sb.from(meta.table).update(u.row).eq("id", u.id)));
+    if (removed.length && meta.deletable) jobs.push(sb.from(meta.table).delete().in("id", removed));
   });
 
   if (JSON.stringify(prev.settings) !== JSON.stringify(next.settings)) {
     jobs.push(
-      supabase
+      sb
         .from("settings")
         .update({
           site_name: next.settings.siteName,
           min_deposit: next.settings.minDeposit,
           min_withdraw: next.settings.minWithdraw,
           levels: next.settings.levels,
-        } as never)
+        })
         .eq("id", 1),
     );
   }
+
 
   const results = await Promise.all(jobs);
   const failed = results.find((r) => (r as { error?: unknown } | null)?.error);
