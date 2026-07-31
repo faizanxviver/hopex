@@ -343,6 +343,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      buy_plan: { Args: { _amount: number; _plan_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
