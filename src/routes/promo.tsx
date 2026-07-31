@@ -10,7 +10,10 @@ export const Route = createFileRoute("/promo")({
   head: () => ({
     meta: [
       { title: "Promo Codes — HopeX" },
-      { name: "description", content: "Redeem a HopeX promo code and get an instant bonus credited to your wallet." },
+      {
+        name: "description",
+        content: "Redeem a HopeX promo code and get an instant bonus credited to your wallet.",
+      },
       { property: "og:title", content: "Promo Codes — HopeX" },
       { property: "og:description", content: "Instant bonus rewards for HopeX investors." },
     ],
@@ -37,7 +40,8 @@ function Promo() {
     setBusy(true);
     const res = await redeemPromo(code.trim(), 0);
     setBusy(false);
-    if (!res || res.bonus <= 0) return toast.error("This promo code is invalid, used up or expired.");
+    if (!res || res.bonus <= 0)
+      return toast.error("This promo code is invalid, used up or expired.");
 
     update((d) => {
       const me = d.users.find((u) => u.id === user.id)!;
@@ -64,7 +68,10 @@ function Promo() {
 
   return (
     <div>
-      <SectionTitle title="Promo codes" subtitle="Have a code? Redeem it here for an instant wallet bonus." />
+      <SectionTitle
+        title="Promo codes"
+        subtitle="Have a code? Redeem it here for an instant wallet bonus."
+      />
 
       <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
         <GlassCard glow>

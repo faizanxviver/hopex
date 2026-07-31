@@ -18,7 +18,11 @@ export const Route = createFileRoute("/plans")({
   head: () => ({
     meta: [
       { title: "Investment Plans — HopeX" },
-      { name: "description", content: "Compare Starter, Growth, Premium and VIP plans and invest directly from your HopeX wallet." },
+      {
+        name: "description",
+        content:
+          "Compare Starter, Growth, Premium and VIP plans and invest directly from your HopeX wallet.",
+      },
       { property: "og:title", content: "Investment Plans — HopeX" },
       { property: "og:description", content: "Daily income plans from 1.2% to 3.1%." },
     ],
@@ -89,7 +93,10 @@ function Plans() {
 
   return (
     <div>
-      <SectionTitle title="Investment plans" subtitle="Pick a plan and start earning daily income." />
+      <SectionTitle
+        title="Investment plans"
+        subtitle="Pick a plan and start earning daily income."
+      />
 
       <div className="mb-5 grid grid-cols-2 gap-3">
         <GlassCard className="p-4">
@@ -102,7 +109,9 @@ function Plans() {
           <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
             <ShieldCheck className="h-3.5 w-3.5" /> Deposit balance
           </p>
-          <p className="mt-1 truncate font-display text-xl font-extrabold text-gold">{money(deposited)}</p>
+          <p className="mt-1 truncate font-display text-xl font-extrabold text-gold">
+            {money(deposited)}
+          </p>
         </GlassCard>
       </div>
 
@@ -173,7 +182,9 @@ function Plans() {
                       {inv.dailyRoi}% daily · started {new Date(inv.startedAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <p className="font-display text-xl font-extrabold text-gold">{money(inv.amount)}</p>
+                  <p className="font-display text-xl font-extrabold text-gold">
+                    {money(inv.amount)}
+                  </p>
                 </div>
                 <Progress value={pct} className="mt-4 h-2" />
                 <div className="mt-2 flex justify-between text-xs text-muted-foreground">
@@ -202,8 +213,8 @@ function Plans() {
                   <Row label="Total return" value={money(projected)} accent />
                 </div>
                 <p className="mt-3 text-xs text-muted-foreground">
-                  {money(value)} will be deducted from your balance and your first daily income is credited instantly.
-                  Active plans cannot be cancelled.
+                  {money(value)} will be deducted from your balance and your first daily income is
+                  credited instantly. Active plans cannot be cancelled.
                 </p>
                 <div className="mt-6 flex gap-3">
                   <button
@@ -225,9 +236,12 @@ function Plans() {
               <>
                 <h3 className="font-display text-xl font-extrabold">Invest in {active.name}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {money(active.min)} – {money(active.max)} · {active.dailyRoi}% daily for {active.durationDays} days
+                  {money(active.min)} – {money(active.max)} · {active.dailyRoi}% daily for{" "}
+                  {active.durationDays} days
                 </p>
-                <p className="mt-3 text-xs text-muted-foreground">Available: {money(user.balance)}</p>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Available: {money(user.balance)}
+                </p>
                 <input
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}

@@ -21,7 +21,10 @@ export const Route = createFileRoute("/more")({
   head: () => ({
     meta: [
       { title: "More — HopeX" },
-      { name: "description", content: "Withdrawals, history, security, support and account tools in one place." },
+      {
+        name: "description",
+        content: "Withdrawals, history, security, support and account tools in one place.",
+      },
       { property: "og:title", content: "More — HopeX" },
       { property: "og:description", content: "All your HopeX account tools." },
     ],
@@ -43,7 +46,12 @@ const wallet = [
 ] as const;
 
 const account = [
-  { to: "/profile", label: "Profile & settings", desc: "Details, security, preferences", icon: SlidersHorizontal },
+  {
+    to: "/profile",
+    label: "Profile & settings",
+    desc: "Details, security, preferences",
+    icon: SlidersHorizontal,
+  },
   { to: "/plans", label: "Investment plans", desc: "Compare and invest", icon: TrendingUp },
   { to: "/referrals", label: "Referral center", desc: "4-level commissions", icon: Gift },
 ] as const;
@@ -75,24 +83,40 @@ function More() {
 
       <div className="grid gap-3 sm:grid-cols-3">
         <GlassCard className="p-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("Withdrawable balance")}</p>
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            {t("Withdrawable balance")}
+          </p>
           <p className="mt-1 font-display text-2xl font-extrabold">{money(user.balance)}</p>
         </GlassCard>
         <GlassCard className="p-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("Deposit balance")}</p>
-          <p className="mt-1 font-display text-2xl font-extrabold">{money(depositBalance(db, user.id))}</p>
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            {t("Deposit balance")}
+          </p>
+          <p className="mt-1 font-display text-2xl font-extrabold">
+            {money(depositBalance(db, user.id))}
+          </p>
         </GlassCard>
         <GlassCard className="p-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("Referral income")}</p>
-          <p className="mt-1 font-display text-2xl font-extrabold text-gold">{money(user.referralEarnings)}</p>
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            {t("Referral income")}
+          </p>
+          <p className="mt-1 font-display text-2xl font-extrabold text-gold">
+            {money(user.referralEarnings)}
+          </p>
         </GlassCard>
       </div>
 
       <div>
-        <p className="mb-3 text-sm font-bold uppercase tracking-widest text-muted-foreground">{t("Wallet")}</p>
+        <p className="mb-3 text-sm font-bold uppercase tracking-widest text-muted-foreground">
+          {t("Wallet")}
+        </p>
         <div className="grid gap-3 sm:grid-cols-2">
           {wallet.map((l) => (
-            <Link key={l.to} to={l.to} className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5">
+            <Link
+              key={l.to}
+              to={l.to}
+              className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5"
+            >
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
                 <l.icon className="h-5 w-5" />
               </span>
@@ -113,10 +137,16 @@ function More() {
       </div>
 
       <div>
-        <p className="mb-3 text-sm font-bold uppercase tracking-widest text-muted-foreground">{t("Account")}</p>
+        <p className="mb-3 text-sm font-bold uppercase tracking-widest text-muted-foreground">
+          {t("Account")}
+        </p>
         <div className="grid gap-3 sm:grid-cols-2">
           {account.map((l) => (
-            <Link key={l.to} to={l.to} className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5">
+            <Link
+              key={l.to}
+              to={l.to}
+              className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5"
+            >
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gold/20 text-gold">
                 <l.icon className="h-5 w-5" />
               </span>
@@ -127,13 +157,18 @@ function More() {
             </Link>
           ))}
           {user.role === "admin" ? (
-            <Link to="/admin" className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5">
+            <Link
+              to="/admin"
+              className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5"
+            >
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-destructive/15 text-destructive">
                 <ShieldHalf className="h-5 w-5" />
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold">Admin panel</span>
-                <span className="block truncate text-xs text-muted-foreground">Platform administration</span>
+                <span className="block truncate text-xs text-muted-foreground">
+                  Platform administration
+                </span>
               </span>
             </Link>
           ) : null}
@@ -141,13 +176,18 @@ function More() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <button onClick={() => setChatOpen(true)} className="glass flex items-center gap-3 rounded-2xl p-4 text-left">
+        <button
+          onClick={() => setChatOpen(true)}
+          className="glass flex items-center gap-3 rounded-2xl p-4 text-left"
+        >
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-success/15 text-success">
             <Headset className="h-5 w-5" />
           </span>
           <span>
             <span className="block text-sm font-semibold">{t("Live support chat")}</span>
-            <span className="block text-xs text-muted-foreground">Average reply under 2 minutes</span>
+            <span className="block text-xs text-muted-foreground">
+              Average reply under 2 minutes
+            </span>
           </span>
         </button>
 

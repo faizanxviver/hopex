@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -44,7 +52,6 @@ export interface Investment {
   lastPayoutAt: string;
   earned: number;
 }
-
 
 export interface AppNotification {
   id: string;
@@ -270,7 +277,6 @@ const fromInvestment = (i: Investment): Row => ({
   last_payout_at: i.lastPayoutAt,
 });
 
-
 const toNotification = (r: Row): AppNotification => ({
   id: r.id as string,
   userId: r.user_id as string,
@@ -401,7 +407,10 @@ interface Ctx {
   redeemPromo: (code: string, amount: number) => Promise<{ bonus: number; code: string } | null>;
   claimEarnings: () => Promise<number>;
 
-  addNotification: (userId: string, n: Omit<AppNotification, "id" | "userId" | "read" | "createdAt">) => void;
+  addNotification: (
+    userId: string,
+    n: Omit<AppNotification, "id" | "userId" | "read" | "createdAt">,
+  ) => void;
   theme: "dark" | "light";
   toggleTheme: () => void;
   chatOpen: boolean;
@@ -422,15 +431,53 @@ type Coll =
   | "promos"
   | "methods";
 
-const TABLES: Record<Coll, { table: string; from: (x: never) => Row; insertable: boolean; deletable: boolean }> = {
-  users: { table: "profiles", from: fromUser as (x: never) => Row, insertable: false, deletable: false },
-  transactions: { table: "transactions", from: fromTx as (x: never) => Row, insertable: true, deletable: true },
-  investments: { table: "investments", from: fromInvestment as (x: never) => Row, insertable: true, deletable: true },
-  notifications: { table: "notifications", from: fromNotification as (x: never) => Row, insertable: true, deletable: true },
-  chats: { table: "chat_messages", from: fromChat as (x: never) => Row, insertable: true, deletable: true },
+const TABLES: Record<
+  Coll,
+  { table: string; from: (x: never) => Row; insertable: boolean; deletable: boolean }
+> = {
+  users: {
+    table: "profiles",
+    from: fromUser as (x: never) => Row,
+    insertable: false,
+    deletable: false,
+  },
+  transactions: {
+    table: "transactions",
+    from: fromTx as (x: never) => Row,
+    insertable: true,
+    deletable: true,
+  },
+  investments: {
+    table: "investments",
+    from: fromInvestment as (x: never) => Row,
+    insertable: true,
+    deletable: true,
+  },
+  notifications: {
+    table: "notifications",
+    from: fromNotification as (x: never) => Row,
+    insertable: true,
+    deletable: true,
+  },
+  chats: {
+    table: "chat_messages",
+    from: fromChat as (x: never) => Row,
+    insertable: true,
+    deletable: true,
+  },
   plans: { table: "plans", from: fromPlan as (x: never) => Row, insertable: true, deletable: true },
-  promos: { table: "promo_codes", from: fromPromo as (x: never) => Row, insertable: true, deletable: true },
-  methods: { table: "payment_methods", from: fromMethod as (x: never) => Row, insertable: true, deletable: true },
+  promos: {
+    table: "promo_codes",
+    from: fromPromo as (x: never) => Row,
+    insertable: true,
+    deletable: true,
+  },
+  methods: {
+    table: "payment_methods",
+    from: fromMethod as (x: never) => Row,
+    insertable: true,
+    deletable: true,
+  },
 };
 
 type WithId = { id: string };
@@ -446,7 +493,6 @@ const sb = supabase as unknown as { from: (table: string) => LooseQuery };
 /** Persists the difference between two in-memory snapshots to the database. */
 async function persistDiff(prev: DB, next: DB) {
   const jobs: PromiseLike<{ error: unknown }>[] = [];
-
 
   (Object.keys(TABLES) as Coll[]).forEach((key) => {
     const meta = TABLES[key];
@@ -492,7 +538,6 @@ async function persistDiff(prev: DB, next: DB) {
         .eq("id", 1),
     );
   }
-
 
   const results = await Promise.all(jobs);
   const failed = results.find((r) => (r as { error?: unknown } | null)?.error);
@@ -551,7 +596,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     ]);
 
     const adminIds = new Set(
-      ((roles.data as Row[]) ?? []).filter((r) => r.role === "admin").map((r) => r.user_id as string),
+      ((roles.data as Row[]) ?? [])
+        .filter((r) => r.role === "admin")
+        .map((r) => r.user_id as string),
     );
 
     base.users = ((profiles.data as Row[]) ?? []).map((r) => toUser(r, adminIds));
@@ -646,38 +693,51 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [update],
   );
 
-  const signup: Ctx["signup"] = useCallback(async (name, phone, password, ref) => {
-    const { data, error } = await supabase.auth.signUp({
-      email: authEmail(phone),
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { name: name.trim(), phone: phone.trim(), referred_by: ref?.trim().toUpperCase() || null },
-      },
-    });
-    if (error) return error.message;
-    if (!data.session) return null;
-    setLoading(true);
-    await load(data.session.user.id);
-    return null;
-  }, [load]);
+  const signup: Ctx["signup"] = useCallback(
+    async (name, phone, password, ref) => {
+      const { data, error } = await supabase.auth.signUp({
+        email: authEmail(phone),
+        password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: {
+            name: name.trim(),
+            phone: phone.trim(),
+            referred_by: ref?.trim().toUpperCase() || null,
+          },
+        },
+      });
+      if (error) return error.message;
+      if (!data.session) return null;
+      setLoading(true);
+      await load(data.session.user.id);
+      return null;
+    },
+    [load],
+  );
 
-  const login: Ctx["login"] = useCallback(async (phone, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email: authEmail(phone), password });
-    if (error) return error.message;
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("blocked")
-      .eq("id", data.user.id)
-      .maybeSingle();
-    if ((profile as Row | null)?.blocked) {
-      await supabase.auth.signOut();
-      return "This account has been suspended. Contact support.";
-    }
-    setLoading(true);
-    await load(data.user.id);
-    return null;
-  }, [load]);
+  const login: Ctx["login"] = useCallback(
+    async (phone, password) => {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: authEmail(phone),
+        password,
+      });
+      if (error) return error.message;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("blocked")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      if ((profile as Row | null)?.blocked) {
+        await supabase.auth.signOut();
+        return "This account has been suspended. Contact support.";
+      }
+      setLoading(true);
+      await load(data.user.id);
+      return null;
+    },
+    [load],
+  );
 
   const logout = useCallback(async () => {
     await supabase.auth.signOut();
@@ -693,7 +753,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const redeemPromo = useCallback(async (code: string, amount: number) => {
-    const { data, error } = await supabase.rpc("redeem_promo", { _code: code.trim(), _amount: amount });
+    const { data, error } = await supabase.rpc("redeem_promo", {
+      _code: code.trim(),
+      _amount: amount,
+    });
     if (error || !data || !(data as unknown[]).length) return null;
     const row = (data as Row[])[0];
     return { bonus: num(row.bonus), code: row.code as string };
@@ -707,7 +770,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (total > 0) await load(sessionRef.current);
     return total;
   }, [load]);
-
 
   const toggleTheme = useCallback(() => setTheme((t) => (t === "dark" ? "light" : "dark")), []);
 
@@ -745,7 +807,8 @@ export function useStore() {
 
 /** Every amount in HopeX is Pakistani Rupees. */
 export const money = (n: number) =>
-  "Rs " + Number(n || 0).toLocaleString("en-PK", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  "Rs " +
+  Number(n || 0).toLocaleString("en-PK", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export const newId = uid;
 export const timestamp = now;
@@ -779,13 +842,23 @@ export function hasActivePlan(db: DB, userId: string) {
 /** Total funds the user has deposited and that were approved by an admin. */
 export function depositBalance(db: DB, userId: string) {
   return db.transactions
-    .filter((t) => t.userId === userId && t.type === "deposit" && (t.status === "approved" || t.status === "completed"))
+    .filter(
+      (t) =>
+        t.userId === userId &&
+        t.type === "deposit" &&
+        (t.status === "approved" || t.status === "completed"),
+    )
     .reduce((a, t) => a + t.amount, 0);
 }
 
 export function pendingDeposits(db: DB, userId: string) {
   return db.transactions
-    .filter((t) => t.userId === userId && t.type === "deposit" && (t.status === "pending" || t.status === "processing"))
+    .filter(
+      (t) =>
+        t.userId === userId &&
+        t.type === "deposit" &&
+        (t.status === "pending" || t.status === "processing"),
+    )
     .reduce((a, t) => a + t.amount, 0);
 }
 

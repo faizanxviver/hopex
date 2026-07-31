@@ -9,7 +9,10 @@ export const Route = createFileRoute("/withdraw-history")({
   head: () => ({
     meta: [
       { title: "Withdraw History — HopeX" },
-      { name: "description", content: "Track every payout request, its method and current status." },
+      {
+        name: "description",
+        content: "Track every payout request, its method and current status.",
+      },
       { property: "og:title", content: "Withdraw History — HopeX" },
       { property: "og:description", content: "Processing, successful and declined payouts." },
     ],
@@ -32,17 +35,24 @@ function WithdrawHistory() {
 
   return (
     <div>
-      <SectionTitle title={t("Withdraw history")} subtitle="Every payout request and its current status." />
+      <SectionTitle
+        title={t("Withdraw history")}
+        subtitle="Every payout request and its current status."
+      />
 
       <div className="mb-4 grid grid-cols-2 gap-3">
         <GlassCard className="p-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("Successful")}</p>
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            {t("Successful")}
+          </p>
           <p className="mt-1 font-display text-xl font-extrabold text-success">
             {money(paid.reduce((a, r) => a + r.amount, 0))}
           </p>
         </GlassCard>
         <GlassCard className="p-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">{t("Processing")}</p>
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            {t("Processing")}
+          </p>
           <p className="mt-1 font-display text-xl font-extrabold text-primary">
             {money(processing.reduce((a, r) => a + r.amount, 0))}
           </p>

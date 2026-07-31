@@ -76,7 +76,9 @@ export function TxRow({ tx }: { tx: Transaction }) {
 export function TxList({ rows, empty }: { rows: Transaction[]; empty: React.ReactNode }) {
   if (!rows.length) {
     return (
-      <div className="glass rounded-3xl p-10 text-center text-sm text-muted-foreground">{empty}</div>
+      <div className="glass rounded-3xl p-10 text-center text-sm text-muted-foreground">
+        {empty}
+      </div>
     );
   }
   return (

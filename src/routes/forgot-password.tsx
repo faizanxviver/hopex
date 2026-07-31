@@ -10,7 +10,10 @@ export const Route = createFileRoute("/forgot-password")({
   head: () => ({
     meta: [
       { title: "Reset your password — HopeX" },
-      { name: "description", content: "Request a secure password reset link for your HopeX account." },
+      {
+        name: "description",
+        content: "Request a secure password reset link for your HopeX account.",
+      },
       { property: "og:title", content: "Reset your password — HopeX" },
       { property: "og:description", content: "Request a secure password reset link." },
     ],
@@ -29,7 +32,10 @@ function ForgotPassword() {
       <div className="w-full max-w-md">
         <div className="mb-6 flex items-center justify-between">
           <Brand />
-          <Link to="/auth" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <Link
+            to="/auth"
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
             <ArrowLeft className="h-4 w-4" /> Back to sign in
           </Link>
         </div>
@@ -41,8 +47,8 @@ function ForgotPassword() {
               </span>
               <h1 className="mt-4 font-display text-2xl font-extrabold">Check your inbox</h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                If an account exists for <b>{email}</b>, a reset link is on its way. (Email delivery is
-                
+                If an account exists for <b>{email}</b>, a reset link is on its way. (Email delivery
+                is
               </p>
             </div>
           ) : (

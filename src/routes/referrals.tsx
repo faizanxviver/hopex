@@ -11,7 +11,11 @@ export const Route = createFileRoute("/referrals")({
   head: () => ({
     meta: [
       { title: "Referral Program — HopeX" },
-      { name: "description", content: "Earn across 4 referral levels: 10%, 2%, 1% and 4% commission on downline investments." },
+      {
+        name: "description",
+        content:
+          "Earn across 4 referral levels: 10%, 2%, 1% and 4% commission on downline investments.",
+      },
       { property: "og:title", content: "Referral Program — HopeX" },
       { property: "og:description", content: "Build a team and earn four levels deep." },
     ],
@@ -48,11 +52,16 @@ function Referrals() {
 
   return (
     <div>
-      <SectionTitle title="Referral center" subtitle="Earn commission four levels deep, credited automatically." />
+      <SectionTitle
+        title="Referral center"
+        subtitle="Earn commission four levels deep, credited automatically."
+      />
 
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <GlassCard glow>
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">Your referral link</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">
+            Your referral link
+          </p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
             <input
               readOnly
@@ -89,8 +98,12 @@ function Referrals() {
             <p className="mt-2 font-display text-3xl font-extrabold">{levels[0].length}</p>
           </GlassCard>
           <GlassCard className="col-span-2">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Referral earnings</p>
-            <p className="mt-2 font-display text-3xl font-extrabold text-gold">{money(user.referralEarnings)}</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              Referral earnings
+            </p>
+            <p className="mt-2 font-display text-3xl font-extrabold text-gold">
+              {money(user.referralEarnings)}
+            </p>
           </GlassCard>
         </div>
       </div>
@@ -114,7 +127,9 @@ function Referrals() {
               onClick={() => setTab(i)}
               className={cn(
                 "shrink-0 rounded-xl px-4 py-2 text-sm font-semibold transition",
-                tab === i ? "gradient-cool text-primary-foreground" : "glass-soft text-muted-foreground",
+                tab === i
+                  ? "gradient-cool text-primary-foreground"
+                  : "glass-soft text-muted-foreground",
               )}
             >
               Level {i + 1}
@@ -151,7 +166,8 @@ function Referrals() {
           )}
         </div>
         <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-          <Users className="h-3.5 w-3.5" /> Commission is credited automatically the moment a downline member invests.
+          <Users className="h-3.5 w-3.5" /> Commission is credited automatically the moment a
+          downline member invests.
         </p>
       </GlassCard>
     </div>

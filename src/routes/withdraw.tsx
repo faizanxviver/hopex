@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Building2, Banknote, Bitcoin, Smartphone, Lock, ShieldCheck, Timer, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Building2,
+  Banknote,
+  Bitcoin,
+  Smartphone,
+  Lock,
+  ShieldCheck,
+  Timer,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { hasActivePlan, money, newId, timestamp, useStore } from "@/lib/store";
@@ -11,7 +21,11 @@ export const Route = createFileRoute("/withdraw")({
   head: () => ({
     meta: [
       { title: "Withdraw Funds — HopeX" },
-      { name: "description", content: "Withdraw your available balance to your saved bank, JazzCash or EasyPaisa account." },
+      {
+        name: "description",
+        content:
+          "Withdraw your available balance to your saved bank, JazzCash or EasyPaisa account.",
+      },
       { property: "og:title", content: "Withdraw Funds — HopeX" },
       { property: "og:description", content: "Fast payouts, reviewed within minutes." },
     ],
@@ -58,7 +72,8 @@ function Withdraw() {
     [db.transactions, user?.id],
   );
   const latest = myWithdrawals[0];
-  const pending = latest && (latest.status === "processing" || latest.status === "pending") ? latest : null;
+  const pending =
+    latest && (latest.status === "processing" || latest.status === "pending") ? latest : null;
 
   if (!user) return null;
 
@@ -115,20 +130,29 @@ function Withdraw() {
   if (!planActive) {
     return (
       <div>
-        <SectionTitle title="Withdraw funds" subtitle="Withdrawals unlock once you own an investment plan." />
+        <SectionTitle
+          title="Withdraw funds"
+          subtitle="Withdrawals unlock once you own an investment plan."
+        />
         <GlassCard className="mx-auto max-w-lg text-center" glow>
           <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl gradient-brand text-primary-foreground">
             <Lock className="h-7 w-7" />
           </span>
           <h2 className="mt-5 font-display text-2xl font-extrabold">Withdrawals are locked</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            You must activate at least one investment plan before requesting a payout. Your balance of{" "}
-            {money(user.balance)} stays safe in your wallet.
+            You must activate at least one investment plan before requesting a payout. Your balance
+            of {money(user.balance)} stays safe in your wallet.
           </p>
-          <Link to="/plans" className="btn-glass btn-glass-primary mt-6 flex h-12 items-center justify-center text-sm font-bold">
+          <Link
+            to="/plans"
+            className="btn-glass btn-glass-primary mt-6 flex h-12 items-center justify-center text-sm font-bold"
+          >
             Browse investment plans
           </Link>
-          <Link to="/deposit" className="btn-glass mt-3 flex h-12 items-center justify-center text-sm font-semibold text-foreground">
+          <Link
+            to="/deposit"
+            className="btn-glass mt-3 flex h-12 items-center justify-center text-sm font-semibold text-foreground"
+          >
             Deposit funds first
           </Link>
         </GlassCard>
@@ -141,15 +165,20 @@ function Withdraw() {
     const left = REVIEW_MS - (tick - new Date(pending.createdAt).getTime());
     return (
       <div>
-        <SectionTitle title="Withdrawal under review" subtitle="Our payouts team is verifying your request." />
+        <SectionTitle
+          title="Withdrawal under review"
+          subtitle="Our payouts team is verifying your request."
+        />
         <GlassCard className="mx-auto max-w-lg text-center" glow>
           <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl gradient-cool text-primary-foreground">
             <Timer className="h-7 w-7" />
           </span>
-          <p className="mt-5 font-display text-4xl font-black tabular-nums">{left > 0 ? clock(left) : "Reviewing…"}</p>
+          <p className="mt-5 font-display text-4xl font-black tabular-nums">
+            {left > 0 ? clock(left) : "Reviewing…"}
+          </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            {money(pending.amount)} to {pending.method} · this page updates live the moment your request is approved
-            or declined.
+            {money(pending.amount)} to {pending.method} · this page updates live the moment your
+            request is approved or declined.
           </p>
           <div className="mt-5 rounded-2xl glass-soft p-4 text-left text-sm">
             <p className="text-muted-foreground">Payout account</p>
@@ -170,7 +199,10 @@ function Withdraw() {
   if (!savedAccount) {
     return (
       <div>
-        <SectionTitle title="Add your payout account" subtitle="Save the account you want to receive payments in." />
+        <SectionTitle
+          title="Add your payout account"
+          subtitle="Save the account you want to receive payments in."
+        />
         <GlassCard className="mx-auto max-w-lg" glow>
           <span className="grid h-14 w-14 place-items-center rounded-2xl gradient-brand text-primary-foreground">
             <ShieldCheck className="h-6 w-6" />
@@ -269,7 +301,9 @@ function Withdraw() {
             </div>
 
             <div className="rounded-2xl glass-soft p-4 text-sm">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">Saved payout account</p>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                Saved payout account
+              </p>
               <p className="mt-1 font-semibold">{user.accountName}</p>
               <p className="text-muted-foreground">
                 {user.bankName} · {user.accountNumber}
@@ -304,11 +338,12 @@ function Withdraw() {
                 {money(db.settings.minWithdraw)}
               </li>
               <li className="flex items-start gap-2">
-                <Timer className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Reviewed within about 5 minutes
+                <Timer className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Reviewed within about 5
+                minutes
               </li>
               <li className="flex items-start gap-2">
-                <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" /> Declined requests are refunded
-                instantly
+                <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" /> Declined requests
+                are refunded instantly
               </li>
             </ul>
           </GlassCard>

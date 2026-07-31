@@ -14,14 +14,11 @@ import { cn } from "@/lib/utils";
 import { uploadProofImage } from "@/lib/uploads.functions";
 import { useStore, type PaymentMethod } from "@/lib/store";
 
-
-
 export interface GatewayResult {
   method: string;
   proof: string;
   proofUrl?: string;
 }
-
 
 type Step = "connecting" | "method" | "pay" | "proof" | "processing" | "done";
 
@@ -108,7 +105,6 @@ export function PaymentGateway({
     setTimeout(() => setStep("done"), 2200);
   };
 
-
   const mmss = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 
   return (
@@ -131,7 +127,10 @@ export function PaymentGateway({
         <div className="flex min-w-0 items-center gap-2">
           <span
             className="grid h-9 w-9 shrink-0 place-items-center rounded-xl"
-            style={{ background: "linear-gradient(135deg,var(--gw-accent),var(--gw-accent-2))", color: "#04231b" }}
+            style={{
+              background: "linear-gradient(135deg,var(--gw-accent),var(--gw-accent-2))",
+              color: "#04231b",
+            }}
           >
             <ShieldCheck className="h-5 w-5" />
           </span>
@@ -204,7 +203,11 @@ export function PaymentGateway({
                   style={{ background: "#ffffff10", color: "var(--gw-accent)" }}
                 >
                   {m.imageUrl ? (
-                    <img src={m.imageUrl} alt={m.name} className="h-11 w-11 rounded-xl object-cover" />
+                    <img
+                      src={m.imageUrl}
+                      alt={m.name}
+                      className="h-11 w-11 rounded-xl object-cover"
+                    />
                   ) : (
                     <span className="text-sm font-black">{m.name[0]}</span>
                   )}
@@ -226,7 +229,10 @@ export function PaymentGateway({
             <div className="gw-panel p-5">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-bold">{method.name}</p>
-                <span className="rounded-full px-3 py-1 text-[11px]" style={{ background: "#ffffff10" }}>
+                <span
+                  className="rounded-full px-3 py-1 text-[11px]"
+                  style={{ background: "#ffffff10" }}
+                >
                   expires in {mmss}
                 </span>
               </div>
@@ -244,7 +250,11 @@ export function PaymentGateway({
                   className="flex shrink-0 items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold"
                   style={{ background: "#ffffff14", color: "var(--gw-accent)" }}
                 >
-                  {copied === "acct" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied === "acct" ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
                   {copied === "acct" ? "Copied" : "Copy"}
                 </button>
               </div>
@@ -253,13 +263,19 @@ export function PaymentGateway({
                 className="mt-3 flex items-center gap-2 rounded-xl px-3 py-3"
                 style={{ background: "#ffffff0d", border: "1px dashed var(--gw-line)" }}
               >
-                <p className="min-w-0 flex-1 font-mono text-sm">Rs {amount.toLocaleString("en-PK")}</p>
+                <p className="min-w-0 flex-1 font-mono text-sm">
+                  Rs {amount.toLocaleString("en-PK")}
+                </p>
                 <button
                   onClick={() => copy(String(amount), "amt")}
                   className="flex shrink-0 items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold"
                   style={{ background: "#ffffff14", color: "var(--gw-accent)" }}
                 >
-                  {copied === "amt" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied === "amt" ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
                   {copied === "amt" ? "Copied" : "Copy"}
                 </button>
               </div>
@@ -272,7 +288,10 @@ export function PaymentGateway({
               </ol>
             </div>
 
-            <button onClick={() => setStep("proof")} className="gw-accent-btn h-12 w-full rounded-xl">
+            <button
+              onClick={() => setStep("proof")}
+              className="gw-accent-btn h-12 w-full rounded-xl"
+            >
               I have paid — continue
             </button>
           </div>
@@ -295,7 +314,10 @@ export function PaymentGateway({
                 style={{ border: "1px dashed var(--gw-line)", background: "#ffffff08" }}
               >
                 {uploading ? (
-                  <Loader2 className="h-4 w-4 shrink-0 animate-spin" style={{ color: "var(--gw-accent)" }} />
+                  <Loader2
+                    className="h-4 w-4 shrink-0 animate-spin"
+                    style={{ color: "var(--gw-accent)" }}
+                  />
                 ) : (
                   <Upload className="h-4 w-4 shrink-0" style={{ color: "var(--gw-accent)" }} />
                 )}
@@ -318,7 +340,10 @@ export function PaymentGateway({
                     className="h-16 w-16 rounded-lg object-cover"
                     style={{ border: "1px solid var(--gw-line)" }}
                   />
-                  <p className="flex items-center gap-1 text-xs" style={{ color: "var(--gw-accent)" }}>
+                  <p
+                    className="flex items-center gap-1 text-xs"
+                    style={{ color: "var(--gw-accent)" }}
+                  >
                     <Check className="h-3.5 w-3.5" /> Screenshot uploaded
                   </p>
                 </div>
@@ -328,7 +353,6 @@ export function PaymentGateway({
                   {uploadError}
                 </p>
               ) : null}
-
             </div>
 
             <button
@@ -341,7 +365,6 @@ export function PaymentGateway({
             >
               {uploading ? "Uploading screenshot…" : "Submit payment"}
             </button>
-
           </div>
         ) : null}
 
@@ -360,8 +383,8 @@ export function PaymentGateway({
             <CheckCircle2 className="h-14 w-14" style={{ color: "var(--gw-accent)" }} />
             <p className="text-xl font-black">Payment submitted</p>
             <p className="text-sm" style={{ color: "var(--gw-dim)" }}>
-              Rs {amount.toLocaleString("en-PK")} via {method.name} has been sent for verification. You will be notified once
-              the funds are credited.
+              Rs {amount.toLocaleString("en-PK")} via {method.name} has been sent for verification.
+              You will be notified once the funds are credited.
             </p>
             <button
               onClick={() => onComplete({ method: method.name, proof, proofUrl })}
@@ -379,7 +402,10 @@ export function PaymentGateway({
 
       {confirmExit ? (
         <div className="fixed inset-0 z-10 grid place-items-center bg-black/70 p-4">
-          <div className="gw-panel w-full max-w-sm p-6 text-center" style={{ background: "var(--gw-panel)" }}>
+          <div
+            className="gw-panel w-full max-w-sm p-6 text-center"
+            style={{ background: "var(--gw-panel)" }}
+          >
             <p className="text-lg font-bold">Cancel this payment?</p>
             <p className="mt-2 text-sm" style={{ color: "var(--gw-dim)" }}>
               Your transaction is not complete. If you exit now, nothing will be submitted.

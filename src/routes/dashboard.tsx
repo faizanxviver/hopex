@@ -30,7 +30,10 @@ export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — HopeX" },
-      { name: "description", content: "Track your live investment income, balances and daily payouts in one place." },
+      {
+        name: "description",
+        content: "Track your live investment income, balances and daily payouts in one place.",
+      },
       { property: "og:title", content: "Dashboard — HopeX" },
       { property: "og:description", content: "Live earnings, balances and instant actions." },
     ],
@@ -99,7 +102,9 @@ function Dashboard() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             {t("Withdrawable balance")}
           </p>
-          <p className="mt-2 font-display text-4xl font-black tracking-tight sm:text-5xl">{money(user.balance)}</p>
+          <p className="mt-2 font-display text-4xl font-black tracking-tight sm:text-5xl">
+            {money(user.balance)}
+          </p>
 
           <div className="mt-4 inline-flex items-center gap-2 rounded-2xl glass-soft px-3 py-2">
             <PiggyBank className="h-4 w-4 shrink-0 text-gold" />
@@ -172,7 +177,9 @@ function Dashboard() {
                 <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
                   <HandCoins className="h-3.5 w-3.5" /> {t("Daily income")}
                 </p>
-                <p className="mt-1 font-display text-xl font-extrabold">{money(dailyIncome(db, user.id))}</p>
+                <p className="mt-1 font-display text-xl font-extrabold">
+                  {money(dailyIncome(db, user.id))}
+                </p>
               </div>
             </div>
 
@@ -187,12 +194,17 @@ function Dashboard() {
             <Rocket className="h-5 w-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-display text-base font-extrabold">{t("Activate a plan to start earning")}</p>
+            <p className="font-display text-base font-extrabold">
+              {t("Activate a plan to start earning")}
+            </p>
             <p className="mt-1 text-xs text-muted-foreground">
               {t("Your income ticker starts the moment your first plan goes live.")}
             </p>
           </div>
-          <Link to="/plans" className="btn-glass btn-glass-gold grid h-12 shrink-0 place-items-center px-6 text-sm font-bold">
+          <Link
+            to="/plans"
+            className="btn-glass btn-glass-gold grid h-12 shrink-0 place-items-center px-6 text-sm font-bold"
+          >
             {t("Invest")}
           </Link>
         </GlassCard>
@@ -204,7 +216,9 @@ function Dashboard() {
           <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">
             <UsersRound className="h-3.5 w-3.5" /> {t("Referral income")}
           </p>
-          <p className="mt-1 truncate font-display text-xl font-extrabold text-gold">{money(user.referralEarnings)}</p>
+          <p className="mt-1 truncate font-display text-xl font-extrabold text-gold">
+            {money(user.referralEarnings)}
+          </p>
         </GlassCard>
         <GlassCard className="p-4">
           <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-muted-foreground">

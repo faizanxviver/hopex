@@ -12,9 +12,16 @@ export const Route = createFileRoute("/deposit")({
   head: () => ({
     meta: [
       { title: "Deposit Funds — HopeX" },
-      { name: "description", content: "Fund your wallet through the secure SecurePay gateway with bank transfer, USDT, JazzCash or EasyPaisa." },
+      {
+        name: "description",
+        content:
+          "Fund your wallet through the secure SecurePay gateway with bank transfer, USDT, JazzCash or EasyPaisa.",
+      },
       { property: "og:title", content: "Deposit Funds — HopeX" },
-      { property: "og:description", content: "Fast, secure deposits with multiple payment methods." },
+      {
+        property: "og:description",
+        content: "Fast, secure deposits with multiple payment methods.",
+      },
     ],
   }),
   component: () => (
@@ -110,7 +117,9 @@ function Deposit() {
                     onClick={() => setAmount(String(q))}
                     className={cn(
                       "rounded-2xl border py-4 text-sm font-bold transition hover:-translate-y-0.5",
-                      Number(amount) === q ? "border-primary bg-primary/10 text-primary" : "border-border glass-soft",
+                      Number(amount) === q
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border glass-soft",
                     )}
                   >
                     Rs {q.toLocaleString("en-PK")}
@@ -120,7 +129,9 @@ function Deposit() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold">Or enter a custom amount (PKR)</label>
+              <label className="mb-2 block text-sm font-semibold">
+                Or enter a custom amount (PKR)
+              </label>
               <input
                 type="number"
                 value={amount}
@@ -134,22 +145,27 @@ function Deposit() {
               Submit &amp; continue to payment
             </button>
             <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-              <ShieldCheck className="h-3.5 w-3.5 text-success" /> You will be taken to the SecurePay gateway to
-              select a method, pay and upload your screenshot.
+              <ShieldCheck className="h-3.5 w-3.5 text-success" /> You will be taken to the
+              SecurePay gateway to select a method, pay and upload your screenshot.
             </p>
           </form>
         </GlassCard>
 
         <div className="space-y-4">
           <GlassCard>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Deposit balance</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              Deposit balance
+            </p>
             <p className="mt-2 font-display text-3xl font-extrabold">{money(deposited)}</p>
             {pending > 0 ? (
               <p className="mt-1 inline-flex items-center gap-1 text-xs text-warning">
                 <Clock className="h-3 w-3" /> {money(pending)} awaiting approval
               </p>
             ) : null}
-            <Link to="/deposit-history" className="mt-5 block rounded-xl gradient-cool py-2.5 text-center text-sm font-semibold text-primary-foreground">
+            <Link
+              to="/deposit-history"
+              className="mt-5 block rounded-xl gradient-cool py-2.5 text-center text-sm font-semibold text-primary-foreground"
+            >
               Deposit history
             </Link>
           </GlassCard>

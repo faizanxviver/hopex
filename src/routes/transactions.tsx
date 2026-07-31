@@ -12,7 +12,10 @@ export const Route = createFileRoute("/transactions")({
   head: () => ({
     meta: [
       { title: "All Transactions — HopeX" },
-      { name: "description", content: "Filter and search every deposit, withdrawal, investment, commission and payout." },
+      {
+        name: "description",
+        content: "Filter and search every deposit, withdrawal, investment, commission and payout.",
+      },
       { property: "og:title", content: "All Transactions — HopeX" },
       { property: "og:description", content: "Complete ledger of your account activity." },
     ],
@@ -26,7 +29,15 @@ export const Route = createFileRoute("/transactions")({
   ),
 });
 
-const types = ["all", "deposit", "withdraw", "investment", "commission", "bonus", "payout"] as const;
+const types = [
+  "all",
+  "deposit",
+  "withdraw",
+  "investment",
+  "commission",
+  "bonus",
+  "payout",
+] as const;
 
 function Transactions() {
   const { db, user } = useStore();
@@ -40,7 +51,8 @@ function Transactions() {
     return db.transactions.filter((tx) => {
       if (tx.userId !== user?.id) return false;
       if (type !== "all" && tx.type !== type) return false;
-      if (q && !`${tx.type} ${tx.method ?? ""}`.toLowerCase().includes(q.toLowerCase())) return false;
+      if (q && !`${tx.type} ${tx.method ?? ""}`.toLowerCase().includes(q.toLowerCase()))
+        return false;
       const d = new Date(tx.createdAt).getTime();
       if (from && d < new Date(from).getTime()) return false;
       if (to && d > new Date(to).getTime() + 86400000) return false;
@@ -48,21 +60,32 @@ function Transactions() {
     });
   }, [db.transactions, user?.id, type, q, from, to]);
 
-  const inflow = rows.filter((r) => r.type !== "withdraw" && r.type !== "investment").reduce((a, r) => a + r.amount, 0);
-  const outflow = rows.filter((r) => r.type === "withdraw" || r.type === "investment").reduce((a, r) => a + r.amount, 0);
+  const inflow = rows
+    .filter((r) => r.type !== "withdraw" && r.type !== "investment")
+    .reduce((a, r) => a + r.amount, 0);
+  const outflow = rows
+    .filter((r) => r.type === "withdraw" || r.type === "investment")
+    .reduce((a, r) => a + r.amount, 0);
 
   return (
     <div>
-      <SectionTitle title={t("All transactions")} subtitle="Search, filter and audit every movement in your account." />
+      <SectionTitle
+        title={t("All transactions")}
+        subtitle="Search, filter and audit every movement in your account."
+      />
 
       <div className="mb-4 grid grid-cols-2 gap-3">
         <GlassCard className="p-4">
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground">In</p>
-          <p className="mt-1 font-display text-xl font-extrabold text-success">+${inflow.toLocaleString()}</p>
+          <p className="mt-1 font-display text-xl font-extrabold text-success">
+            +${inflow.toLocaleString()}
+          </p>
         </GlassCard>
         <GlassCard className="p-4">
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Out</p>
-          <p className="mt-1 font-display text-xl font-extrabold text-destructive">−${outflow.toLocaleString()}</p>
+          <p className="mt-1 font-display text-xl font-extrabold text-destructive">
+            −${outflow.toLocaleString()}
+          </p>
         </GlassCard>
       </div>
 

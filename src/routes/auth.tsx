@@ -17,7 +17,10 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in or create an account — HopeX" },
-      { name: "description", content: "Access your HopeX investment wallet, plans and referral dashboard." },
+      {
+        name: "description",
+        content: "Access your HopeX investment wallet, plans and referral dashboard.",
+      },
       { property: "og:title", content: "Sign in — HopeX" },
       { property: "og:description", content: "Secure access to your HopeX investment account." },
     ],
@@ -85,7 +88,10 @@ function AuthPage() {
       <div className="w-full max-w-md">
         <div className="mb-6 flex items-center justify-between">
           <Brand />
-          <Link to="/" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <Link
+            to="/"
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
             <ArrowLeft className="h-4 w-4" /> Home
           </Link>
         </div>
@@ -99,7 +105,9 @@ function AuthPage() {
                 search={{ mode: m }}
                 className={cn(
                   "rounded-xl py-2 text-center text-sm font-semibold transition",
-                  mode === m ? "gradient-cool text-primary-foreground shadow" : "text-muted-foreground",
+                  mode === m
+                    ? "gradient-cool text-primary-foreground shadow"
+                    : "text-muted-foreground",
                 )}
               >
                 {m === "login" ? "Sign in" : "Create account"}
@@ -118,7 +126,12 @@ function AuthPage() {
 
           <form key={mode + "-form"} onSubmit={submit} className="animate-rise mt-6 space-y-3">
             {isSignup ? (
-              <Field icon={UserIcon} placeholder="Full name" value={form.name} onChange={set("name")} />
+              <Field
+                icon={UserIcon}
+                placeholder="Full name"
+                value={form.name}
+                onChange={set("name")}
+              />
             ) : null}
             <Field
               icon={Phone}
@@ -128,9 +141,20 @@ function AuthPage() {
               value={form.phone}
               onChange={set("phone")}
             />
-            <Field icon={Lock} type="password" placeholder="Password" value={form.password} onChange={set("password")} />
+            <Field
+              icon={Lock}
+              type="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={set("password")}
+            />
             {isSignup ? (
-              <Field icon={Gift} placeholder="Referral code (optional)" value={form.ref} onChange={set("ref")} />
+              <Field
+                icon={Gift}
+                placeholder="Referral code (optional)"
+                value={form.ref}
+                onChange={set("ref")}
+              />
             ) : null}
             <button
               disabled={loading}
@@ -142,7 +166,8 @@ function AuthPage() {
           </form>
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            Protected by bank-grade encryption. By continuing you agree to our terms and privacy policy.
+            Protected by bank-grade encryption. By continuing you agree to our terms and privacy
+            policy.
           </p>
         </GlassCard>
       </div>

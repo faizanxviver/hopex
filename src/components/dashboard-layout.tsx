@@ -157,7 +157,9 @@ function ChatButton() {
 /** Floating WhatsApp-style support button, always reachable. */
 function ChatFab() {
   const { db, user, setChatOpen, chatOpen } = useStore();
-  const unread = db.chats.filter((c) => c.userId === user?.id && c.from === "support" && !c.status).length;
+  const unread = db.chats.filter(
+    (c) => c.userId === user?.id && c.from === "support" && !c.status,
+  ).length;
   if (!user || user.role === "admin" || chatOpen) return null;
   return (
     <button
@@ -186,7 +188,9 @@ export function DashboardLayout({ children, wide }: { children: ReactNode; wide?
       <div className="aurora" />
 
       <header className="sticky top-0 z-40 glass-soft rounded-none px-4 py-3">
-        <div className={cn("mx-auto flex items-center gap-3", wide ? "max-w-[100rem]" : "max-w-7xl")}>
+        <div
+          className={cn("mx-auto flex items-center gap-3", wide ? "max-w-[100rem]" : "max-w-7xl")}
+        >
           <Brand />
 
           <nav className="ml-6 hidden flex-1 items-center gap-1 md:flex">
@@ -252,7 +256,9 @@ export function DashboardLayout({ children, wide }: { children: ReactNode; wide?
         </div>
       </header>
 
-      <main className={cn("mx-auto px-4 pb-32 pt-6 md:pb-12", wide ? "max-w-[100rem]" : "max-w-7xl")}>
+      <main
+        className={cn("mx-auto px-4 pb-32 pt-6 md:pb-12", wide ? "max-w-[100rem]" : "max-w-7xl")}
+      >
         {children}
       </main>
 

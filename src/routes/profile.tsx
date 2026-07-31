@@ -13,7 +13,11 @@ export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
       { title: "Profile & Settings — HopeX" },
-      { name: "description", content: "Update your profile, manage security, language, theme and notification preferences." },
+      {
+        name: "description",
+        content:
+          "Update your profile, manage security, language, theme and notification preferences.",
+      },
       { property: "og:title", content: "Profile & Settings — HopeX" },
       { property: "og:description", content: "Account, security and preference settings." },
     ],
@@ -30,14 +34,19 @@ export const Route = createFileRoute("/profile")({
 function Profile() {
   const { user, update, theme, toggleTheme } = useStore();
   const { t } = useT();
-  const [form, setForm] = useState({ name: user?.name ?? "", email: user?.email ?? "", phone: user?.phone ?? "" });
+  const [form, setForm] = useState({
+    name: user?.name ?? "",
+    email: user?.email ?? "",
+    phone: user?.phone ?? "",
+  });
   const [pwd, setPwd] = useState({ current: "", next: "" });
   const [prefs, setPrefs] = useState({ email: true, push: true, marketing: false });
   const [calc, setCalc] = useState({ amount: "1000", roi: "2.4", days: "60" });
 
   if (!user) return null;
 
-  const profit = (Number(calc.amount) || 0) * ((Number(calc.roi) || 0) / 100) * (Number(calc.days) || 0);
+  const profit =
+    (Number(calc.amount) || 0) * ((Number(calc.roi) || 0) / 100) * (Number(calc.days) || 0);
 
   const save = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +62,10 @@ function Profile() {
 
   return (
     <div>
-      <SectionTitle title={t("Profile & settings")} subtitle="Manage your identity, security and preferences." />
+      <SectionTitle
+        title={t("Profile & settings")}
+        subtitle="Manage your identity, security and preferences."
+      />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <GlassCard>
@@ -61,7 +73,9 @@ function Profile() {
           <form onSubmit={save} className="mt-4 space-y-3">
             {(["name", "email", "phone"] as const).map((k) => (
               <div key={k}>
-                <label className="mb-1.5 block text-xs font-semibold capitalize text-muted-foreground">{k}</label>
+                <label className="mb-1.5 block text-xs font-semibold capitalize text-muted-foreground">
+                  {k}
+                </label>
                 <input
                   value={form[k]}
                   onChange={(e) => setForm((f) => ({ ...f, [k]: e.target.value }))}
@@ -69,7 +83,9 @@ function Profile() {
                 />
               </div>
             ))}
-            <button className="btn-glass btn-glass-primary h-12 w-full font-semibold">{t("Save")}</button>
+            <button className="btn-glass btn-glass-primary h-12 w-full font-semibold">
+              {t("Save")}
+            </button>
           </form>
         </GlassCard>
 
@@ -92,7 +108,8 @@ function Profile() {
             />
             <button
               onClick={async () => {
-                if (pwd.next.length < 6) return toast.error("New password must be at least 6 characters.");
+                if (pwd.next.length < 6)
+                  return toast.error("New password must be at least 6 characters.");
                 const { error: signInError } = await supabase.auth.signInWithPassword({
                   email: user.email,
                   password: pwd.current,
@@ -136,7 +153,9 @@ function Profile() {
                 <span className="grid h-9 w-9 place-items-center rounded-lg bg-accent text-accent-foreground">
                   {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                 </span>
-                <p className="text-sm font-semibold">{theme === "dark" ? t("Light mode") : t("Dark mode")}</p>
+                <p className="text-sm font-semibold">
+                  {theme === "dark" ? t("Light mode") : t("Dark mode")}
+                </p>
               </div>
               <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
             </div>
@@ -155,7 +174,9 @@ function Profile() {
                         me.language = l;
                         return d;
                       });
-                      toast.success(l === "en" ? "Language set to English." : "زبان اردو پر سیٹ کر دی گئی۔");
+                      toast.success(
+                        l === "en" ? "Language set to English." : "زبان اردو پر سیٹ کر دی گئی۔",
+                      );
                     }}
                     className={
                       user.language === l
@@ -176,9 +197,15 @@ function Profile() {
                 ["marketing", "Product & promo updates"],
               ] as const
             ).map(([k, label]) => (
-              <div key={k} className="flex items-center justify-between rounded-xl glass-soft px-4 py-3">
+              <div
+                key={k}
+                className="flex items-center justify-between rounded-xl glass-soft px-4 py-3"
+              >
                 <p className="text-sm font-medium">{label}</p>
-                <Switch checked={prefs[k]} onCheckedChange={(v) => setPrefs((p) => ({ ...p, [k]: v }))} />
+                <Switch
+                  checked={prefs[k]}
+                  onCheckedChange={(v) => setPrefs((p) => ({ ...p, [k]: v }))}
+                />
               </div>
             ))}
           </div>

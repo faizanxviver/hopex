@@ -26,7 +26,10 @@ export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
       { title: "Admin Panel — HopeX" },
-      { name: "description", content: "Manage users, deposits, withdrawals, plans, promo codes, chat and broadcasts." },
+      {
+        name: "description",
+        content: "Manage users, deposits, withdrawals, plans, promo codes, chat and broadcasts.",
+      },
       { property: "og:title", content: "Admin Panel — HopeX" },
       { property: "og:description", content: "Full platform administration console." },
     ],
@@ -66,7 +69,6 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
   Settings: Settings,
 };
 
-
 function Admin() {
   const { db, update, addNotification } = useStore();
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
@@ -76,8 +78,12 @@ function Admin() {
   const users = db.users.filter((u) => u.role === "user");
   const deposits = db.transactions.filter((t) => t.type === "deposit");
   const withdrawals = db.transactions.filter((t) => t.type === "withdraw");
-  const totalDeposits = deposits.filter((t) => t.status === "approved").reduce((a, t) => a + t.amount, 0);
-  const totalWithdrawals = withdrawals.filter((t) => t.status === "completed").reduce((a, t) => a + t.amount, 0);
+  const totalDeposits = deposits
+    .filter((t) => t.status === "approved")
+    .reduce((a, t) => a + t.amount, 0);
+  const totalWithdrawals = withdrawals
+    .filter((t) => t.status === "completed")
+    .reduce((a, t) => a + t.amount, 0);
 
   const setStatus = (id: string, status: TxStatus, credit: boolean) => {
     update((d) => {
@@ -85,7 +91,8 @@ function Admin() {
       if (!t) return d;
       t.status = status;
       const owner = d.users.find((u) => u.id === t.userId);
-      if (owner && credit && t.type === "deposit" && status === "approved") owner.balance += t.amount;
+      if (owner && credit && t.type === "deposit" && status === "approved")
+        owner.balance += t.amount;
       if (owner && t.type === "withdraw" && status === "rejected") owner.balance += t.amount;
       d.notifications.unshift({
         id: newId(),
@@ -106,7 +113,11 @@ function Admin() {
   const pendingDeps = deposits.filter((t) => isPending(t.status)).length;
   const pendingWds = withdrawals.filter((t) => isPending(t.status)).length;
   const rows = (tab === "Deposits" ? deposits : withdrawals).filter((t) =>
-    bucket === "Pending" ? isPending(t.status) : bucket === "Approved" ? isDone(t.status) : t.status === "rejected",
+    bucket === "Pending"
+      ? isPending(t.status)
+      : bucket === "Approved"
+        ? isDone(t.status)
+        : t.status === "rejected",
   );
   const counts: Partial<Record<(typeof tabs)[number], number>> = {
     Users: users.length,
@@ -117,7 +128,10 @@ function Admin() {
 
   return (
     <div>
-      <SectionTitle title="Admin panel" subtitle="Full control over users, money flow and platform configuration." />
+      <SectionTitle
+        title="Admin panel"
+        subtitle="Full control over users, money flow and platform configuration."
+      />
 
       <div className="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-24 lg:self-start">
@@ -159,395 +173,420 @@ function Admin() {
         </aside>
 
         <div>
-
-
-      {tab === "Overview" ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <StatCard label="Total users" value={String(users.length)} />
-          <StatCard label="Total deposits" value={money(totalDeposits)} accent="success" />
-          <StatCard label="Total withdrawals" value={money(totalWithdrawals)} accent="gold" />
-          <StatCard label="Active investments" value={String(db.investments.length)} />
-          <StatCard
-            label="Capital invested"
-            value={money(db.investments.reduce((a, i) => a + i.amount, 0))}
-          />
-          <StatCard label="Platform profit" value={money(Math.max(0, totalDeposits - totalWithdrawals))} accent="success" />
-        </div>
-      ) : null}
-
-      {tab === "Users" ? (
-        <GlassCard className="overflow-x-auto p-0">
-          <table className="w-full min-w-[46rem] text-sm">
-            <thead className="border-b border-border/60 text-left text-xs uppercase tracking-widest text-muted-foreground">
-              <tr>
-                <th className="p-4">User</th>
-                <th className="p-4">Balance</th>
-                <th className="p-4">Invested</th>
-                <th className="p-4">Referred by</th>
-                <th className="p-4">Status</th>
-                <th className="p-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/40">
-              {users.map((u) => (
-                <tr key={u.id}>
-                  <td className="p-4">
-                    <p className="font-semibold">{u.name}</p>
-                    <p className="text-xs text-muted-foreground">{u.email}</p>
-                  </td>
-                  <td className="p-4 font-semibold">{money(u.balance)}</td>
-                  <td className="p-4">{money(u.invested)}</td>
-                  <td className="p-4 text-muted-foreground">{u.referredBy ?? "—"}</td>
-                  <td className="p-4">
-                    <StatusBadge status={u.blocked ? "rejected" : "approved"} />
-                  </td>
-                  <td className="p-4">
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() =>
-                          update((d) => {
-                            const t = d.users.find((x) => x.id === u.id)!;
-                            t.blocked = !t.blocked;
-                            return d;
-                          })
-                        }
-                        className="rounded-lg glass-soft px-3 py-1 text-xs font-semibold"
-                      >
-                        {u.blocked ? "Unblock" : "Block"}
-                      </button>
-                      <button
-                        onClick={() => {
-                          const v = prompt(`New balance for ${u.name}`, String(u.balance));
-                          if (v == null || isNaN(Number(v))) return;
-                          update((d) => {
-                            const t = d.users.find((x) => x.id === u.id)!;
-                            t.balance = Number(v);
-                            return d;
-                          });
-                          toast.success("Balance updated.");
-                        }}
-                        className="rounded-lg glass-soft px-3 py-1 text-xs font-semibold"
-                      >
-                        Edit balance
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </GlassCard>
-      ) : null}
-
-      {tab === "Deposits" || tab === "Withdrawals" ? (
-        <>
-        <div className="mb-4 inline-flex gap-1 rounded-2xl glass-soft p-1">
-          {(["Pending", "Approved", "Rejected"] as const).map((b) => {
-            const count = (tab === "Deposits" ? deposits : withdrawals).filter((t) =>
-              b === "Pending" ? isPending(t.status) : b === "Approved" ? isDone(t.status) : t.status === "rejected",
-            ).length;
-            return (
-              <button
-                key={b}
-                onClick={() => setBucket(b)}
-                className={cn(
-                  "rounded-xl px-4 py-2 text-sm font-semibold transition",
-                  bucket === b
-                    ? b === "Pending"
-                      ? "bg-destructive text-destructive-foreground"
-                      : "gradient-cool text-primary-foreground"
-                    : "text-muted-foreground",
-                )}
-              >
-                {b === "Pending" ? "Pending" : b === "Approved" ? "Successful" : "Declined"} ({count})
-              </button>
-            );
-          })}
-        </div>
-        <GlassCard className="overflow-x-auto p-0">
-          <table className="w-full min-w-[46rem] text-sm">
-            <thead className="border-b border-border/60 text-left text-xs uppercase tracking-widest text-muted-foreground">
-              <tr>
-                <th className="p-4">User</th>
-                <th className="p-4">Method</th>
-                <th className="p-4">Reference</th>
-                <th className="p-4">Proof</th>
-                <th className="p-4">Amount</th>
-                <th className="p-4">Status</th>
-                <th className="p-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/40">
-              {rows.map((t) => (
-                <tr key={t.id}>
-                  <td className="p-4">{db.users.find((u) => u.id === t.userId)?.name ?? "—"}</td>
-                  <td className="p-4">{t.method}</td>
-                  <td className="p-4 text-muted-foreground">{t.reference ?? "—"}</td>
-                  <td className="p-4">
-                    {t.proofUrl ? (
-                      <button onClick={() => setProof(t.proofUrl!)} className="group inline-flex items-center gap-2">
-                        <img
-                          src={t.proofUrl}
-                          alt="Payment proof"
-                          loading="lazy"
-                          className="h-10 w-10 rounded-lg border border-border/60 object-cover transition group-hover:scale-105"
-                        />
-                        <span className="text-xs font-semibold text-primary">View</span>
-                      </button>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
-                  </td>
-                  <td className="p-4 font-semibold">{money(t.amount)}</td>
-                  <td className="p-4">
-                    <StatusBadge status={t.status} />
-                  </td>
-                  <td className="p-4">
-                    {isPending(t.status) ? (
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => setStatus(t.id, tab === "Deposits" ? "approved" : "completed", true)}
-                          className="rounded-lg bg-success/15 px-3 py-1 text-xs font-semibold text-success"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => setStatus(t.id, "rejected", false)}
-                          className="rounded-lg bg-destructive/15 px-3 py-1 text-xs font-semibold text-destructive"
-                        >
-                          Decline
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">Reviewed</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {rows.length === 0 ? <p className="p-6 text-sm text-muted-foreground">Nothing in this section.</p> : null}
-        </GlassCard>
-        </>
-      ) : null}
-
-      {tab === "Methods" ? <MethodsManager /> : null}
-
-      {tab === "Plans" ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {db.plans.map((p) => (
-            <GlassCard key={p.id}>
-              <h3 className="font-display text-lg font-extrabold">{p.name}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {money(p.min)} – {money(p.max)} · {p.durationDays} days
-              </p>
-              <input
-                type="number"
-                step="0.1"
-                defaultValue={p.dailyRoi}
-                onBlur={(e) =>
-                  update((d) => {
-                    const t = d.plans.find((x) => x.id === p.id)!;
-                    t.dailyRoi = Number(e.target.value);
-                    return d;
-                  })
-                }
-                className="mt-4 h-11 w-full rounded-xl border border-input bg-background/40 px-3 text-sm outline-none"
+          {tab === "Overview" ? (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <StatCard label="Total users" value={String(users.length)} />
+              <StatCard label="Total deposits" value={money(totalDeposits)} accent="success" />
+              <StatCard label="Total withdrawals" value={money(totalWithdrawals)} accent="gold" />
+              <StatCard label="Active investments" value={String(db.investments.length)} />
+              <StatCard
+                label="Capital invested"
+                value={money(db.investments.reduce((a, i) => a + i.amount, 0))}
               />
-              <p className="mt-1 text-xs text-muted-foreground">Daily ROI %</p>
-              <div className="mt-4 flex gap-2">
-                <button
-                  onClick={() =>
-                    update((d) => {
-                      const t = d.plans.find((x) => x.id === p.id)!;
-                      t.active = !t.active;
-                      return d;
-                    })
-                  }
-                  className="flex-1 rounded-lg glass-soft py-2 text-xs font-semibold"
-                >
-                  {p.active ? "Disable" : "Enable"}
-                </button>
-                <button
-                  onClick={() =>
-                    update((d) => {
-                      d.plans = d.plans.filter((x) => x.id !== p.id);
-                      return d;
-                    })
-                  }
-                  className="flex-1 rounded-lg bg-destructive/15 py-2 text-xs font-semibold text-destructive"
-                >
-                  Delete
-                </button>
-              </div>
-            </GlassCard>
-          ))}
-          <GlassCard className="grid place-items-center border-dashed">
-            <button
-              onClick={() => {
-                const name = prompt("Plan name");
-                if (!name) return;
-                update((d) => {
-                  d.plans.push({
-                    id: newId(),
-                    name,
-                    min: 100,
-                    max: 10000,
-                    dailyRoi: 1.5,
-                    durationDays: 30,
-                    features: ["Daily payouts"],
-                    active: true,
-                  });
-                  return d;
-                });
-                toast.success("Plan created.");
-              }}
-              className="rounded-xl gradient-brand px-5 py-2.5 text-sm font-semibold text-primary-foreground"
-            >
-              + Add plan
-            </button>
-          </GlassCard>
-        </div>
-      ) : null}
+              <StatCard
+                label="Platform profit"
+                value={money(Math.max(0, totalDeposits - totalWithdrawals))}
+                accent="success"
+              />
+            </div>
+          ) : null}
 
-      {tab === "Promo Codes" ? (
-        <div className="space-y-4">
-          <button
-            onClick={() => {
-              const code = prompt("Promo code")?.toUpperCase();
-              if (!code) return;
-              update((d) => {
-                d.promos.push({
-                  id: newId(),
-                  code,
-                  type: "percent",
-                  value: 5,
-                  usageLimit: 100,
-                  used: 0,
-                  expiresAt: "2026-12-31",
-                  active: true,
-                });
-                return d;
-              });
-              toast.success("Promo code created.");
-            }}
-            className="rounded-xl gradient-brand px-5 py-2.5 text-sm font-semibold text-primary-foreground"
-          >
-            + New promo code
-          </button>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {db.promos.map((p) => (
-              <GlassCard key={p.id}>
-                <div className="flex items-center justify-between gap-3">
-                  <p className="font-display text-lg font-extrabold text-gold">{p.code}</p>
-                  <StatusBadge status={p.active ? "approved" : "rejected"} />
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {p.type === "percent" ? `${p.value}% bonus` : `${money(p.value)} bonus`} · expires {p.expiresAt}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Used {p.used}/{p.usageLimit}
-                </p>
+          {tab === "Users" ? (
+            <GlassCard className="overflow-x-auto p-0">
+              <table className="w-full min-w-[46rem] text-sm">
+                <thead className="border-b border-border/60 text-left text-xs uppercase tracking-widest text-muted-foreground">
+                  <tr>
+                    <th className="p-4">User</th>
+                    <th className="p-4">Balance</th>
+                    <th className="p-4">Invested</th>
+                    <th className="p-4">Referred by</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/40">
+                  {users.map((u) => (
+                    <tr key={u.id}>
+                      <td className="p-4">
+                        <p className="font-semibold">{u.name}</p>
+                        <p className="text-xs text-muted-foreground">{u.email}</p>
+                      </td>
+                      <td className="p-4 font-semibold">{money(u.balance)}</td>
+                      <td className="p-4">{money(u.invested)}</td>
+                      <td className="p-4 text-muted-foreground">{u.referredBy ?? "—"}</td>
+                      <td className="p-4">
+                        <StatusBadge status={u.blocked ? "rejected" : "approved"} />
+                      </td>
+                      <td className="p-4">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() =>
+                              update((d) => {
+                                const t = d.users.find((x) => x.id === u.id)!;
+                                t.blocked = !t.blocked;
+                                return d;
+                              })
+                            }
+                            className="rounded-lg glass-soft px-3 py-1 text-xs font-semibold"
+                          >
+                            {u.blocked ? "Unblock" : "Block"}
+                          </button>
+                          <button
+                            onClick={() => {
+                              const v = prompt(`New balance for ${u.name}`, String(u.balance));
+                              if (v == null || isNaN(Number(v))) return;
+                              update((d) => {
+                                const t = d.users.find((x) => x.id === u.id)!;
+                                t.balance = Number(v);
+                                return d;
+                              });
+                              toast.success("Balance updated.");
+                            }}
+                            className="rounded-lg glass-soft px-3 py-1 text-xs font-semibold"
+                          >
+                            Edit balance
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </GlassCard>
+          ) : null}
+
+          {tab === "Deposits" || tab === "Withdrawals" ? (
+            <>
+              <div className="mb-4 inline-flex gap-1 rounded-2xl glass-soft p-1">
+                {(["Pending", "Approved", "Rejected"] as const).map((b) => {
+                  const count = (tab === "Deposits" ? deposits : withdrawals).filter((t) =>
+                    b === "Pending"
+                      ? isPending(t.status)
+                      : b === "Approved"
+                        ? isDone(t.status)
+                        : t.status === "rejected",
+                  ).length;
+                  return (
+                    <button
+                      key={b}
+                      onClick={() => setBucket(b)}
+                      className={cn(
+                        "rounded-xl px-4 py-2 text-sm font-semibold transition",
+                        bucket === b
+                          ? b === "Pending"
+                            ? "bg-destructive text-destructive-foreground"
+                            : "gradient-cool text-primary-foreground"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      {b === "Pending" ? "Pending" : b === "Approved" ? "Successful" : "Declined"} (
+                      {count})
+                    </button>
+                  );
+                })}
+              </div>
+              <GlassCard className="overflow-x-auto p-0">
+                <table className="w-full min-w-[46rem] text-sm">
+                  <thead className="border-b border-border/60 text-left text-xs uppercase tracking-widest text-muted-foreground">
+                    <tr>
+                      <th className="p-4">User</th>
+                      <th className="p-4">Method</th>
+                      <th className="p-4">Reference</th>
+                      <th className="p-4">Proof</th>
+                      <th className="p-4">Amount</th>
+                      <th className="p-4">Status</th>
+                      <th className="p-4">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/40">
+                    {rows.map((t) => (
+                      <tr key={t.id}>
+                        <td className="p-4">
+                          {db.users.find((u) => u.id === t.userId)?.name ?? "—"}
+                        </td>
+                        <td className="p-4">{t.method}</td>
+                        <td className="p-4 text-muted-foreground">{t.reference ?? "—"}</td>
+                        <td className="p-4">
+                          {t.proofUrl ? (
+                            <button
+                              onClick={() => setProof(t.proofUrl!)}
+                              className="group inline-flex items-center gap-2"
+                            >
+                              <img
+                                src={t.proofUrl}
+                                alt="Payment proof"
+                                loading="lazy"
+                                className="h-10 w-10 rounded-lg border border-border/60 object-cover transition group-hover:scale-105"
+                              />
+                              <span className="text-xs font-semibold text-primary">View</span>
+                            </button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </td>
+                        <td className="p-4 font-semibold">{money(t.amount)}</td>
+                        <td className="p-4">
+                          <StatusBadge status={t.status} />
+                        </td>
+                        <td className="p-4">
+                          {isPending(t.status) ? (
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                onClick={() =>
+                                  setStatus(
+                                    t.id,
+                                    tab === "Deposits" ? "approved" : "completed",
+                                    true,
+                                  )
+                                }
+                                className="rounded-lg bg-success/15 px-3 py-1 text-xs font-semibold text-success"
+                              >
+                                Approve
+                              </button>
+                              <button
+                                onClick={() => setStatus(t.id, "rejected", false)}
+                                className="rounded-lg bg-destructive/15 px-3 py-1 text-xs font-semibold text-destructive"
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Reviewed</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {rows.length === 0 ? (
+                  <p className="p-6 text-sm text-muted-foreground">Nothing in this section.</p>
+                ) : null}
+              </GlassCard>
+            </>
+          ) : null}
+
+          {tab === "Methods" ? <MethodsManager /> : null}
+
+          {tab === "Plans" ? (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {db.plans.map((p) => (
+                <GlassCard key={p.id}>
+                  <h3 className="font-display text-lg font-extrabold">{p.name}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {money(p.min)} – {money(p.max)} · {p.durationDays} days
+                  </p>
+                  <input
+                    type="number"
+                    step="0.1"
+                    defaultValue={p.dailyRoi}
+                    onBlur={(e) =>
+                      update((d) => {
+                        const t = d.plans.find((x) => x.id === p.id)!;
+                        t.dailyRoi = Number(e.target.value);
+                        return d;
+                      })
+                    }
+                    className="mt-4 h-11 w-full rounded-xl border border-input bg-background/40 px-3 text-sm outline-none"
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">Daily ROI %</p>
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      onClick={() =>
+                        update((d) => {
+                          const t = d.plans.find((x) => x.id === p.id)!;
+                          t.active = !t.active;
+                          return d;
+                        })
+                      }
+                      className="flex-1 rounded-lg glass-soft py-2 text-xs font-semibold"
+                    >
+                      {p.active ? "Disable" : "Enable"}
+                    </button>
+                    <button
+                      onClick={() =>
+                        update((d) => {
+                          d.plans = d.plans.filter((x) => x.id !== p.id);
+                          return d;
+                        })
+                      }
+                      className="flex-1 rounded-lg bg-destructive/15 py-2 text-xs font-semibold text-destructive"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </GlassCard>
+              ))}
+              <GlassCard className="grid place-items-center border-dashed">
                 <button
-                  onClick={() =>
+                  onClick={() => {
+                    const name = prompt("Plan name");
+                    if (!name) return;
                     update((d) => {
-                      const t = d.promos.find((x) => x.id === p.id)!;
-                      t.active = !t.active;
+                      d.plans.push({
+                        id: newId(),
+                        name,
+                        min: 100,
+                        max: 10000,
+                        dailyRoi: 1.5,
+                        durationDays: 30,
+                        features: ["Daily payouts"],
+                        active: true,
+                      });
                       return d;
-                    })
-                  }
-                  className="mt-4 w-full rounded-lg glass-soft py-2 text-xs font-semibold"
+                    });
+                    toast.success("Plan created.");
+                  }}
+                  className="rounded-xl gradient-brand px-5 py-2.5 text-sm font-semibold text-primary-foreground"
                 >
-                  {p.active ? "Disable" : "Enable"}
+                  + Add plan
                 </button>
               </GlassCard>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      {tab === "Support Chat" ? <AdminChat /> : null}
-
-      {tab === "Broadcast" ? (
-        <GlassCard className="max-w-xl">
-          <h2 className="text-lg font-bold">Broadcast a notification</h2>
-          <BroadcastForm
-            onSend={(title, body, target) => {
-              const targets = target === "all" ? users : users.filter((u) => u.id === target);
-              targets.forEach((u) => addNotification(u.id, { title, body, kind: "info", popup: true }));
-              toast.success(`Sent to ${targets.length} user(s).`);
-            }}
-            users={users.map((u) => ({ id: u.id, name: u.name }))}
-          />
-        </GlassCard>
-      ) : null}
-
-      {tab === "Settings" ? (
-        <GlassCard className="max-w-xl space-y-4">
-          <h2 className="text-lg font-bold">Platform settings</h2>
-          {(
-            [
-              ["siteName", "Site name"],
-              ["minDeposit", "Minimum deposit"],
-              ["minWithdraw", "Minimum withdrawal"],
-            ] as const
-          ).map(([k, label]) => (
-            <div key={k}>
-              <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">{label}</label>
-              <input
-                defaultValue={String(db.settings[k])}
-                onBlur={(e) =>
-                  update((d) => {
-                    const value = k === "siteName" ? e.target.value : Number(e.target.value);
-                    (d.settings as unknown as Record<string, unknown>)[k] = value;
-                    return d;
-                  })
-                }
-                className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none"
-              />
             </div>
-          ))}
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
-              Quick deposit amounts (comma separated)
-            </label>
-            <input
-              defaultValue={db.settings.quickAmounts.join(", ")}
-              onBlur={(e) =>
-                update((d) => {
-                  d.settings.quickAmounts = e.target.value
-                    .split(",")
-                    .map((x) => Number(x.trim()))
-                    .filter((n) => n > 0);
-                  return d;
-                })
-              }
-              className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
-              Referral commission levels (%)
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {db.settings.levels.map((lv, i) => (
+          ) : null}
+
+          {tab === "Promo Codes" ? (
+            <div className="space-y-4">
+              <button
+                onClick={() => {
+                  const code = prompt("Promo code")?.toUpperCase();
+                  if (!code) return;
+                  update((d) => {
+                    d.promos.push({
+                      id: newId(),
+                      code,
+                      type: "percent",
+                      value: 5,
+                      usageLimit: 100,
+                      used: 0,
+                      expiresAt: "2026-12-31",
+                      active: true,
+                    });
+                    return d;
+                  });
+                  toast.success("Promo code created.");
+                }}
+                className="rounded-xl gradient-brand px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+              >
+                + New promo code
+              </button>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {db.promos.map((p) => (
+                  <GlassCard key={p.id}>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-display text-lg font-extrabold text-gold">{p.code}</p>
+                      <StatusBadge status={p.active ? "approved" : "rejected"} />
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {p.type === "percent" ? `${p.value}% bonus` : `${money(p.value)} bonus`} ·
+                      expires {p.expiresAt}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Used {p.used}/{p.usageLimit}
+                    </p>
+                    <button
+                      onClick={() =>
+                        update((d) => {
+                          const t = d.promos.find((x) => x.id === p.id)!;
+                          t.active = !t.active;
+                          return d;
+                        })
+                      }
+                      className="mt-4 w-full rounded-lg glass-soft py-2 text-xs font-semibold"
+                    >
+                      {p.active ? "Disable" : "Enable"}
+                    </button>
+                  </GlassCard>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {tab === "Support Chat" ? <AdminChat /> : null}
+
+          {tab === "Broadcast" ? (
+            <GlassCard className="max-w-xl">
+              <h2 className="text-lg font-bold">Broadcast a notification</h2>
+              <BroadcastForm
+                onSend={(title, body, target) => {
+                  const targets = target === "all" ? users : users.filter((u) => u.id === target);
+                  targets.forEach((u) =>
+                    addNotification(u.id, { title, body, kind: "info", popup: true }),
+                  );
+                  toast.success(`Sent to ${targets.length} user(s).`);
+                }}
+                users={users.map((u) => ({ id: u.id, name: u.name }))}
+              />
+            </GlassCard>
+          ) : null}
+
+          {tab === "Settings" ? (
+            <GlassCard className="max-w-xl space-y-4">
+              <h2 className="text-lg font-bold">Platform settings</h2>
+              {(
+                [
+                  ["siteName", "Site name"],
+                  ["minDeposit", "Minimum deposit"],
+                  ["minWithdraw", "Minimum withdrawal"],
+                ] as const
+              ).map(([k, label]) => (
+                <div key={k}>
+                  <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
+                    {label}
+                  </label>
+                  <input
+                    defaultValue={String(db.settings[k])}
+                    onBlur={(e) =>
+                      update((d) => {
+                        const value = k === "siteName" ? e.target.value : Number(e.target.value);
+                        (d.settings as unknown as Record<string, unknown>)[k] = value;
+                        return d;
+                      })
+                    }
+                    className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none"
+                  />
+                </div>
+              ))}
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
+                  Quick deposit amounts (comma separated)
+                </label>
                 <input
-                  key={i}
-                  defaultValue={lv}
-                  type="number"
+                  defaultValue={db.settings.quickAmounts.join(", ")}
                   onBlur={(e) =>
                     update((d) => {
-                      d.settings.levels[i] = Number(e.target.value);
+                      d.settings.quickAmounts = e.target.value
+                        .split(",")
+                        .map((x) => Number(x.trim()))
+                        .filter((n) => n > 0);
                       return d;
                     })
                   }
-                  className="h-12 rounded-xl border border-input bg-background/40 px-3 text-sm outline-none"
+                  className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none"
                 />
-              ))}
-            </div>
-          </div>
-        </GlassCard>
-      ) : null}
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
+                  Referral commission levels (%)
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {db.settings.levels.map((lv, i) => (
+                    <input
+                      key={i}
+                      defaultValue={lv}
+                      type="number"
+                      onBlur={(e) =>
+                        update((d) => {
+                          d.settings.levels[i] = Number(e.target.value);
+                          return d;
+                        })
+                      }
+                      className="h-12 rounded-xl border border-input bg-background/40 px-3 text-sm outline-none"
+                    />
+                  ))}
+                </div>
+              </div>
+            </GlassCard>
+          ) : null}
         </div>
       </div>
 
@@ -556,7 +595,10 @@ function Admin() {
           className="fixed inset-0 z-[80] flex items-center justify-center bg-background/80 p-4 backdrop-blur-md"
           onClick={() => setProof(null)}
         >
-          <div className="glass max-h-full w-full max-w-lg overflow-auto rounded-3xl p-4" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="glass max-h-full w-full max-w-lg overflow-auto rounded-3xl p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-bold">Payment proof</p>
               <div className="flex items-center gap-2">
@@ -582,9 +624,7 @@ function Admin() {
       ) : null}
     </div>
   );
-
 }
-
 
 function BroadcastForm({
   onSend,
@@ -688,7 +728,10 @@ function AdminChat() {
       <GlassCard className="flex h-[28rem] flex-col p-0">
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
           {messages.map((m) => (
-            <div key={m.id} className={m.from === "support" ? "flex justify-end" : "flex justify-start"}>
+            <div
+              key={m.id}
+              className={m.from === "support" ? "flex justify-end" : "flex justify-start"}
+            >
               <p
                 className={
                   m.from === "support"
@@ -700,7 +743,9 @@ function AdminChat() {
               </p>
             </div>
           ))}
-          {messages.length === 0 ? <p className="text-sm text-muted-foreground">No messages.</p> : null}
+          {messages.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No messages.</p>
+          ) : null}
         </div>
         <div className="flex gap-2 border-t border-border/60 p-3">
           <input
@@ -744,7 +789,10 @@ function AdminChat() {
             <Line label="Earnings" value={money(person.earnings)} />
             <Line label="Referral code" value={person.referralCode} />
             <Line label="Referred by" value={person.referredBy ?? "—"} />
-            <Line label="Active plans" value={String(db.investments.filter((i) => i.userId === person.id).length)} />
+            <Line
+              label="Active plans"
+              value={String(db.investments.filter((i) => i.userId === person.id).length)}
+            />
             <Line label="Status" value={person.blocked ? "Frozen" : "Active"} />
           </div>
 
@@ -787,7 +835,10 @@ function AdminChat() {
             onClick={() => {
               const plan = db.plans.find((p) => p.active);
               if (!plan) return;
-              const v = prompt(`Activate ${plan.name} for ${person.name} — amount (PKR)`, String(plan.min));
+              const v = prompt(
+                `Activate ${plan.name} for ${person.name} — amount (PKR)`,
+                String(plan.min),
+              );
               if (!v || isNaN(Number(v))) return;
               update((d) => {
                 d.investments.unshift({
@@ -824,7 +875,6 @@ function Line({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-
 
 /* ---------------- Payment methods manager ---------------- */
 function MethodsManager() {

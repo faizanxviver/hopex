@@ -152,14 +152,11 @@ function RootComponent() {
                 "!border-destructive/40 !bg-[color-mix(in_oklab,var(--card)_86%,var(--destructive))] [&_[data-icon]]:!text-destructive",
               warning:
                 "!border-gold/45 !bg-[color-mix(in_oklab,var(--card)_86%,var(--gold))] [&_[data-icon]]:!text-gold",
-              info:
-                "!border-primary/40 !bg-[color-mix(in_oklab,var(--card)_88%,var(--primary))] [&_[data-icon]]:!text-primary",
+              info: "!border-primary/40 !bg-[color-mix(in_oklab,var(--card)_88%,var(--primary))] [&_[data-icon]]:!text-primary",
             },
           }}
         />
-
       </StoreProvider>
     </QueryClientProvider>
   );
 }
-
