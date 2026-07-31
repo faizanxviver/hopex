@@ -589,6 +589,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return { bonus: num(row.bonus), code: row.code as string };
   }, []);
 
+  /** Credits every completed 24-hour income cycle to the withdrawable balance. */
+  const claimEarnings = useCallback(async () => {
+    const { data, error } = await supabase.rpc("claim_earnings");
+    if (error) return 0;
+    const total = num(data);
+    if (total > 0) await load(sessionRef.current);
+    return total;
+  }, [load]);
+
+
   const toggleTheme = useCallback(() => setTheme((t) => (t === "dark" ? "light" : "dark")), []);
 
   const value: Ctx = {
