@@ -136,22 +136,28 @@ function RootComponent() {
         <Outlet />
         <LiveChat />
         <Toaster
-          position="top-right"
+          position="top-center"
           toastOptions={{
             classNames: {
               toast:
-                "glass !rounded-2xl !border-border/60 !text-foreground !shadow-[var(--shadow-elegant)] !backdrop-blur-xl",
-              title: "!font-semibold",
+                "glass !rounded-2xl !border !border-primary/25 !bg-[color-mix(in_oklab,var(--card)_88%,var(--primary))] !text-foreground !shadow-[var(--shadow-elegant)] !backdrop-blur-xl",
+              title: "!font-bold !text-foreground",
               description: "!text-muted-foreground",
-              actionButton: "!bg-primary !text-primary-foreground",
-              cancelButton: "!bg-muted !text-muted-foreground",
-              success: "!border-success/40",
-              error: "!border-destructive/40",
-              warning: "!border-warning/40",
-              info: "!border-primary/40",
+              icon: "!text-primary",
+              actionButton: "!bg-primary !text-primary-foreground !rounded-xl",
+              cancelButton: "!bg-muted !text-muted-foreground !rounded-xl",
+              success:
+                "!border-success/40 !bg-[color-mix(in_oklab,var(--card)_86%,var(--success))] [&_[data-icon]]:!text-success",
+              error:
+                "!border-destructive/40 !bg-[color-mix(in_oklab,var(--card)_86%,var(--destructive))] [&_[data-icon]]:!text-destructive",
+              warning:
+                "!border-gold/45 !bg-[color-mix(in_oklab,var(--card)_86%,var(--gold))] [&_[data-icon]]:!text-gold",
+              info:
+                "!border-primary/40 !bg-[color-mix(in_oklab,var(--card)_88%,var(--primary))] [&_[data-icon]]:!text-primary",
             },
           }}
         />
+
       </StoreProvider>
     </QueryClientProvider>
   );
