@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  Building2,
-  Bitcoin,
-  Smartphone,
-  Banknote,
   Copy,
   Check,
   ShieldCheck,
