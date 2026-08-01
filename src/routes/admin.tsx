@@ -462,82 +462,8 @@ function Admin() {
 
           {tab === "Methods" ? <MethodsManager /> : null}
 
-          {tab === "Plans" ? (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {db.plans.map((p) => (
-                <GlassCard key={p.id}>
-                  <h3 className="font-display text-lg font-extrabold">{p.name}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {money(p.min)} – {money(p.max)} · {p.durationDays} days
-                  </p>
-                  <input
-                    type="number"
-                    step="0.1"
-                    defaultValue={p.dailyRoi}
-                    onBlur={(e) =>
-                      update((d) => {
-                        const t = d.plans.find((x) => x.id === p.id)!;
-                        t.dailyRoi = Number(e.target.value);
-                        return d;
-                      })
-                    }
-                    className="mt-4 h-11 w-full rounded-xl border border-input bg-background/40 px-3 text-sm outline-none"
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">Daily ROI %</p>
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      onClick={() =>
-                        update((d) => {
-                          const t = d.plans.find((x) => x.id === p.id)!;
-                          t.active = !t.active;
-                          return d;
-                        })
-                      }
-                      className="flex-1 rounded-lg glass-soft py-2 text-xs font-semibold"
-                    >
-                      {p.active ? "Disable" : "Enable"}
-                    </button>
-                    <button
-                      onClick={() =>
-                        update((d) => {
-                          d.plans = d.plans.filter((x) => x.id !== p.id);
-                          return d;
-                        })
-                      }
-                      className="flex-1 rounded-lg bg-destructive/15 py-2 text-xs font-semibold text-destructive"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </GlassCard>
-              ))}
-              <GlassCard className="grid place-items-center border-dashed">
-                <button
-                  onClick={() => {
-                    const name = prompt("Plan name");
-                    if (!name) return;
-                    update((d) => {
-                      d.plans.push({
-                        id: newId(),
-                        name,
-                        min: 100,
-                        max: 10000,
-                        dailyRoi: 1.5,
-                        durationDays: 30,
-                        features: ["Daily payouts"],
-                        active: true,
-                      });
-                      return d;
-                    });
-                    toast.success("Plan created.");
-                  }}
-                  className="rounded-xl gradient-brand px-5 py-2.5 text-sm font-semibold text-primary-foreground"
-                >
-                  + Add plan
-                </button>
-              </GlassCard>
-            </div>
-          ) : null}
+          {tab === "Plans" ? <PlansManager /> : null}
+
 
           {tab === "Promo Codes" ? (
             <div className="space-y-4">
