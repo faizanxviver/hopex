@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { BadgeCheck, ShieldCheck, Wallet2 } from "lucide-react";
+import { ShieldCheck, Wallet2 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { Progress } from "@/components/ui/progress";
