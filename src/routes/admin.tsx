@@ -462,82 +462,8 @@ function Admin() {
 
           {tab === "Methods" ? <MethodsManager /> : null}
 
-          {tab === "Plans" ? (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {db.plans.map((p) => (
-                <GlassCard key={p.id}>
-                  <h3 className="font-display text-lg font-extrabold">{p.name}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {money(p.min)} – {money(p.max)} · {p.durationDays} days
-                  </p>
-                  <input
-                    type="number"
-                    step="0.1"
-                    defaultValue={p.dailyRoi}
-                    onBlur={(e) =>
-                      update((d) => {
-                        const t = d.plans.find((x) => x.id === p.id)!;
-                        t.dailyRoi = Number(e.target.value);
-                        return d;
-                      })
-                    }
-                    className="mt-4 h-11 w-full rounded-xl border border-input bg-background/40 px-3 text-sm outline-none"
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">Daily ROI %</p>
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      onClick={() =>
-                        update((d) => {
-                          const t = d.plans.find((x) => x.id === p.id)!;
-                          t.active = !t.active;
-                          return d;
-                        })
-                      }
-                      className="flex-1 rounded-lg glass-soft py-2 text-xs font-semibold"
-                    >
-                      {p.active ? "Disable" : "Enable"}
-                    </button>
-                    <button
-                      onClick={() =>
-                        update((d) => {
-                          d.plans = d.plans.filter((x) => x.id !== p.id);
-                          return d;
-                        })
-                      }
-                      className="flex-1 rounded-lg bg-destructive/15 py-2 text-xs font-semibold text-destructive"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </GlassCard>
-              ))}
-              <GlassCard className="grid place-items-center border-dashed">
-                <button
-                  onClick={() => {
-                    const name = prompt("Plan name");
-                    if (!name) return;
-                    update((d) => {
-                      d.plans.push({
-                        id: newId(),
-                        name,
-                        min: 100,
-                        max: 10000,
-                        dailyRoi: 1.5,
-                        durationDays: 30,
-                        features: ["Daily payouts"],
-                        active: true,
-                      });
-                      return d;
-                    });
-                    toast.success("Plan created.");
-                  }}
-                  className="rounded-xl gradient-brand px-5 py-2.5 text-sm font-semibold text-primary-foreground"
-                >
-                  + Add plan
-                </button>
-              </GlassCard>
-            </div>
-          ) : null}
+          {tab === "Plans" ? <PlansManager /> : null}
+
 
           {tab === "Promo Codes" ? (
             <div className="space-y-4">
@@ -1007,6 +933,203 @@ function BrandingSettings() {
             ) : null}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function PlanEditor({
+  plan,
+  onSave,
+  onCancel,
+}: {
+  plan: { name: string; price: number; daily: number; days: number };
+  onSave: (v: { name: string; price: number; daily: number; days: number }) => void;
+  onCancel: () => void;
+}) {
+  const [name, setName] = useState(plan.name);
+  const [price, setPrice] = useState(String(plan.price));
+  const [daily, setDaily] = useState(String(plan.daily));
+  const [days, setDays] = useState(String(plan.days));
+
+  const p = Number(price) || 0;
+  const d = Number(daily) || 0;
+  const n = Number(days) || 0;
+  const total = d * n;
+
+  const field = "h-11 w-full rounded-xl border border-input bg-background/40 px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
+
+  return (
+    <GlassCard className="space-y-3">
+      <div>
+        <label className="text-[11px] uppercase tracking-widest text-muted-foreground">Plan name</label>
+        <input value={name} onChange={(e) => setName(e.target.value)} className={field} />
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <div>
+          <label className="text-[11px] uppercase tracking-widest text-muted-foreground">Price</label>
+          <input value={price} onChange={(e) => setPrice(e.target.value)} type="number" className={field} />
+        </div>
+        <div>
+          <label className="text-[11px] uppercase tracking-widest text-muted-foreground">Daily income</label>
+          <input value={daily} onChange={(e) => setDaily(e.target.value)} type="number" className={field} />
+        </div>
+        <div>
+          <label className="text-[11px] uppercase tracking-widest text-muted-foreground">Days</label>
+          <input value={days} onChange={(e) => setDays(e.target.value)} type="number" className={field} />
+        </div>
+      </div>
+      <div className="rounded-xl glass-soft p-3 text-sm">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Total return (auto)</span>
+          <span className="font-bold text-success">{money(total)}</span>
+        </div>
+        <div className="mt-1 flex justify-between">
+          <span className="text-muted-foreground">Net profit</span>
+          <span className="font-semibold">{money(total - p)}</span>
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <button onClick={onCancel} className="flex-1 rounded-xl glass-soft py-2.5 text-sm font-semibold">
+          Cancel
+        </button>
+        <button
+          onClick={() => {
+            if (!name.trim() || p <= 0 || d <= 0 || n <= 0) return toast.error("Fill name, price, daily income and days.");
+            onSave({ name: name.trim(), price: p, daily: d, days: n });
+          }}
+          className="flex-1 rounded-xl gradient-brand py-2.5 text-sm font-bold text-primary-foreground"
+        >
+          Save plan
+        </button>
+      </div>
+    </GlassCard>
+  );
+}
+
+function PlansManager() {
+  const { db, update } = useStore();
+  const [editing, setEditing] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  return (
+    <div className="space-y-4">
+      {!creating ? (
+        <button
+          onClick={() => setCreating(true)}
+          className="rounded-xl gradient-brand px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+        >
+          + Add plan
+        </button>
+      ) : (
+        <div className="max-w-md">
+          <PlanEditor
+            plan={{ name: "", price: 1000, daily: 50, days: 30 }}
+            onCancel={() => setCreating(false)}
+            onSave={(v) => {
+              update((d) => {
+                d.plans.push({
+                  id: newId(),
+                  name: v.name,
+                  min: v.price,
+                  max: v.price,
+                  dailyRoi: (v.daily / v.price) * 100,
+                  durationDays: v.days,
+                  features: [],
+                  active: true,
+                });
+                return d;
+              });
+              setCreating(false);
+              toast.success("Plan created.");
+            }}
+          />
+        </div>
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {db.plans.map((p) => {
+          const daily = p.min * (p.dailyRoi / 100);
+          if (editing === p.id) {
+            return (
+              <PlanEditor
+                key={p.id}
+                plan={{ name: p.name, price: p.min, daily, days: p.durationDays }}
+                onCancel={() => setEditing(null)}
+                onSave={(v) => {
+                  update((d) => {
+                    const t = d.plans.find((x) => x.id === p.id)!;
+                    t.name = v.name;
+                    t.min = v.price;
+                    t.max = v.price;
+                    t.dailyRoi = (v.daily / v.price) * 100;
+                    t.durationDays = v.days;
+                    return d;
+                  });
+                  setEditing(null);
+                  toast.success("Plan updated.");
+                }}
+              />
+            );
+          }
+          return (
+            <GlassCard key={p.id}>
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="font-display text-lg font-extrabold">{p.name}</h3>
+                <StatusBadge status={p.active ? "approved" : "rejected"} />
+              </div>
+              <div className="mt-3 space-y-1.5 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Price</span>
+                  <span className="font-semibold">{money(p.min)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Daily income</span>
+                  <span className="font-semibold text-success">{money(daily)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Days</span>
+                  <span className="font-semibold">{p.durationDays}</span>
+                </div>
+                <div className="flex justify-between border-t border-border/50 pt-1.5">
+                  <span className="text-muted-foreground">Total return</span>
+                  <span className="font-bold text-gold">{money(daily * p.durationDays)}</span>
+                </div>
+              </div>
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={() => setEditing(p.id)}
+                  className="flex-1 rounded-lg glass-soft py-2 text-xs font-semibold"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() =>
+                    update((d) => {
+                      const t = d.plans.find((x) => x.id === p.id)!;
+                      t.active = !t.active;
+                      return d;
+                    })
+                  }
+                  className="flex-1 rounded-lg glass-soft py-2 text-xs font-semibold"
+                >
+                  {p.active ? "Disable" : "Enable"}
+                </button>
+                <button
+                  onClick={() =>
+                    update((d) => {
+                      d.plans = d.plans.filter((x) => x.id !== p.id);
+                      return d;
+                    })
+                  }
+                  className="flex-1 rounded-lg bg-destructive/15 py-2 text-xs font-semibold text-destructive"
+                >
+                  Delete
+                </button>
+              </div>
+            </GlassCard>
+          );
+        })}
       </div>
     </div>
   );
