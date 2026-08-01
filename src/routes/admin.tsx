@@ -916,3 +916,98 @@ function MethodsManager() {
     </div>
   );
 }
+
+/* ---------------- Branding settings (name, title, logo) ---------------- */
+function BrandingSettings() {
+  const { db, update } = useStore();
+  const [busy, setBusy] = useState(false);
+  const { siteName, siteTitle, siteLogo } = db.settings;
+
+  const setField = (key: "siteName" | "siteTitle" | "siteLogo", value: string) =>
+    update((d) => {
+      d.settings[key] = value;
+      return d;
+    });
+
+  const pickLogo = async (file: File) => {
+    setBusy(true);
+    try {
+      const base64 = await new Promise<string>((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(String(r.result).split(",")[1] ?? "");
+        r.onerror = () => rej(new Error("Could not read file"));
+        r.readAsDataURL(file);
+      });
+      const { url } = await uploadProofImage({ data: { base64, name: file.name } });
+      setField("siteLogo", url);
+      toast.success("Logo updated.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4 rounded-2xl border border-border/60 bg-background/30 p-4">
+      <p className="text-sm font-bold">Site branding</p>
+
+      <div>
+        <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Site name</label>
+        <input
+          defaultValue={siteName}
+          onBlur={(e) => setField("siteName", e.target.value)}
+          className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none"
+        />
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
+          Site title (browser tab)
+        </label>
+        <input
+          defaultValue={siteTitle}
+          onBlur={(e) => setField("siteTitle", e.target.value)}
+          className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none"
+        />
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Site logo</label>
+        <div className="flex items-center gap-3">
+          <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl gradient-brand font-display text-base font-black text-primary-foreground">
+            {siteLogo ? (
+              <img src={siteLogo} alt={`${siteName} logo`} className="h-full w-full object-cover" />
+            ) : (
+              (siteName[0] ?? "H")
+            )}
+          </div>
+          <div className="flex flex-1 flex-wrap gap-2">
+            <label className="btn-glass cursor-pointer rounded-xl px-4 py-2 text-xs font-semibold">
+              {busy ? "Uploading…" : siteLogo ? "Replace logo" : "Upload logo"}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={busy}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void pickLogo(f);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            {siteLogo ? (
+              <button
+                onClick={() => setField("siteLogo", "")}
+                className="rounded-xl px-4 py-2 text-xs font-semibold text-destructive"
+              >
+                Remove
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
