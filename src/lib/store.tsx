@@ -123,6 +123,8 @@ export interface User {
 
 interface Settings {
   siteName: string;
+  siteTitle: string;
+  siteLogo: string;
   minDeposit: number;
   minWithdraw: number;
   levels: [number, number, number, number];
@@ -171,6 +173,8 @@ const emptyDb = (): DB => ({
   methods: [],
   settings: {
     siteName: "HopeX",
+    siteTitle: "HopeX — Investment Platform",
+    siteLogo: "",
     minDeposit: 1000,
     minWithdraw: 500,
     levels: [10, 2, 1, 4],
@@ -530,6 +534,8 @@ async function persistDiff(prev: DB, next: DB) {
         .from("settings")
         .update({
           site_name: next.settings.siteName,
+          site_title: next.settings.siteTitle,
+          site_logo: next.settings.siteLogo || null,
           min_deposit: next.settings.minDeposit,
           min_withdraw: next.settings.minWithdraw,
           levels: next.settings.levels,
@@ -571,6 +577,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (s) {
       base.settings = {
         siteName: s.site_name as string,
+        siteTitle: (s.site_title as string) ?? "HopeX — Investment Platform",
+        siteLogo: (s.site_logo as string) ?? "",
         minDeposit: num(s.min_deposit),
         minWithdraw: num(s.min_withdraw),
         levels: (s.levels as [number, number, number, number]) ?? [10, 2, 1, 4],
