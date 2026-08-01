@@ -617,9 +617,9 @@ function Admin() {
           {tab === "Settings" ? (
             <GlassCard className="max-w-xl space-y-4">
               <h2 className="text-lg font-bold">Platform settings</h2>
+              <BrandingSettings />
               {(
                 [
-                  ["siteName", "Site name"],
                   ["minDeposit", "Minimum deposit"],
                   ["minWithdraw", "Minimum withdrawal"],
                 ] as const
@@ -632,8 +632,9 @@ function Admin() {
                     defaultValue={String(db.settings[k])}
                     onBlur={(e) =>
                       update((d) => {
-                        const value = k === "siteName" ? e.target.value : Number(e.target.value);
-                        (d.settings as unknown as Record<string, unknown>)[k] = value;
+                        (d.settings as unknown as Record<string, unknown>)[k] = Number(
+                          e.target.value,
+                        );
                         return d;
                       })
                     }
@@ -641,6 +642,7 @@ function Admin() {
                   />
                 </div>
               ))}
+
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
                   Quick deposit amounts (comma separated)
