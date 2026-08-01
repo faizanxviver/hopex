@@ -318,7 +318,9 @@ export type Database = {
           min_deposit: number
           min_withdraw: number
           quick_amounts: number[]
+          site_logo: string | null
           site_name: string
+          site_title: string
           updated_at: string
         }
         Insert: {
@@ -327,7 +329,9 @@ export type Database = {
           min_deposit?: number
           min_withdraw?: number
           quick_amounts?: number[]
+          site_logo?: string | null
           site_name?: string
+          site_title?: string
           updated_at?: string
         }
         Update: {
@@ -336,7 +340,9 @@ export type Database = {
           min_deposit?: number
           min_withdraw?: number
           quick_amounts?: number[]
+          site_logo?: string | null
           site_name?: string
+          site_title?: string
           updated_at?: string
         }
         Relationships: []
