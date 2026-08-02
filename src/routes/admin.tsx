@@ -286,69 +286,8 @@ function Admin() {
           ) : null}
 
 
-          {tab === "Users" ? (
-            <GlassCard className="overflow-x-auto p-0">
-              <table className="w-full min-w-[46rem] text-sm">
-                <thead className="border-b border-border/60 text-left text-xs uppercase tracking-widest text-muted-foreground">
-                  <tr>
-                    <th className="p-4">User</th>
-                    <th className="p-4">Balance</th>
-                    <th className="p-4">Invested</th>
-                    <th className="p-4">Referred by</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/40">
-                  {users.map((u) => (
-                    <tr key={u.id}>
-                      <td className="p-4">
-                        <p className="font-semibold">{u.name}</p>
-                        <p className="text-xs text-muted-foreground">{u.email}</p>
-                      </td>
-                      <td className="p-4 font-semibold">{money(u.balance)}</td>
-                      <td className="p-4">{money(u.invested)}</td>
-                      <td className="p-4 text-muted-foreground">{u.referredBy ?? "—"}</td>
-                      <td className="p-4">
-                        <StatusBadge status={u.blocked ? "rejected" : "approved"} />
-                      </td>
-                      <td className="p-4">
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            onClick={() =>
-                              update((d) => {
-                                const t = d.users.find((x) => x.id === u.id)!;
-                                t.blocked = !t.blocked;
-                                return d;
-                              })
-                            }
-                            className="rounded-lg glass-soft px-3 py-1 text-xs font-semibold"
-                          >
-                            {u.blocked ? "Unblock" : "Block"}
-                          </button>
-                          <button
-                            onClick={() => {
-                              const v = prompt(`New balance for ${u.name}`, String(u.balance));
-                              if (v == null || isNaN(Number(v))) return;
-                              update((d) => {
-                                const t = d.users.find((x) => x.id === u.id)!;
-                                t.balance = Number(v);
-                                return d;
-                              });
-                              toast.success("Balance updated.");
-                            }}
-                            className="rounded-lg glass-soft px-3 py-1 text-xs font-semibold"
-                          >
-                            Edit balance
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </GlassCard>
-          ) : null}
+          {tab === "Users" ? <UsersManager /> : null}
+
 
           {tab === "Deposits" || tab === "Withdrawals" ? (
             <>
@@ -1132,5 +1071,219 @@ function PlansManager() {
         })}
       </div>
     </div>
+  );
+}
+
+/* ---------------- Users manager (mobile-first, 12 controls) ---------------- */
+function UsersManager() {
+  const { db, update, addNotification } = useStore();
+  const [q, setQ] = useState("");
+  const [view, setView] = useState<"all" | "frozen" | "invested" | "new">("all");
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  const users = db.users
+    .filter((u) => u.role === "user")
+    .filter((u) =>
+      q.trim() ? `${u.name} ${u.phone ?? ""} ${u.email} ${u.referralCode}`.toLowerCase().includes(q.toLowerCase()) : true,
+    )
+    .filter((u) =>
+      view === "frozen"
+        ? u.blocked
+        : view === "invested"
+          ? u.invested > 0
+          : view === "new"
+            ? Date.now() - new Date(u.createdAt).getTime() < 7 * 86400000
+            : true,
+    );
+
+  const patch = (id: string, fn: (u: (typeof db.users)[number]) => void) =>
+    update((d) => {
+      const u = d.users.find((x) => x.id === id);
+      if (u) fn(u);
+      return d;
+    });
+
+  const ledger = (id: string, type: "bonus" | "withdraw" | "commission", amount: number, method: string) =>
+    update((d) => {
+      d.transactions.unshift({
+        id: newId(),
+        userId: id,
+        type,
+        amount,
+        method,
+        status: "completed",
+        createdAt: timestamp(),
+      });
+      return d;
+    });
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search name, phone, code…"
+          className="h-11 min-w-0 flex-1 rounded-xl border border-input bg-background/40 px-4 text-sm outline-none"
+        />
+        <div className="inline-flex gap-1 rounded-xl glass-soft p-1">
+          {(["all", "new", "invested", "frozen"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={cn(
+                "rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition",
+                view === v ? "gradient-cool text-primary-foreground" : "text-muted-foreground",
+              )}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-2">
+        {users.map((u) => {
+          const plans = db.investments.filter((i) => i.userId === u.id).length;
+          const open = openId === u.id;
+          return (
+            <GlassCard key={u.id} className="p-4">
+              <div className="flex items-center gap-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl gradient-cool text-xs font-black text-primary-foreground">
+                  {u.name.slice(0, 2).toUpperCase()}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold">{u.name}</p>
+                  <p className="truncate text-xs text-muted-foreground">{u.phone ?? u.email}</p>
+                </div>
+                <StatusBadge status={u.blocked ? "rejected" : "approved"} />
+              </div>
+
+              <div className="mt-3 grid grid-cols-4 gap-2 text-center">
+                {[
+                  ["Balance", money(u.balance)],
+                  ["Invested", money(u.invested)],
+                  ["Refs", u.referralCode],
+                  ["Plans", String(plans)],
+                ].map(([l, v]) => (
+                  <div key={l} className="rounded-xl glass-soft px-2 py-2">
+                    <p className="truncate text-[9px] uppercase tracking-widest text-muted-foreground">{l}</p>
+                    <p className="truncate text-[11px] font-bold">{v}</p>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setOpenId(open ? null : u.id)}
+                className="btn-glass mt-3 flex h-10 w-full items-center justify-center text-xs font-bold text-foreground"
+              >
+                {open ? "Hide controls" : "Manage user"}
+              </button>
+
+              {open ? (
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Ctl label="Add funds" onClick={() => {
+                    const v = Number(prompt(`Add funds to ${u.name}`, "1000"));
+                    if (!v) return;
+                    patch(u.id, (x) => { x.balance += v; });
+                    ledger(u.id, "bonus", v, "Admin credit");
+                    addNotification(u.id, { title: "Funds added", body: `${money(v)} credited by support.`, kind: "success" });
+                    toast.success("Funds added.");
+                  }} />
+                  <Ctl label="Deduct funds" onClick={() => {
+                    const v = Number(prompt(`Deduct from ${u.name}`, "1000"));
+                    if (!v) return;
+                    patch(u.id, (x) => { x.balance = Math.max(0, x.balance - v); });
+                    ledger(u.id, "withdraw", v, "Admin adjustment");
+                    toast.success("Funds deducted.");
+                  }} />
+                  <Ctl label="Set balance" onClick={() => {
+                    const v = prompt(`Set balance for ${u.name}`, String(u.balance));
+                    if (v == null || isNaN(Number(v))) return;
+                    patch(u.id, (x) => { x.balance = Number(v); });
+                    toast.success("Balance updated.");
+                  }} />
+                  <Ctl label="Referral bonus" onClick={() => {
+                    const v = Number(prompt(`Referral bonus for ${u.name}`, "500"));
+                    if (!v) return;
+                    patch(u.id, (x) => { x.balance += v; x.referralEarnings += v; });
+                    ledger(u.id, "commission", v, "Admin referral bonus");
+                    toast.success("Bonus credited.");
+                  }} />
+                  <Ctl label="Activate plan" onClick={() => {
+                    const plan = db.plans.find((p) => p.active);
+                    if (!plan) return toast.error("No active plan.");
+                    update((d) => {
+                      d.investments.unshift({
+                        id: newId(), userId: u.id, planId: plan.id, planName: plan.name,
+                        amount: plan.min, dailyRoi: plan.dailyRoi, durationDays: plan.durationDays,
+                        earned: 0, startedAt: timestamp(), lastPayoutAt: timestamp(),
+                      });
+                      return d;
+                    });
+                    toast.success(`${plan.name} activated.`);
+                  }} />
+                  <Ctl label="End all plans" onClick={() => {
+                    update((d) => {
+                      d.investments = d.investments.filter((i) => i.userId !== u.id);
+                      return d;
+                    });
+                    toast.success("Plans removed.");
+                  }} />
+                  <Ctl label="Notify user" onClick={() => {
+                    const body = prompt(`Message to ${u.name}`);
+                    if (!body) return;
+                    addNotification(u.id, { title: "Message from HopeX", body, kind: "info", popup: true });
+                    toast.success("Notification sent.");
+                  }} />
+                  <Ctl label="Reset payout acct" onClick={() => {
+                    patch(u.id, (x) => { x.bankName = ""; x.accountName = ""; x.accountNumber = ""; });
+                    toast.success("Payout account cleared.");
+                  }} />
+                  <Ctl label={u.verified ? "Unverify" : "Verify"} onClick={() => {
+                    patch(u.id, (x) => { x.verified = !x.verified; });
+                    toast.success("Verification updated.");
+                  }} />
+                  <Ctl label="Clear chat" onClick={() => {
+                    update((d) => {
+                      d.chats = d.chats.filter((c) => c.userId !== u.id);
+                      return d;
+                    });
+                    toast.success("Chat cleared.");
+                  }} />
+                  <Ctl label="Copy contact" onClick={() => {
+                    navigator.clipboard?.writeText(u.phone ?? u.email);
+                    toast.success("Contact copied.");
+                  }} />
+                  <Ctl
+                    danger
+                    label={u.blocked ? "Unfreeze" : "Freeze"}
+                    onClick={() => {
+                      patch(u.id, (x) => { x.blocked = !x.blocked; });
+                      toast.success(u.blocked ? "Account unfrozen." : "Account frozen.");
+                    }}
+                  />
+                </div>
+              ) : null}
+            </GlassCard>
+          );
+        })}
+        {users.length === 0 ? <p className="text-sm text-muted-foreground">No users match this filter.</p> : null}
+      </div>
+    </div>
+  );
+}
+
+function Ctl({ label, onClick, danger }: { label: string; onClick: () => void; danger?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "rounded-xl px-2 py-2.5 text-[11px] font-bold transition",
+        danger ? "bg-destructive/15 text-destructive" : "glass-soft text-foreground hover:bg-accent",
+      )}
+    >
+      {label}
+    </button>
   );
 }

@@ -1,13 +1,24 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Calculator, Languages, Moon, Sun } from "lucide-react";
+import {
+  Languages,
+  Lock,
+  Moon,
+  ShieldCheck,
+  Sun,
+  UserRound,
+  Wallet,
+  Smartphone,
+  BadgeCheck,
+} from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { Switch } from "@/components/ui/switch";
-import { money, useStore } from "@/lib/store";
+import { useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -15,11 +26,12 @@ export const Route = createFileRoute("/profile")({
       { title: "Profile & Settings — HopeX" },
       {
         name: "description",
-        content:
-          "Update your profile, manage security, language, theme and notification preferences.",
+        content: "View your account details, manage your payout account, password, theme and language.",
       },
       { property: "og:title", content: "Profile & Settings — HopeX" },
-      { property: "og:description", content: "Account, security and preference settings." },
+      { property: "og:description", content: "Account, payout account and preference settings." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (
@@ -31,77 +43,80 @@ export const Route = createFileRoute("/profile")({
   ),
 });
 
+/** Only these two wallets are supported for payouts. */
+export const PAYOUT_METHODS = [
+  { id: "JazzCash", icon: Smartphone },
+  { id: "Easypaisa", icon: Wallet },
+] as const;
+
 function Profile() {
   const { user, update, theme, toggleTheme } = useStore();
   const { t } = useT();
-  const [form, setForm] = useState({
-    name: user?.name ?? "",
-    email: user?.email ?? "",
-    phone: user?.phone ?? "",
-  });
   const [pwd, setPwd] = useState({ current: "", next: "" });
-  const [prefs, setPrefs] = useState({ email: true, push: true, marketing: false });
-  const [calc, setCalc] = useState({ amount: "1000", roi: "2.4", days: "60" });
 
   if (!user) return null;
-
-  const profit =
-    (Number(calc.amount) || 0) * ((Number(calc.roi) || 0) / 100) * (Number(calc.days) || 0);
-
-  const save = (e: React.FormEvent) => {
-    e.preventDefault();
-    update((d) => {
-      const me = d.users.find((u) => u.id === user.id)!;
-      me.name = form.name;
-      me.email = form.email;
-      me.phone = form.phone;
-      return d;
-    });
-    toast.success("Profile updated.");
-  };
 
   return (
     <div>
       <SectionTitle
         title={t("Profile & settings")}
-        subtitle="Manage your identity, security and preferences."
+        subtitle={t("Your account details, payout account and preferences.")}
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
+        {/* Personal details — read only */}
         <GlassCard>
-          <h2 className="text-lg font-bold">{t("Personal details")}</h2>
-          <form onSubmit={save} className="mt-4 space-y-3">
-            {(["name", "email", "phone"] as const).map((k) => (
-              <div key={k}>
-                <label className="mb-1.5 block text-xs font-semibold capitalize text-muted-foreground">
-                  {k}
-                </label>
-                <input
-                  value={form[k]}
-                  onChange={(e) => setForm((f) => ({ ...f, [k]: e.target.value }))}
-                  className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
-                />
+          <div className="flex items-center gap-3">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl gradient-brand font-display font-black text-primary-foreground">
+              {user.name[0]}
+            </span>
+            <div className="min-w-0">
+              <h2 className="truncate text-lg font-bold">{t("Personal details")}</h2>
+              <p className="text-xs text-muted-foreground">
+                {t("Locked for your security — contact support to change these.")}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-2.5">
+            {[
+              { label: t("Full name"), value: user.name, icon: UserRound },
+              { label: t("Mobile number"), value: user.phone ?? "—", icon: Smartphone },
+              { label: t("Referral code"), value: user.referralCode, icon: BadgeCheck },
+            ].map((f) => (
+              <div key={f.label} className="flex items-center gap-3 rounded-2xl glass-soft px-4 py-3">
+                <f.icon className="h-4 w-4 shrink-0 text-primary" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[11px] uppercase tracking-widest text-muted-foreground">
+                    {f.label}
+                  </span>
+                  <span className="block truncate text-sm font-semibold">{f.value}</span>
+                </span>
+                <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               </div>
             ))}
-            <button className="btn-glass btn-glass-primary h-12 w-full font-semibold">
-              {t("Save")}
-            </button>
-          </form>
+          </div>
         </GlassCard>
 
+        {/* Payout account */}
+        <PayoutAccountCard />
+
+        {/* Security */}
         <GlassCard>
-          <h2 className="text-lg font-bold">{t("Security")}</h2>
+          <h2 className="flex items-center gap-2 text-lg font-bold">
+            <ShieldCheck className="h-4 w-4 text-primary" /> {t("Security")}
+          </h2>
           <div className="mt-4 space-y-3">
             <input
               type="password"
-              placeholder="Current password"
+              placeholder={t("Current password")}
               value={pwd.current}
               onChange={(e) => setPwd((p) => ({ ...p, current: e.target.value }))}
               className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
             <input
               type="password"
-              placeholder="New password"
+              placeholder={t("New password")}
               value={pwd.next}
               onChange={(e) => setPwd((p) => ({ ...p, next: e.target.value }))}
               className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
@@ -120,31 +135,14 @@ function Profile() {
                 setPwd({ current: "", next: "" });
                 toast.success("Password changed.");
               }}
-              className="btn-glass btn-glass-primary h-12 w-full font-semibold"
+              className="btn-glass btn-glass-primary flex h-12 w-full items-center justify-center font-semibold"
             >
-              Change password
+              {t("Change password")}
             </button>
-
-            <div className="flex items-center justify-between rounded-xl glass-soft px-4 py-3">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold">Two-factor authentication</p>
-                <p className="text-xs text-muted-foreground">Extra layer of login protection</p>
-              </div>
-              <Switch
-                checked={user.twoFactor}
-                onCheckedChange={(v) => {
-                  update((d) => {
-                    const me = d.users.find((u) => u.id === user.id)!;
-                    me.twoFactor = v;
-                    return d;
-                  });
-                  toast.success(`2FA ${v ? "enabled" : "disabled"}.`);
-                }}
-              />
-            </div>
           </div>
         </GlassCard>
 
+        {/* Preferences */}
         <GlassCard>
           <h2 className="text-lg font-bold">{t("Preferences")}</h2>
           <div className="mt-4 space-y-3">
@@ -165,81 +163,148 @@ function Profile() {
                 <Languages className="h-4 w-4" /> {t("Language")}
               </p>
               <div className="flex gap-2">
-                {(["en", "ur"] as const).map((l) => (
+                {(
+                  [
+                    { id: "en", label: "English" },
+                    { id: "ur", label: "اردو" },
+                  ] as const
+                ).map((l) => (
                   <button
-                    key={l}
+                    key={l.id}
                     onClick={() => {
                       update((d) => {
                         const me = d.users.find((u) => u.id === user.id)!;
-                        me.language = l;
+                        me.language = l.id;
                         return d;
                       });
-                      toast.success(
-                        l === "en" ? "Language set to English." : "زبان اردو پر سیٹ کر دی گئی۔",
-                      );
+                      toast.success(l.id === "ur" ? "زبان اردو کر دی گئی۔" : "Language set to English.");
                     }}
-                    className={
-                      user.language === l
-                        ? "btn-glass btn-glass-primary px-4 py-1.5 text-xs font-semibold"
-                        : "btn-glass px-4 py-1.5 text-xs font-semibold text-muted-foreground"
-                    }
+                    className={cn(
+                      "flex-1 rounded-xl py-2.5 text-sm font-semibold transition",
+                      user.language === l.id
+                        ? "btn-glass btn-glass-primary"
+                        : "glass-soft text-muted-foreground",
+                    )}
                   >
-                    {l === "en" ? "English" : "اردو"}
+                    {l.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {(
-              [
-                ["email", "Email notifications"],
-                ["push", "In-app notifications"],
-                ["marketing", "Product & promo updates"],
-              ] as const
-            ).map(([k, label]) => (
-              <div
-                key={k}
-                className="flex items-center justify-between rounded-xl glass-soft px-4 py-3"
-              >
-                <p className="text-sm font-medium">{label}</p>
-                <Switch
-                  checked={prefs[k]}
-                  onCheckedChange={(v) => setPrefs((p) => ({ ...p, [k]: v }))}
-                />
-              </div>
-            ))}
+            <Link
+              to="/investments"
+              className="btn-glass flex h-12 items-center justify-center text-sm font-semibold text-foreground"
+            >
+              {t("Active plans")}
+            </Link>
           </div>
-        </GlassCard>
-
-        <GlassCard>
-          <h2 className="flex items-center gap-2 text-lg font-bold">
-            <Calculator className="h-4 w-4 text-primary" /> {t("Profit calculator")}
-          </h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
-            {(
-              [
-                ["amount", "Amount (USD)"],
-                ["roi", "Daily ROI (%)"],
-                ["days", "Duration (days)"],
-              ] as const
-            ).map(([k, label]) => (
-              <label key={k} className="text-xs text-muted-foreground">
-                {label}
-                <input
-                  type="number"
-                  value={calc[k]}
-                  onChange={(e) => setCalc((c) => ({ ...c, [k]: e.target.value }))}
-                  className="mt-1 h-11 w-full rounded-xl border border-input bg-background/40 px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
-                />
-              </label>
-            ))}
-          </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Projected profit: <b className="text-success">{money(profit)}</b> · total return{" "}
-            <b className="text-gold">{money(profit + (Number(calc.amount) || 0))}</b>
-          </p>
         </GlassCard>
       </div>
     </div>
+  );
+}
+
+/** Bind / change the single account every payout is sent to. */
+export function PayoutAccountCard() {
+  const { user, update } = useStore();
+  const { t } = useT();
+  const [editing, setEditing] = useState(false);
+  const [method, setMethod] = useState<string>(user?.bankName || PAYOUT_METHODS[0].id);
+  const [holder, setHolder] = useState(user?.accountName ?? "");
+  const [account, setAccount] = useState(user?.accountNumber ?? "");
+
+  if (!user) return null;
+  const bound = Boolean(user.accountNumber && user.accountName);
+
+  const save = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (holder.trim().length < 3) return toast.error("Enter the account holder name.");
+    if (!/^\d{10,15}$/.test(account.trim().replace(/\D/g, "")))
+      return toast.error("Enter a valid mobile account number.");
+    update((d) => {
+      const me = d.users.find((u) => u.id === user.id)!;
+      me.bankName = method;
+      me.accountName = holder.trim();
+      me.accountNumber = account.trim();
+      return d;
+    });
+    setEditing(false);
+    toast.success("Payout account saved.");
+  };
+
+  return (
+    <GlassCard>
+      <h2 className="flex items-center gap-2 text-lg font-bold">
+        <Wallet className="h-4 w-4 text-gold" /> {t("Payout account")}
+      </h2>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {t("Every withdrawal is sent to this account only.")}
+      </p>
+
+      {bound && !editing ? (
+        <div className="mt-4 space-y-3">
+          <div className="rounded-2xl glass-soft p-4">
+            <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+              {user.bankName}
+            </p>
+            <p className="mt-1 font-display text-lg font-extrabold">{user.accountName}</p>
+            <p className="font-mono text-sm text-muted-foreground">{user.accountNumber}</p>
+          </div>
+          <button
+            onClick={() => setEditing(true)}
+            className="btn-glass flex h-11 w-full items-center justify-center text-sm font-semibold text-foreground"
+          >
+            {t("Change account")}
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={save} className="mt-4 space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            {PAYOUT_METHODS.map((m) => (
+              <button
+                type="button"
+                key={m.id}
+                onClick={() => setMethod(m.id)}
+                className={cn(
+                  "flex items-center gap-2 rounded-2xl border p-3 text-left text-sm font-semibold transition",
+                  method === m.id ? "border-primary bg-primary/10" : "border-border glass-soft",
+                )}
+              >
+                <m.icon className="h-4 w-4 shrink-0 text-primary" />
+                <span className="truncate">{m.id}</span>
+              </button>
+            ))}
+          </div>
+          <input
+            value={holder}
+            onChange={(e) => setHolder(e.target.value)}
+            placeholder={t("Account holder name")}
+            className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+          <input
+            inputMode="numeric"
+            value={account}
+            onChange={(e) => setAccount(e.target.value)}
+            placeholder="03XXXXXXXXX"
+            className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 font-mono text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+          <div className="flex gap-2">
+            {bound ? (
+              <button
+                type="button"
+                onClick={() => setEditing(false)}
+                className="btn-glass flex h-12 flex-1 items-center justify-center text-sm font-semibold text-foreground"
+              >
+                {t("Cancel")}
+              </button>
+            ) : null}
+            <button className="btn-glass btn-glass-primary flex h-12 flex-1 items-center justify-center text-sm font-bold">
+              {t("Save account")}
+            </button>
+          </div>
+        </form>
+      )}
+    </GlassCard>
   );
 }

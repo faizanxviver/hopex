@@ -12,6 +12,8 @@ import {
   TrendingUp,
   LogOut,
   CircleDollarSign,
+  Layers,
+
   Ticket,
   ChevronRight,
   Copy,
@@ -61,14 +63,21 @@ const wallet = [
 
 const account = [
   {
+    to: "/investments",
+    label: "Active plans",
+    desc: "Your running investments",
+    icon: Layers,
+  },
+  {
     to: "/profile",
     label: "Profile & settings",
-    desc: "Details, security, preferences",
+    desc: "Payout account, security, language",
     icon: SlidersHorizontal,
   },
   { to: "/plans", label: "Investment plans", desc: "Compare and invest", icon: TrendingUp },
   { to: "/referrals", label: "Referral center", desc: "4-level commissions", icon: Gift },
 ] as const;
+
 
 function More() {
   const { db, user, setChatOpen, logout } = useStore();
@@ -104,32 +113,33 @@ function More() {
           </button>
         </div>
 
-        <div className="relative mt-4 grid grid-cols-3 gap-2">
-          <div className="rounded-2xl glass-soft p-3">
+        <div className="relative mt-4 grid gap-2 sm:grid-cols-3">
+          <div className="rounded-2xl glass-soft px-3 py-2.5">
             <p className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">
               {t("Withdrawable balance")}
             </p>
-            <p className="mt-1 truncate font-display text-base font-extrabold sm:text-xl">
+            <p className="mt-0.5 truncate font-display text-lg font-extrabold">
               {money(user.balance)}
             </p>
           </div>
-          <div className="rounded-2xl glass-soft p-3">
+          <div className="rounded-2xl glass-soft px-3 py-2.5">
             <p className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">
               {t("Deposit balance")}
             </p>
-            <p className="mt-1 truncate font-display text-base font-extrabold sm:text-xl">
+            <p className="mt-0.5 truncate font-display text-lg font-extrabold">
               {money(depositBalance(db, user.id))}
             </p>
           </div>
-          <div className="rounded-2xl glass-soft p-3">
+          <div className="rounded-2xl glass-soft px-3 py-2.5">
             <p className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">
               {t("Referral income")}
             </p>
-            <p className="mt-1 truncate font-display text-base font-extrabold text-gold sm:text-xl">
+            <p className="mt-0.5 truncate font-display text-lg font-extrabold text-gold">
               {money(user.referralEarnings)}
             </p>
           </div>
         </div>
+
       </GlassCard>
 
       {/* Quick actions */}
