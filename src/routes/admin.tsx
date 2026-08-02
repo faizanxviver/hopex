@@ -61,6 +61,8 @@ const tabs = [
   "Support Chat",
   "Broadcast",
   "Audit Log",
+  "Tools",
+  "SEO",
   "Settings",
 ] as const;
 
@@ -75,6 +77,8 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
   "Support Chat": MessageSquare,
   Broadcast: Megaphone,
   "Audit Log": ScrollText,
+  Tools: Wrench,
+  SEO: Globe,
   Settings: Settings,
 };
 
