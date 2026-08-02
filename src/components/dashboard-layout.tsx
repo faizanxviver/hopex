@@ -270,11 +270,14 @@ export function DashboardLayout({ children, wide }: { children: ReactNode; wide?
         </div>
       </header>
 
+      <AnnouncementBanner />
+
       <main
         className={cn("mx-auto px-4 pb-32 pt-6 md:pb-12", wide ? "max-w-[100rem]" : "max-w-7xl")}
       >
         {children}
       </main>
+
 
       <ChatFab />
 
