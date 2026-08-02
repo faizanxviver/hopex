@@ -469,3 +469,22 @@ a[href*="lovable.dev?utm"],
   background: color-mix(in oklab, var(--wa-panel) 90%, transparent);
   color: var(--wa-dim);
 }
+
+/* Announcement marquee */
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+}
+.marquee > span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: marquee 22s linear infinite;
+}
+.marquee:hover > span {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-200%);
+  }
+}

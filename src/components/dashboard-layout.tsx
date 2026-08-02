@@ -13,6 +13,8 @@ import {
   UsersRound,
   House,
   MessageCircle,
+  Megaphone,
+  X,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useStore } from "@/lib/store";
