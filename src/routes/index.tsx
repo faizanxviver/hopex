@@ -113,7 +113,7 @@ function Landing() {
 
         <div className="mt-9 grid gap-3 sm:grid-cols-3">
           {[
-            { k: "$184M+", v: "Assets under management" },
+            { k: "Rs 5.2B+", v: "Assets under management" },
             { k: "3.1%", v: "Peak daily ROI" },
             { k: "< 2 hrs", v: "Average payout time" },
           ].map((s) => (
@@ -158,7 +158,7 @@ function Landing() {
               <p className="mt-2 font-display text-3xl font-black text-gradient">{p.dailyRoi}%</p>
               <p className="text-xs text-muted-foreground">daily · {p.durationDays} days</p>
               <p className="mt-2 text-xs text-muted-foreground">
-                ${p.min.toLocaleString()} – ${p.max.toLocaleString()}
+                Rs {p.min.toLocaleString("en-PK")} – Rs {p.max.toLocaleString("en-PK")}
               </p>
               <Link
                 to="/plans"
