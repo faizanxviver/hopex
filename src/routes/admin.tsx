@@ -163,6 +163,50 @@ function Admin() {
   ];
   const recent = db.transactions.slice(0, 6);
 
+  const navList = (
+    <nav className="space-y-3">
+      {groups.map((g) => (
+        <div key={g.label}>
+          <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            {g.label}
+          </p>
+          {g.items.map((t) => {
+            const Icon = tabIcons[t];
+            return (
+              <button
+                key={t}
+                onClick={() => {
+                  setTab(t);
+                  setMenuOpen(false);
+                }}
+                className={cn(
+                  "flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition",
+                  tab === t
+                    ? "gradient-cool text-primary-foreground shadow-[var(--shadow-elegant)]"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{t}</span>
+                {counts[t] ? (
+                  <span
+                    className={cn(
+                      "ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold",
+                      tab === t ? "bg-background/25" : "bg-primary/15 text-primary",
+                    )}
+                  >
+                    {counts[t]}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      ))}
+    </nav>
+  );
+
+
   return (
     <div>
       {/* Console header */}
