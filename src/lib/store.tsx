@@ -625,6 +625,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<"dark" | "light">("light");
   const [chatOpen, setChatOpen] = useState(false);
   const sessionRef = useRef<string | null>(null);
+  const dbRef = useRef<DB>(db);
+  dbRef.current = db;
+
 
   const load = useCallback(async (sessionId: string | null) => {
     sessionRef.current = sessionId;
