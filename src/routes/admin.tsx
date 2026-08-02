@@ -16,12 +16,15 @@ import {
   Users,
   ScrollText,
   Crown,
+  Wrench,
+  Globe,
   type LucideIcon,
 } from "lucide-react";
 
 import { toast } from "sonner";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { AdminChat } from "@/components/admin-chat";
+import { AdminCommandPalette, AdminTools, BulkActionBar, SeoSettings } from "@/components/admin-tools";
 import { GlassCard, StatCard, StatusBadge } from "@/components/glass";
 import { money, newId, timestamp, useStore, fetchAuditLog, logAudit } from "@/lib/store";
 import type { AuditEntry, SalaryTier } from "@/lib/store";
