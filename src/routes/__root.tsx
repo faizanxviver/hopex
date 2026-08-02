@@ -93,7 +93,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "Daily ROI investment plans, secure wallet and a 4-level affiliate program.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "HopeX" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "robots", content: "index, follow" },
+      {
+        name: "keywords",
+        content: "investment platform, daily roi, hopex, referral program, pakistan investment",
+      },
+      { name: "theme-color", content: "#0b1220" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "HopeX",
+          url: "https://hopex.site",
+          description:
+            "HopeX is a premium investment platform with daily ROI plans, instant deposits, fast payouts and a 4-level referral program.",
+        }),
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
