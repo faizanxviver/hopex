@@ -12,6 +12,8 @@ import {
   TrendingUp,
   LogOut,
   CircleDollarSign,
+  Layers,
+
   Ticket,
   ChevronRight,
   Copy,
