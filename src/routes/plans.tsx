@@ -54,7 +54,6 @@ function Plans() {
 
   if (!user) return null;
   const deposited = depositBalance(db, user.id);
-  const deposited = depositBalance(db, user.id);
 
   const price = active ? active.min : 0;
   const daily = active ? price * (active.dailyRoi / 100) : 0;
