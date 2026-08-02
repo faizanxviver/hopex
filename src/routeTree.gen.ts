@@ -23,6 +23,7 @@ import { Route as PlansRouteImport } from './routes/plans'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PromoRouteImport } from './routes/promo'
 import { Route as ReferralsRouteImport } from './routes/referrals'
+import { Route as SalaryRouteImport } from './routes/salary'
 import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as WithdrawRouteImport } from './routes/withdraw'
 import { Route as WithdrawHistoryRouteImport } from './routes/withdraw-history'
@@ -97,6 +98,11 @@ const ReferralsRoute = ReferralsRouteImport.update({
   path: '/referrals',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SalaryRoute = SalaryRouteImport.update({
+  id: '/salary',
+  path: '/salary',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TransactionsRoute = TransactionsRouteImport.update({
   id: '/transactions',
   path: '/transactions',
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/promo': typeof PromoRoute
   '/referrals': typeof ReferralsRoute
+  '/salary': typeof SalaryRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
@@ -147,6 +154,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/promo': typeof PromoRoute
   '/referrals': typeof ReferralsRoute
+  '/salary': typeof SalaryRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/promo': typeof PromoRoute
   '/referrals': typeof ReferralsRoute
+  '/salary': typeof SalaryRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/promo'
     | '/referrals'
+    | '/salary'
     | '/transactions'
     | '/withdraw'
     | '/withdraw-history'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/promo'
     | '/referrals'
+    | '/salary'
     | '/transactions'
     | '/withdraw'
     | '/withdraw-history'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/promo'
     | '/referrals'
+    | '/salary'
     | '/transactions'
     | '/withdraw'
     | '/withdraw-history'
@@ -246,6 +258,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   PromoRoute: typeof PromoRoute
   ReferralsRoute: typeof ReferralsRoute
+  SalaryRoute: typeof SalaryRoute
   TransactionsRoute: typeof TransactionsRoute
   WithdrawRoute: typeof WithdrawRoute
   WithdrawHistoryRoute: typeof WithdrawHistoryRoute
@@ -351,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReferralsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/salary': {
+      id: '/salary'
+      path: '/salary'
+      fullPath: '/salary'
+      preLoaderRoute: typeof SalaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/transactions': {
       id: '/transactions'
       path: '/transactions'
@@ -390,6 +410,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   PromoRoute: PromoRoute,
   ReferralsRoute: ReferralsRoute,
+  SalaryRoute: SalaryRoute,
   TransactionsRoute: TransactionsRoute,
   WithdrawRoute: WithdrawRoute,
   WithdrawHistoryRoute: WithdrawHistoryRoute,
