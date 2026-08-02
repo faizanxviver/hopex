@@ -506,6 +506,10 @@ function Admin() {
 
           {tab === "Audit Log" ? <AuditLogPanel /> : null}
 
+          {tab === "Tools" ? <AdminTools /> : null}
+
+          {tab === "SEO" ? <SeoSettings /> : null}
+
           {tab === "Settings" ? (
             <GlassCard className="max-w-xl space-y-4">
               <h2 className="text-lg font-bold">Platform settings</h2>
