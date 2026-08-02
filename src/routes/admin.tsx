@@ -178,7 +178,8 @@ function Admin() {
               Live control over users, money flow, plans and support.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <AdminCommandPalette onJump={(t) => setTab(t as (typeof tabs)[number])} />
             <button
               onClick={() => setTab("Deposits")}
               className={cn(
