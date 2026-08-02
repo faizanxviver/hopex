@@ -983,9 +983,13 @@ export function pakistanHour(at = new Date()) {
   return (at.getUTCHours() + 5) % 24;
 }
 
-export function isWithdrawWindowOpen(at = new Date()) {
+export function isWithdrawWindowOpen(
+  at = new Date(),
+  open = WITHDRAW_OPEN_HOUR,
+  close = WITHDRAW_CLOSE_HOUR,
+) {
   const h = pakistanHour(at);
-  return h >= WITHDRAW_OPEN_HOUR && h < WITHDRAW_CLOSE_HOUR;
+  return h >= open && h < close;
 }
 
 export function pakistanClock(at = new Date()) {
