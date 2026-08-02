@@ -168,6 +168,11 @@ export const DEFAULT_SALARY_TIERS: SalaryTier[] = [
   { rank: "Platinum", team: 60, invested: 200000, salary: 25000 },
 ];
 
+export const DEFAULT_SEO_DESCRIPTION =
+  "HopeX is a premium investment platform with daily ROI plans, instant deposits, fast payouts and a 4-level referral program.";
+export const DEFAULT_SEO_KEYWORDS =
+  "investment platform, daily roi, hopex, referral program, pakistan investment";
+
 interface DB {
   users: User[];
   transactions: Transaction[];
