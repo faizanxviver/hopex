@@ -372,6 +372,21 @@ function Admin() {
                     {rows.map((t) => (
                       <tr key={t.id}>
                         <td className="p-4">
+                          <input
+                            type="checkbox"
+                            aria-label="Select row"
+                            className="h-4 w-4 accent-[var(--primary)]"
+                            checked={selected.includes(t.id)}
+                            onChange={(e) =>
+                              setSelected(
+                                e.target.checked
+                                  ? [...selected, t.id]
+                                  : selected.filter((x) => x !== t.id),
+                              )
+                            }
+                          />
+                        </td>
+                        <td className="p-4">
                           {db.users.find((u) => u.id === t.userId)?.name ?? "—"}
                         </td>
                         <td className="p-4">{t.method}</td>
