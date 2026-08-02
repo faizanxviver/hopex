@@ -5,7 +5,7 @@ import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { TxList } from "@/components/tx-list";
 import { useT } from "@/lib/i18n";
-import { useStore } from "@/lib/store";
+import { money, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/transactions")({
