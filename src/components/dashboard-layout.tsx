@@ -72,8 +72,23 @@ export function AuthGuard({ children, admin }: { children: ReactNode; admin?: bo
       </div>
     );
   }
+
+  if (db.settings.maintenanceMode && user.role !== "admin") {
+    return (
+      <div className="grid min-h-screen place-items-center px-6 text-center">
+        <div className="max-w-md">
+          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-warning/20 text-warning">
+            <Megaphone className="h-7 w-7" />
+          </span>
+          <h1 className="mt-5 font-display text-2xl font-black">Under maintenance</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{db.settings.maintenanceMessage}</p>
+        </div>
+      </div>
+    );
+  }
   return <>{children}</>;
 }
+
 
 /** Admin-controlled scrolling notice shown above every dashboard page. */
 function AnnouncementBanner() {
