@@ -125,6 +125,13 @@ interface Settings {
   siteName: string;
   siteTitle: string;
   siteLogo: string;
+  siteFavicon: string;
+  seoDescription: string;
+  seoKeywords: string;
+  ogImage: string;
+  supportWhatsapp: string;
+  withdrawOpenHour: number;
+  withdrawCloseHour: number;
   minDeposit: number;
   minWithdraw: number;
   levels: [number, number, number, number];
@@ -160,6 +167,11 @@ export const DEFAULT_SALARY_TIERS: SalaryTier[] = [
   { rank: "Gold", team: 25, invested: 75000, salary: 8000 },
   { rank: "Platinum", team: 60, invested: 200000, salary: 25000 },
 ];
+
+export const DEFAULT_SEO_DESCRIPTION =
+  "HopeX is a premium investment platform with daily ROI plans, instant deposits, fast payouts and a 4-level referral program.";
+export const DEFAULT_SEO_KEYWORDS =
+  "investment platform, daily roi, hopex, referral program, pakistan investment";
 
 interface DB {
   users: User[];
@@ -205,6 +217,13 @@ const emptyDb = (): DB => ({
     siteName: "HopeX",
     siteTitle: "HopeX — Investment Platform",
     siteLogo: "",
+    siteFavicon: "",
+    seoDescription: DEFAULT_SEO_DESCRIPTION,
+    seoKeywords: DEFAULT_SEO_KEYWORDS,
+    ogImage: "",
+    supportWhatsapp: "",
+    withdrawOpenHour: 8,
+    withdrawCloseHour: 20,
     minDeposit: 1000,
     minWithdraw: 500,
     levels: [10, 2, 1, 4],
@@ -571,6 +590,13 @@ async function persistDiff(prev: DB, next: DB) {
           site_name: next.settings.siteName,
           site_title: next.settings.siteTitle,
           site_logo: next.settings.siteLogo || null,
+          site_favicon: next.settings.siteFavicon || null,
+          seo_description: next.settings.seoDescription,
+          seo_keywords: next.settings.seoKeywords,
+          og_image: next.settings.ogImage || null,
+          support_whatsapp: next.settings.supportWhatsapp,
+          withdraw_open_hour: next.settings.withdrawOpenHour,
+          withdraw_close_hour: next.settings.withdrawCloseHour,
           min_deposit: next.settings.minDeposit,
           min_withdraw: next.settings.minWithdraw,
           levels: next.settings.levels,
@@ -619,6 +645,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         siteName: s.site_name as string,
         siteTitle: (s.site_title as string) ?? "HopeX — Investment Platform",
         siteLogo: (s.site_logo as string) ?? "",
+        siteFavicon: (s.site_favicon as string) ?? "",
+        seoDescription: (s.seo_description as string) ?? DEFAULT_SEO_DESCRIPTION,
+        seoKeywords: (s.seo_keywords as string) ?? DEFAULT_SEO_KEYWORDS,
+        ogImage: (s.og_image as string) ?? "",
+        supportWhatsapp: (s.support_whatsapp as string) ?? "",
+        withdrawOpenHour: Number(s.withdraw_open_hour ?? 8),
+        withdrawCloseHour: Number(s.withdraw_close_hour ?? 20),
         minDeposit: num(s.min_deposit),
         minWithdraw: num(s.min_withdraw),
         levels: (s.levels as [number, number, number, number]) ?? [10, 2, 1, 4],
@@ -950,9 +983,13 @@ export function pakistanHour(at = new Date()) {
   return (at.getUTCHours() + 5) % 24;
 }
 
-export function isWithdrawWindowOpen(at = new Date()) {
+export function isWithdrawWindowOpen(
+  at = new Date(),
+  open = WITHDRAW_OPEN_HOUR,
+  close = WITHDRAW_CLOSE_HOUR,
+) {
   const h = pakistanHour(at);
-  return h >= WITHDRAW_OPEN_HOUR && h < WITHDRAW_CLOSE_HOUR;
+  return h >= open && h < close;
 }
 
 export function pakistanClock(at = new Date()) {

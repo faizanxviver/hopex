@@ -354,12 +354,19 @@ export type Database = {
           maintenance_mode: boolean
           min_deposit: number
           min_withdraw: number
+          og_image: string | null
           quick_amounts: number[]
           salary_tiers: Json
+          seo_description: string
+          seo_keywords: string
+          site_favicon: string | null
           site_logo: string | null
           site_name: string
           site_title: string
+          support_whatsapp: string
           updated_at: string
+          withdraw_close_hour: number
+          withdraw_open_hour: number
         }
         Insert: {
           announcement_active?: boolean
@@ -370,12 +377,19 @@ export type Database = {
           maintenance_mode?: boolean
           min_deposit?: number
           min_withdraw?: number
+          og_image?: string | null
           quick_amounts?: number[]
           salary_tiers?: Json
+          seo_description?: string
+          seo_keywords?: string
+          site_favicon?: string | null
           site_logo?: string | null
           site_name?: string
           site_title?: string
+          support_whatsapp?: string
           updated_at?: string
+          withdraw_close_hour?: number
+          withdraw_open_hour?: number
         }
         Update: {
           announcement_active?: boolean
@@ -386,12 +400,19 @@ export type Database = {
           maintenance_mode?: boolean
           min_deposit?: number
           min_withdraw?: number
+          og_image?: string | null
           quick_amounts?: number[]
           salary_tiers?: Json
+          seo_description?: string
+          seo_keywords?: string
+          site_favicon?: string | null
           site_logo?: string | null
           site_name?: string
           site_title?: string
+          support_whatsapp?: string
           updated_at?: string
+          withdraw_close_hour?: number
+          withdraw_open_hour?: number
         }
         Relationships: []
       }

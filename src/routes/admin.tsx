@@ -16,12 +16,15 @@ import {
   Users,
   ScrollText,
   Crown,
+  Wrench,
+  Globe,
   type LucideIcon,
 } from "lucide-react";
 
 import { toast } from "sonner";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { AdminChat } from "@/components/admin-chat";
+import { AdminCommandPalette, AdminTools, BulkActionBar, SeoSettings } from "@/components/admin-tools";
 import { GlassCard, StatCard, StatusBadge } from "@/components/glass";
 import { money, newId, timestamp, useStore, fetchAuditLog, logAudit } from "@/lib/store";
 import type { AuditEntry, SalaryTier } from "@/lib/store";
@@ -61,6 +64,8 @@ const tabs = [
   "Support Chat",
   "Broadcast",
   "Audit Log",
+  "Tools",
+  "SEO",
   "Settings",
 ] as const;
 
@@ -75,6 +80,8 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
   "Support Chat": MessageSquare,
   Broadcast: Megaphone,
   "Audit Log": ScrollText,
+  Tools: Wrench,
+  SEO: Globe,
   Settings: Settings,
 };
 
@@ -83,6 +90,7 @@ function Admin() {
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
   const [proof, setProof] = useState<string | null>(null);
   const [bucket, setBucket] = useState<"Pending" | "Approved" | "Rejected">("Pending");
+  const [selected, setSelected] = useState<string[]>([]);
 
   const users = db.users.filter((u) => u.role === "user");
   const deposits = db.transactions.filter((t) => t.type === "deposit");
@@ -151,7 +159,7 @@ function Admin() {
     { label: "Operations", items: ["Overview", "Users", "Support Chat"] },
     { label: "Money flow", items: ["Deposits", "Withdrawals", "Methods"] },
     { label: "Growth", items: ["Plans", "Promo Codes", "Broadcast"] },
-    { label: "System", items: ["Settings"] },
+    { label: "System", items: ["Tools", "SEO", "Audit Log", "Settings"] },
   ];
   const recent = db.transactions.slice(0, 6);
 
@@ -170,7 +178,8 @@ function Admin() {
               Live control over users, money flow, plans and support.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <AdminCommandPalette onJump={(t) => setTab(t as (typeof tabs)[number])} />
             <button
               onClick={() => setTab("Deposits")}
               className={cn(
@@ -336,10 +345,20 @@ function Admin() {
                   );
                 })}
               </div>
+              {bucket === "Pending" ? (
+                <BulkActionBar
+                  rows={rows}
+                  selected={selected}
+                  setSelected={setSelected}
+                  onApply={setStatus}
+                  kind={tab === "Deposits" ? "deposit" : "withdraw"}
+                />
+              ) : null}
               <GlassCard className="overflow-x-auto p-0">
                 <table className="w-full min-w-[46rem] text-sm">
                   <thead className="border-b border-border/60 text-left text-xs uppercase tracking-widest text-muted-foreground">
                     <tr>
+                      <th className="w-10 p-4"></th>
                       <th className="p-4">User</th>
                       <th className="p-4">Method</th>
                       <th className="p-4">Reference</th>
@@ -352,6 +371,21 @@ function Admin() {
                   <tbody className="divide-y divide-border/40">
                     {rows.map((t) => (
                       <tr key={t.id}>
+                        <td className="p-4">
+                          <input
+                            type="checkbox"
+                            aria-label="Select row"
+                            className="h-4 w-4 accent-[var(--primary)]"
+                            checked={selected.includes(t.id)}
+                            onChange={(e) =>
+                              setSelected(
+                                e.target.checked
+                                  ? [...selected, t.id]
+                                  : selected.filter((x) => x !== t.id),
+                              )
+                            }
+                          />
+                        </td>
                         <td className="p-4">
                           {db.users.find((u) => u.id === t.userId)?.name ?? "—"}
                         </td>
@@ -497,6 +531,10 @@ function Admin() {
           ) : null}
 
           {tab === "Audit Log" ? <AuditLogPanel /> : null}
+
+          {tab === "Tools" ? <AdminTools /> : null}
+
+          {tab === "SEO" ? <SeoSettings /> : null}
 
           {tab === "Settings" ? (
             <GlassCard className="max-w-xl space-y-4">
