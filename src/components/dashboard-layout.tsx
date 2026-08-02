@@ -56,7 +56,7 @@ export function Brand({ compact }: { compact?: boolean }) {
 
 
 export function AuthGuard({ children, admin }: { children: ReactNode; admin?: boolean }) {
-  const { user, hydrated } = useStore();
+  const { db, user, hydrated } = useStore();
   const navigate = useNavigate();
 
   useEffect(() => {
