@@ -875,11 +875,40 @@ const DAY_MS = 86400000;
 /** Investments that still have income cycles remaining. */
 export function activeInvestments(db: DB, userId: string) {
   return db.investments.filter((i) => {
+    if (i.userId !== userId) return false;
     const daily = (i.amount * i.dailyRoi) / 100;
     if (daily <= 0) return false;
     return Math.round(i.earned / daily) < i.durationDays;
   });
 }
+
+/** Every investment belonging to a user, newest first. */
+export function myInvestments(db: DB, userId: string) {
+  return db.investments
+    .filter((i) => i.userId === userId)
+    .sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+}
+
+/** Withdrawals are accepted between 08:00 and 20:00 Pakistan Standard Time. */
+export const WITHDRAW_OPEN_HOUR = 8;
+export const WITHDRAW_CLOSE_HOUR = 20;
+
+export function pakistanHour(at = new Date()) {
+  // PKT is UTC+5 all year round.
+  return (at.getUTCHours() + 5) % 24;
+}
+
+export function isWithdrawWindowOpen(at = new Date()) {
+  const h = pakistanHour(at);
+  return h >= WITHDRAW_OPEN_HOUR && h < WITHDRAW_CLOSE_HOUR;
+}
+
+export function pakistanClock(at = new Date()) {
+  const h = pakistanHour(at);
+  const m = at.getUTCMinutes();
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")} PKT`;
+}
+
 
 /**
  * Income accrued in real time since the last credited cycle.
