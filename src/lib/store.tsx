@@ -129,7 +129,37 @@ interface Settings {
   minWithdraw: number;
   levels: [number, number, number, number];
   quickAmounts: number[];
+  announcementText: string;
+  announcementActive: boolean;
+  maintenanceMode: boolean;
+  maintenanceMessage: string;
+  salaryTiers: SalaryTier[];
 }
+
+export interface SalaryTier {
+  rank: string;
+  team: number;
+  invested: number;
+  salary: number;
+}
+
+export interface AuditEntry {
+  id: string;
+  adminId: string;
+  adminName: string;
+  action: string;
+  targetId?: string;
+  targetName: string;
+  detail: string;
+  createdAt: string;
+}
+
+export const DEFAULT_SALARY_TIERS: SalaryTier[] = [
+  { rank: "Bronze", team: 3, invested: 5000, salary: 500 },
+  { rank: "Silver", team: 10, invested: 25000, salary: 2500 },
+  { rank: "Gold", team: 25, invested: 75000, salary: 8000 },
+  { rank: "Platinum", team: 60, invested: 200000, salary: 25000 },
+];
 
 interface DB {
   users: User[];
@@ -179,6 +209,11 @@ const emptyDb = (): DB => ({
     minWithdraw: 500,
     levels: [10, 2, 1, 4],
     quickAmounts: [1000, 3000, 5000, 10000, 25000, 50000],
+    announcementText: "",
+    announcementActive: false,
+    maintenanceMode: false,
+    maintenanceMessage: "HopeX is under scheduled maintenance. Please check back shortly.",
+    salaryTiers: DEFAULT_SALARY_TIERS,
   },
   sessionId: null,
 });
@@ -540,6 +575,11 @@ async function persistDiff(prev: DB, next: DB) {
           min_withdraw: next.settings.minWithdraw,
           levels: next.settings.levels,
           quick_amounts: next.settings.quickAmounts,
+          announcement_text: next.settings.announcementText,
+          announcement_active: next.settings.announcementActive,
+          maintenance_mode: next.settings.maintenanceMode,
+          maintenance_message: next.settings.maintenanceMessage,
+          salary_tiers: next.settings.salaryTiers,
         })
         .eq("id", 1),
     );
@@ -583,6 +623,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         minWithdraw: num(s.min_withdraw),
         levels: (s.levels as [number, number, number, number]) ?? [10, 2, 1, 4],
         quickAmounts: ((s.quick_amounts as unknown[]) ?? []).map(num).filter((n) => n > 0),
+        announcementText: (s.announcement_text as string) ?? "",
+        announcementActive: Boolean(s.announcement_active),
+        maintenanceMode: Boolean(s.maintenance_mode),
+        maintenanceMessage:
+          (s.maintenance_message as string) ??
+          "HopeX is under scheduled maintenance. Please check back shortly.",
+        salaryTiers: ((s.salary_tiers as SalaryTier[]) ?? DEFAULT_SALARY_TIERS).map((t) => ({
+          rank: String(t.rank),
+          team: Number(t.team),
+          invested: Number(t.invested),
+          salary: Number(t.salary),
+        })),
       };
     }
 
