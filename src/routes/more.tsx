@@ -61,14 +61,21 @@ const wallet = [
 
 const account = [
   {
+    to: "/investments",
+    label: "Active plans",
+    desc: "Your running investments",
+    icon: Layers,
+  },
+  {
     to: "/profile",
     label: "Profile & settings",
-    desc: "Details, security, preferences",
+    desc: "Payout account, security, language",
     icon: SlidersHorizontal,
   },
   { to: "/plans", label: "Investment plans", desc: "Compare and invest", icon: TrendingUp },
   { to: "/referrals", label: "Referral center", desc: "4-level commissions", icon: Gift },
 ] as const;
+
 
 function More() {
   const { db, user, setChatOpen, logout } = useStore();
