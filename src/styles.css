@@ -376,3 +376,96 @@ a[href*="lovable.dev?utm"],
   opacity: 0 !important;
   pointer-events: none !important;
 }
+
+/* ---------------------------------------------------------------
+   WhatsApp-accurate chat surface (used by user + admin chat)
+   These are deliberately brand-fixed colours: the chat is meant to
+   look exactly like WhatsApp regardless of the app theme.
+---------------------------------------------------------------- */
+.wa {
+  --wa-teal: #075e54;
+  --wa-teal-2: #128c7e;
+  --wa-green: #25d366;
+  --wa-out: #d9fdd3;
+  --wa-in: #ffffff;
+  --wa-panel: #f0f2f5;
+  --wa-text: #111b21;
+  --wa-dim: #667781;
+  --wa-tick: #53bdeb;
+  --wa-wall: #efeae2;
+  color: var(--wa-text);
+}
+.dark .wa {
+  --wa-teal: #1f2c33;
+  --wa-teal-2: #202c33;
+  --wa-out: #005c4b;
+  --wa-in: #202c33;
+  --wa-panel: #111b21;
+  --wa-text: #e9edef;
+  --wa-dim: #8696a0;
+  --wa-wall: #0b141a;
+}
+.wa-header {
+  background: var(--wa-teal);
+  color: #ffffff;
+}
+.dark .wa-header {
+  color: var(--wa-text);
+}
+.wa-panel {
+  background: var(--wa-panel);
+}
+.wa-wall {
+  background-color: var(--wa-wall);
+  background-image:
+    radial-gradient(circle at 12% 18%, #00000010 0 2px, transparent 3px),
+    radial-gradient(circle at 42% 62%, #00000010 0 2px, transparent 3px),
+    radial-gradient(circle at 78% 32%, #00000010 0 2px, transparent 3px),
+    radial-gradient(circle at 88% 88%, #00000010 0 2px, transparent 3px);
+  background-size: 150px 150px;
+}
+.dark .wa-wall {
+  background-image:
+    radial-gradient(circle at 12% 18%, #ffffff08 0 2px, transparent 3px),
+    radial-gradient(circle at 42% 62%, #ffffff08 0 2px, transparent 3px),
+    radial-gradient(circle at 78% 32%, #ffffff08 0 2px, transparent 3px),
+    radial-gradient(circle at 88% 88%, #ffffff08 0 2px, transparent 3px);
+}
+.wa-out {
+  background: var(--wa-out);
+}
+.wa-in {
+  background: var(--wa-in);
+}
+.wa-dim {
+  color: var(--wa-dim);
+}
+.wa-bubble {
+  position: relative;
+  max-width: 82%;
+  border-radius: 8px;
+  padding: 6px 9px 8px;
+  box-shadow: 0 1px 0.5px #0000001a;
+  font-size: 0.875rem;
+  line-height: 1.3rem;
+  word-break: break-word;
+}
+.wa-bubble-out {
+  border-top-right-radius: 0;
+}
+.wa-bubble-in {
+  border-top-left-radius: 0;
+}
+.wa-meta {
+  float: right;
+  margin: 8px -2px -4px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.6875rem;
+  color: var(--wa-dim);
+}
+.wa-divider {
+  background: color-mix(in oklab, var(--wa-panel) 90%, transparent);
+  color: var(--wa-dim);
+}
