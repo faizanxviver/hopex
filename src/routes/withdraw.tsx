@@ -2,19 +2,31 @@ import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
-  Building2,
-  Banknote,
-  Bitcoin,
-  Smartphone,
+  ArrowUpFromLine,
+  Clock4,
+  Info,
   Lock,
   ShieldCheck,
   Timer,
-  CheckCircle2,
+  Wallet,
   XCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
-import { hasActivePlan, money, newId, timestamp, useStore } from "@/lib/store";
+import { PayoutAccountCard } from "@/routes/profile";
+import {
+  WITHDRAW_CLOSE_HOUR,
+  WITHDRAW_OPEN_HOUR,
+  hasActivePlan,
+  isWithdrawWindowOpen,
+  money,
+  newId,
+  pakistanClock,
+  timestamp,
+  useStore,
+} from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/withdraw")({
@@ -23,11 +35,12 @@ export const Route = createFileRoute("/withdraw")({
       { title: "Withdraw Funds — HopeX" },
       {
         name: "description",
-        content:
-          "Withdraw your available balance to your saved bank, JazzCash or EasyPaisa account.",
+        content: "Request a payout to your bound JazzCash or Easypaisa account between 8 AM and 8 PM PKT.",
       },
       { property: "og:title", content: "Withdraw Funds — HopeX" },
       { property: "og:description", content: "Fast payouts, reviewed within minutes." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (
@@ -39,13 +52,6 @@ export const Route = createFileRoute("/withdraw")({
   ),
 });
 
-const METHODS = [
-  { id: "Bank Transfer", icon: Building2 },
-  { id: "JazzCash", icon: Smartphone },
-  { id: "EasyPaisa", icon: Banknote },
-  { id: "USDT (TRC20)", icon: Bitcoin },
-];
-
 const REVIEW_MS = 5 * 60 * 1000;
 
 function clock(ms: number) {
@@ -55,11 +61,8 @@ function clock(ms: number) {
 
 function Withdraw() {
   const { db, user, update, addNotification } = useStore();
-  const [method, setMethod] = useState(METHODS[0].id);
+  const { t } = useT();
   const [amount, setAmount] = useState("");
-  const [bank, setBank] = useState("");
-  const [holder, setHolder] = useState("");
-  const [account, setAccount] = useState("");
   const [tick, setTick] = useState(() => Date.now());
 
   useEffect(() => {
@@ -78,84 +81,28 @@ function Withdraw() {
   if (!user) return null;
 
   const planActive = hasActivePlan(db, user.id);
-  const savedAccount = Boolean(user.accountNumber && user.accountName);
+  const bound = Boolean(user.accountNumber && user.accountName);
+  const windowOpen = isWithdrawWindowOpen(new Date(tick));
 
-  const saveAccount = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (holder.trim().length < 3) return toast.error("Enter the account holder name.");
-    if (account.trim().length < 6) return toast.error("Enter a valid account number.");
-    update((d) => {
-      const me = d.users.find((u) => u.id === user.id)!;
-      me.bankName = bank.trim() || method;
-      me.accountName = holder.trim();
-      me.accountNumber = account.trim();
-      return d;
-    });
-    toast.success("Payout account saved — you can withdraw now.");
-  };
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const value = Number(amount);
-    if (!value || value < db.settings.minWithdraw) {
-      return toast.error(`Minimum withdrawal is ${money(db.settings.minWithdraw)}.`);
-    }
-    if (value > user.balance) return toast.error("Amount exceeds your available balance.");
-
-    update((d) => {
-      const me = d.users.find((u) => u.id === user.id)!;
-      me.balance -= value;
-      d.transactions.unshift({
-        id: newId(),
-        userId: me.id,
-        type: "withdraw",
-        amount: value,
-        method,
-        reference: `${me.accountName} · ${me.accountNumber}`,
-        status: "processing",
-        createdAt: timestamp(),
-      });
-      return d;
-    });
-    addNotification(user.id, {
-      title: "Withdrawal requested",
-      body: `${money(value)} to ${method} is under review.`,
-      kind: "info",
-    });
-    toast.success("Withdrawal submitted — review starts now.");
-    setAmount("");
-  };
-
-  /* ---------- locked: no plan ---------- */
-  if (!planActive) {
+  /* ---------- account binding first ---------- */
+  if (!bound) {
     return (
-      <div>
+      <div className="space-y-5">
         <SectionTitle
-          title="Withdraw funds"
-          subtitle="Withdrawals unlock once you own an investment plan."
+          title={t("Bind your payout account")}
+          subtitle={t("Add the JazzCash or Easypaisa account that will receive every payout.")}
         />
-        <GlassCard className="mx-auto max-w-lg text-center" glow>
-          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl gradient-brand text-primary-foreground">
-            <Lock className="h-7 w-7" />
+        <GlassCard className="mx-auto flex max-w-lg items-center gap-3" glow>
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl gradient-brand text-primary-foreground">
+            <ShieldCheck className="h-5 w-5" />
           </span>
-          <h2 className="mt-5 font-display text-2xl font-extrabold">Withdrawals are locked</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            You must activate at least one investment plan before requesting a payout. Your balance
-            of {money(user.balance)} stays safe in your wallet.
+          <p className="text-sm text-muted-foreground">
+            {t("Once bound, withdrawals always go to this account. You can change it later in More → Profile & settings.")}
           </p>
-          <Link
-            to="/plans"
-            className="btn-glass btn-glass-primary mt-6 flex h-12 items-center justify-center text-sm font-bold"
-          >
-            Browse investment plans
-          </Link>
-          <Link
-            to="/deposit"
-            className="btn-glass mt-3 flex h-12 items-center justify-center text-sm font-semibold text-foreground"
-          >
-            Deposit funds first
-          </Link>
         </GlassCard>
+        <div className="mx-auto max-w-lg">
+          <PayoutAccountCard />
+        </div>
       </div>
     );
   }
@@ -166,187 +113,198 @@ function Withdraw() {
     return (
       <div>
         <SectionTitle
-          title="Withdrawal under review"
-          subtitle="Our payouts team is verifying your request."
+          title={t("Withdrawal under review")}
+          subtitle={t("Our payouts team is verifying your request.")}
         />
         <GlassCard className="mx-auto max-w-lg text-center" glow>
           <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl gradient-cool text-primary-foreground">
             <Timer className="h-7 w-7" />
           </span>
           <p className="mt-5 font-display text-4xl font-black tabular-nums">
-            {left > 0 ? clock(left) : "Reviewing…"}
+            {left > 0 ? clock(left) : t("Reviewing…")}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            {money(pending.amount)} to {pending.method} · this page updates live the moment your
-            request is approved or declined.
+            {money(pending.amount)} · {pending.method}
           </p>
           <div className="mt-5 rounded-2xl glass-soft p-4 text-left text-sm">
-            <p className="text-muted-foreground">Payout account</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              {t("Payout account")}
+            </p>
             <p className="mt-1 font-semibold">{pending.reference}</p>
           </div>
           <Link
             to="/withdraw-history"
             className="btn-glass mt-5 flex h-12 items-center justify-center text-sm font-semibold text-foreground"
           >
-            Withdrawal history
+            {t("Withdraw history")}
           </Link>
         </GlassCard>
       </div>
     );
   }
 
-  /* ---------- no saved payout account ---------- */
-  if (!savedAccount) {
-    return (
-      <div>
-        <SectionTitle
-          title="Add your payout account"
-          subtitle="Save the account you want to receive payments in."
-        />
-        <GlassCard className="mx-auto max-w-lg" glow>
-          <span className="grid h-14 w-14 place-items-center rounded-2xl gradient-brand text-primary-foreground">
-            <ShieldCheck className="h-6 w-6" />
-          </span>
-          <h2 className="mt-4 font-display text-xl font-extrabold">Payout account required</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Withdrawals are only sent to a verified account saved on your profile.
-          </p>
-          <form onSubmit={saveAccount} className="mt-5 space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {METHODS.map((m) => (
-                <button
-                  type="button"
-                  key={m.id}
-                  onClick={() => setMethod(m.id)}
-                  className={cn(
-                    "flex items-center gap-3 rounded-2xl border p-4 text-left text-sm font-semibold transition",
-                    method === m.id ? "border-primary bg-primary/10" : "border-border glass-soft",
-                  )}
-                >
-                  <m.icon className="h-5 w-5 shrink-0 text-primary" />
-                  <span className="truncate">{m.id}</span>
-                </button>
-              ))}
-            </div>
-            <input
-              value={bank}
-              onChange={(e) => setBank(e.target.value)}
-              placeholder="Bank / wallet name"
-              className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
-            />
-            <input
-              value={holder}
-              onChange={(e) => setHolder(e.target.value)}
-              placeholder="Account holder name"
-              className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
-            />
-            <input
-              value={account}
-              onChange={(e) => setAccount(e.target.value)}
-              placeholder={method.includes("USDT") ? "Wallet address" : "Account / mobile number"}
-              className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
-            />
-            <button className="btn-glass btn-glass-primary flex h-13 w-full items-center justify-center py-4 text-base font-bold">
-              Save payout account
-            </button>
-          </form>
-        </GlassCard>
-      </div>
-    );
-  }
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!planActive) {
+      return toast.error(t("Activate an investment plan before requesting a withdrawal."));
+    }
+    if (!windowOpen) {
+      return toast.error(
+        t("Withdrawals are accepted between 8:00 AM and 8:00 PM Pakistan time."),
+      );
+    }
+    if (user.blocked) return toast.error(t("Your account is frozen. Please contact support."));
+    const value = Number(amount);
+    if (!value || value < db.settings.minWithdraw) {
+      return toast.error(`${t("Minimum withdrawal is")} ${money(db.settings.minWithdraw)}.`);
+    }
+    if (value > user.balance) return toast.error(t("Amount exceeds your available balance."));
 
-  /* ---------- withdraw form ---------- */
+    update((d) => {
+      const me = d.users.find((u) => u.id === user.id)!;
+      me.balance -= value;
+      d.transactions.unshift({
+        id: newId(),
+        userId: me.id,
+        type: "withdraw",
+        amount: value,
+        method: me.bankName || "Wallet",
+        reference: `${me.accountName} · ${me.accountNumber}`,
+        status: "processing",
+        createdAt: timestamp(),
+      });
+      return d;
+    });
+    addNotification(user.id, {
+      title: "Withdrawal requested",
+      body: `${money(value)} to ${user.bankName} is under review.`,
+      kind: "info",
+    });
+    toast.success(t("Withdrawal submitted — review starts now."));
+    setAmount("");
+  };
+
+  const quick = [25, 50, 75, 100];
+
   return (
-    <div>
-      <SectionTitle title="Withdraw funds" subtitle={`Available balance: ${money(user.balance)}`} />
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+    <div className="space-y-5">
+      <SectionTitle title={t("Withdraw funds")} subtitle={t("Fast payouts to your bound account.")} />
+
+      {/* Balance hero */}
+      <GlassCard glow className="relative overflow-hidden p-5 sm:p-6">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gold/25 blur-3xl" />
+        <div className="relative">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            {t("Withdrawable balance")}
+          </p>
+          <p className="mt-1 font-display text-4xl font-black tracking-tight">{money(user.balance)}</p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold",
+                windowOpen ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive",
+              )}
+            >
+              <Clock4 className="h-3 w-3" />
+              {windowOpen ? t("Payout window open") : t("Payout window closed")} · {pakistanClock(new Date(tick))}
+            </span>
+            {!planActive ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/20 px-3 py-1 text-[11px] font-bold text-warning">
+                <Lock className="h-3 w-3" /> {t("Plan required")}
+              </span>
+            ) : null}
+          </div>
+        </div>
+      </GlassCard>
+
+      <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
         <GlassCard>
           <form onSubmit={submit} className="space-y-5">
             <div>
-              <p className="mb-3 text-sm font-semibold">Payout method</p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {METHODS.map((m) => (
+              <label className="mb-2 block text-sm font-semibold">{t("Amount")} (PKR)</label>
+              <input
+                type="number"
+                inputMode="numeric"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="2500"
+                className="h-14 w-full rounded-2xl border border-input bg-background/40 px-4 font-display text-xl font-extrabold outline-none focus:ring-2 focus:ring-ring"
+              />
+              <div className="mt-2 grid grid-cols-4 gap-2">
+                {quick.map((p) => (
                   <button
                     type="button"
-                    key={m.id}
-                    onClick={() => setMethod(m.id)}
-                    className={cn(
-                      "flex items-center gap-3 rounded-2xl border p-4 text-left text-sm font-semibold transition",
-                      method === m.id ? "border-primary bg-primary/10" : "border-border glass-soft",
-                    )}
+                    key={p}
+                    onClick={() => setAmount(String(Math.floor((user.balance * p) / 100)))}
+                    className="btn-glass h-10 text-xs font-bold text-foreground"
                   >
-                    <m.icon className="h-5 w-5 shrink-0 text-primary" />
-                    <span className="truncate">{m.id}</span>
+                    {p}%
                   </button>
                 ))}
               </div>
             </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-semibold">Amount (PKR)</label>
-              <input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="2500"
-                className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
-              />
-              <button
-                type="button"
-                onClick={() => setAmount(String(Math.floor(user.balance)))}
-                className="mt-2 rounded-lg glass-soft px-3 py-1 text-xs font-medium"
-              >
-                Withdraw max
-              </button>
+            <div className="rounded-2xl glass-soft p-4">
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                {t("Payout account")}
+              </p>
+              <div className="mt-1.5 flex items-center gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
+                  <Wallet className="h-4 w-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-bold">{user.accountName}</span>
+                  <span className="block truncate font-mono text-xs text-muted-foreground">
+                    {user.bankName} · {user.accountNumber}
+                  </span>
+                </span>
+              </div>
+              <p className="mt-3 flex items-start gap-1.5 text-[11px] text-muted-foreground">
+                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                {t("To change this account go to More → Profile & settings.")}
+              </p>
             </div>
 
-            <div className="rounded-2xl glass-soft p-4 text-sm">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                Saved payout account
-              </p>
-              <p className="mt-1 font-semibold">{user.accountName}</p>
-              <p className="text-muted-foreground">
-                {user.bankName} · {user.accountNumber}
-              </p>
-              <Link to="/profile" className="mt-2 inline-block text-xs font-semibold text-primary">
-                Change in profile
-              </Link>
-            </div>
-
-            <button className="btn-glass btn-glass-primary flex h-13 w-full items-center justify-center py-4 text-base font-bold">
-              Request withdrawal
+            <button className="btn-glass btn-glass-primary flex h-14 w-full items-center justify-center gap-2 text-base font-bold">
+              <ArrowUpFromLine className="h-5 w-5" /> {t("Request withdrawal")}
             </button>
           </form>
         </GlassCard>
 
         <div className="space-y-4">
           <GlassCard>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Available</p>
-            <p className="mt-2 font-display text-3xl font-extrabold">{money(user.balance)}</p>
-            <Link
-              to="/withdraw-history"
-              className="btn-glass mt-5 flex h-12 items-center justify-center text-sm font-semibold text-foreground"
-            >
-              Withdrawal history
-            </Link>
-          </GlassCard>
-          <GlassCard>
-            <p className="font-semibold">Payout policy</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+            <p className="font-display text-base font-extrabold">{t("Withdraw rules")}</p>
+            <ul className="mt-3 space-y-2.5 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" /> Minimum withdrawal{" "}
-                {money(db.settings.minWithdraw)}
+                <Clock4 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                {t("Requests are accepted daily from")} {WITHDRAW_OPEN_HOUR}:00 {t("to")}{" "}
+                {WITHDRAW_CLOSE_HOUR}:00 (PKT)
               </li>
               <li className="flex items-start gap-2">
-                <Timer className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Reviewed within about 5
-                minutes
+                <Lock className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                {t("At least one investment plan must be active.")}
               </li>
               <li className="flex items-start gap-2">
-                <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" /> Declined requests
-                are refunded instantly
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+                {t("Minimum withdrawal is")} {money(db.settings.minWithdraw)}
+              </li>
+              <li className="flex items-start gap-2">
+                <Timer className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                {t("Reviewed within about 5 minutes.")}
+              </li>
+              <li className="flex items-start gap-2">
+                <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                {t("Declined requests are refunded instantly.")}
               </li>
             </ul>
           </GlassCard>
+
+          <Link
+            to="/withdraw-history"
+            className="btn-glass flex h-12 items-center justify-center text-sm font-semibold text-foreground"
+          >
+            {t("Withdraw history")}
+          </Link>
         </div>
       </div>
     </div>
