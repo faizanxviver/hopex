@@ -286,69 +286,8 @@ function Admin() {
           ) : null}
 
 
-          {tab === "Users" ? (
-            <GlassCard className="overflow-x-auto p-0">
-              <table className="w-full min-w-[46rem] text-sm">
-                <thead className="border-b border-border/60 text-left text-xs uppercase tracking-widest text-muted-foreground">
-                  <tr>
-                    <th className="p-4">User</th>
-                    <th className="p-4">Balance</th>
-                    <th className="p-4">Invested</th>
-                    <th className="p-4">Referred by</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/40">
-                  {users.map((u) => (
-                    <tr key={u.id}>
-                      <td className="p-4">
-                        <p className="font-semibold">{u.name}</p>
-                        <p className="text-xs text-muted-foreground">{u.email}</p>
-                      </td>
-                      <td className="p-4 font-semibold">{money(u.balance)}</td>
-                      <td className="p-4">{money(u.invested)}</td>
-                      <td className="p-4 text-muted-foreground">{u.referredBy ?? "—"}</td>
-                      <td className="p-4">
-                        <StatusBadge status={u.blocked ? "rejected" : "approved"} />
-                      </td>
-                      <td className="p-4">
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            onClick={() =>
-                              update((d) => {
-                                const t = d.users.find((x) => x.id === u.id)!;
-                                t.blocked = !t.blocked;
-                                return d;
-                              })
-                            }
-                            className="rounded-lg glass-soft px-3 py-1 text-xs font-semibold"
-                          >
-                            {u.blocked ? "Unblock" : "Block"}
-                          </button>
-                          <button
-                            onClick={() => {
-                              const v = prompt(`New balance for ${u.name}`, String(u.balance));
-                              if (v == null || isNaN(Number(v))) return;
-                              update((d) => {
-                                const t = d.users.find((x) => x.id === u.id)!;
-                                t.balance = Number(v);
-                                return d;
-                              });
-                              toast.success("Balance updated.");
-                            }}
-                            className="rounded-lg glass-soft px-3 py-1 text-xs font-semibold"
-                          >
-                            Edit balance
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </GlassCard>
-          ) : null}
+          {tab === "Users" ? <UsersManager /> : null}
+
 
           {tab === "Deposits" || tab === "Withdrawals" ? (
             <>
