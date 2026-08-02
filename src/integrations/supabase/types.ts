@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          admin_id: string
+          admin_name: string
+          created_at: string
+          detail: string
+          id: string
+          target_id: string | null
+          target_name: string
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          admin_name?: string
+          created_at?: string
+          detail?: string
+          id?: string
+          target_id?: string | null
+          target_name?: string
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          admin_name?: string
+          created_at?: string
+          detail?: string
+          id?: string
+          target_id?: string | null
+          target_name?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           attachment: Json | null
@@ -313,33 +346,48 @@ export type Database = {
       }
       settings: {
         Row: {
+          announcement_active: boolean
+          announcement_text: string
           id: number
           levels: number[]
+          maintenance_message: string
+          maintenance_mode: boolean
           min_deposit: number
           min_withdraw: number
           quick_amounts: number[]
+          salary_tiers: Json
           site_logo: string | null
           site_name: string
           site_title: string
           updated_at: string
         }
         Insert: {
+          announcement_active?: boolean
+          announcement_text?: string
           id?: number
           levels?: number[]
+          maintenance_message?: string
+          maintenance_mode?: boolean
           min_deposit?: number
           min_withdraw?: number
           quick_amounts?: number[]
+          salary_tiers?: Json
           site_logo?: string | null
           site_name?: string
           site_title?: string
           updated_at?: string
         }
         Update: {
+          announcement_active?: boolean
+          announcement_text?: string
           id?: number
           levels?: number[]
+          maintenance_message?: string
+          maintenance_mode?: boolean
           min_deposit?: number
           min_withdraw?: number
           quick_amounts?: number[]
+          salary_tiers?: Json
           site_logo?: string | null
           site_name?: string
           site_title?: string
@@ -414,6 +462,7 @@ export type Database = {
     Functions: {
       buy_plan: { Args: { _amount: number; _plan_id: string }; Returns: string }
       claim_earnings: { Args: never; Returns: number }
+      claim_salary: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -422,6 +471,15 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      leaderboard: {
+        Args: never
+        Returns: {
+          display_name: string
+          earnings: number
+          invested: number
+          referral_earnings: number
+        }[]
+      }
       my_network_codes: { Args: never; Returns: string[] }
       redeem_promo: {
         Args: { _amount?: number; _code: string }
