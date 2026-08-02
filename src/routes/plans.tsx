@@ -167,39 +167,6 @@ function Plans() {
           })}
       </div>
 
-      <h2 className="mt-10 font-display text-2xl font-extrabold">Active investments</h2>
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        {investments.length === 0 ? (
-          <p className="text-sm text-muted-foreground">You have no active investments yet.</p>
-        ) : (
-          investments.map((inv) => {
-            const { pct, daysLeft } = investmentProgress(inv);
-            return (
-              <GlassCard key={inv.id}>
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-bold">{inv.planName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {money(inv.amount * (inv.dailyRoi / 100))} daily · started{" "}
-                      {new Date(inv.startedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <p className="font-display text-xl font-extrabold text-gold">
-                    {money(inv.amount)}
-                  </p>
-                </div>
-                <Progress value={pct} className="mt-4 h-2" />
-                <div className="mt-2 flex justify-between text-xs text-muted-foreground">
-                  <span>
-                    {pct.toFixed(0)}% complete · {daysLeft} days left
-                  </span>
-                  <span className="text-success">earned {money(inv.earned)}</span>
-                </div>
-              </GlassCard>
-            );
-          })
-        )}
-      </div>
 
       {active ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-background/70 p-4 backdrop-blur-sm">
