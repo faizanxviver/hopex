@@ -345,10 +345,20 @@ function Admin() {
                   );
                 })}
               </div>
+              {bucket === "Pending" ? (
+                <BulkActionBar
+                  rows={rows}
+                  selected={selected}
+                  setSelected={setSelected}
+                  onApply={setStatus}
+                  kind={tab === "Deposits" ? "deposit" : "withdraw"}
+                />
+              ) : null}
               <GlassCard className="overflow-x-auto p-0">
                 <table className="w-full min-w-[46rem] text-sm">
                   <thead className="border-b border-border/60 text-left text-xs uppercase tracking-widest text-muted-foreground">
                     <tr>
+                      <th className="w-10 p-4"></th>
                       <th className="p-4">User</th>
                       <th className="p-4">Method</th>
                       <th className="p-4">Reference</th>
