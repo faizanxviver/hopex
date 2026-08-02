@@ -79,18 +79,24 @@ export function LiveChat() {
     if (chatOpen) endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length, chatOpen]);
 
+  const { peerTyping, notifyTyping } = useTyping(user?.id ?? null, "user");
+
+  /* Viewing the thread marks the agent's messages as read on our side. */
   useEffect(() => {
     if (!chatOpen || !user) return;
+    const unread = all.some((c) => c.from === "support" && c.status !== "read");
+    if (!unread) return;
     const t = setTimeout(() => {
       update((d) => {
         d.chats = d.chats.map((c) =>
-          c.userId === user.id && c.from === "user" ? { ...c, status: "read" } : c,
+          c.userId === user.id && c.from === "support" ? { ...c, status: "read" } : c,
         );
         return d;
       });
-    }, 900);
+    }, 500);
     return () => clearTimeout(t);
-  }, [chatOpen, user, all.length, update]);
+  }, [chatOpen, user, all, update]);
+
 
   if (!user || user.role === "admin" || !chatOpen) return null;
 
