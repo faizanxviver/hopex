@@ -2,19 +2,27 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   Ban,
+  Bell,
+  BadgeCheck,
   Check,
   CheckCheck,
-  ChevronDown,
+  Coins,
+  FileText,
+  Image as ImageIcon,
   MessagesSquare,
   MinusCircle,
   Paperclip,
+  PenLine,
   PlusCircle,
   Rocket,
   Search,
   Send,
   Smile,
+  SquarePen,
   Trash2,
   UserRound,
+  Wallet,
+  X,
   Zap,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -22,14 +30,15 @@ import { money, newId, timestamp, useStore } from "@/lib/store";
 import type { ChatMessage } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-const EMOJIS = ["👍", "🙏", "✅", "❌", "🔥", "💰", "📈", "🎉", "😀", "😎", "🤝", "💎"];
+const EMOJIS = ["👍","🙏","✅","❌","🔥","💰","📈","🎉","😀","😎","🤝","💎","⏳","🧾","🏦","💯"];
 
 const CANNED = [
   "Assalam o Alaikum! HopeX support here — how can I help you today?",
   "Your deposit has been verified and credited ✅",
   "Please share a clear payment screenshot so we can verify it.",
-  "Withdrawals are processed within 2 hours once a plan is active.",
+  "Withdrawals are processed between 8:00 AM and 8:00 PM (PKT) once a plan is active.",
   "Your request has been forwarded to the finance team.",
+  "Thank you for your patience — this is now resolved.",
 ];
 
 const timeOf = (iso: string) =>
@@ -45,15 +54,10 @@ function dayLabel(iso: string) {
 }
 
 const initials = (name: string) =>
-  name
-    .split(" ")
-    .map((p) => p[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
 
 export function AdminChat() {
-  const { db, update } = useStore();
+  const { db, update, addNotification } = useStore();
   const [selected, setSelected] = useState<string>("");
   const [text, setText] = useState("");
   const [q, setQ] = useState("");
@@ -61,6 +65,8 @@ export function AdminChat() {
   const [canned, setCanned] = useState(false);
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [showInfo, setShowInfo] = useState(true);
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeQuery, setComposeQuery] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -84,6 +90,14 @@ export function AdminChat() {
   const person = db.users.find((u) => u.id === activeId);
   const totalUnread = db.chats.filter((c) => c.from === "user" && c.status !== "read").length;
 
+  const contacts = db.users
+    .filter((u) => u.role === "user")
+    .filter((u) =>
+      composeQuery.trim()
+        ? `${u.name} ${u.phone ?? ""} ${u.email}`.toLowerCase().includes(composeQuery.toLowerCase())
+        : true,
+    );
+
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length, activeId]);
@@ -101,16 +115,16 @@ export function AdminChat() {
     return () => clearTimeout(t);
   }, [activeId, messages.length, update]);
 
-  const send = (value?: string, attachment?: ChatMessage["attachment"]) => {
+  const send = (value?: string, attachment?: ChatMessage["attachment"], to = activeId) => {
     const body = (value ?? text).trim();
-    if ((!body && !attachment) || !activeId) return;
+    if ((!body && !attachment) || !to) return;
     setText("");
     setEmoji(false);
     setCanned(false);
     update((d) => {
       d.chats.push({
         id: newId(),
-        userId: activeId,
+        userId: to,
         from: "support",
         text: body || (attachment?.name ?? ""),
         status: "read",
@@ -142,37 +156,50 @@ export function AdminChat() {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[19rem_minmax(0,1fr)] xl:grid-cols-[19rem_minmax(0,1fr)_18rem]">
-      {/* Conversations */}
-      <div className="glass flex h-[34rem] flex-col overflow-hidden rounded-3xl">
-        <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
-          <MessagesSquare className="h-4 w-4 text-primary" />
+      {/* ---- Conversations ---- */}
+      <div
+        className={cn(
+          "wa flex h-[32rem] flex-col overflow-hidden rounded-2xl sm:h-[34rem] lg:flex",
+          selected && "hidden lg:flex",
+        )}
+      >
+        <div className="wa-header flex items-center gap-2 px-4 py-3">
+          <MessagesSquare className="h-4 w-4" />
           <p className="text-sm font-bold">Inbox</p>
           {totalUnread ? (
-            <span className="ml-auto rounded-full bg-success px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
-              {totalUnread} new
+            <span className="rounded-full bg-[var(--wa-green)] px-2 py-0.5 text-[10px] font-bold text-white">
+              {totalUnread}
             </span>
           ) : null}
+          <button
+            onClick={() => setComposeOpen(true)}
+            aria-label="Start a new chat"
+            className="ml-auto rounded-lg bg-white/15 p-1.5"
+          >
+            <SquarePen className="h-4 w-4" />
+          </button>
         </div>
-        <div className="space-y-2 px-3 py-2">
-          <div className="flex items-center gap-2 rounded-xl border border-input bg-background/50 px-3">
-            <Search className="h-3.5 w-3.5 text-muted-foreground" />
+
+        <div className="wa-panel space-y-2 px-3 py-2">
+          <div className="flex items-center gap-2 rounded-lg bg-[var(--wa-in)] px-3">
+            <Search className="h-3.5 w-3.5 wa-dim" />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search users…"
+              placeholder="Search or start a new chat"
               className="h-9 flex-1 bg-transparent text-sm outline-none"
             />
           </div>
-          <div className="inline-flex w-full gap-1 rounded-xl glass-soft p-1">
+          <div className="inline-flex w-full gap-1">
             {(["all", "unread"] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={cn(
-                  "flex-1 rounded-lg py-1.5 text-xs font-semibold capitalize transition",
+                  "flex-1 rounded-full py-1 text-xs font-semibold capitalize transition",
                   filter === f
-                    ? "gradient-cool text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground",
+                    ? "bg-[var(--wa-green)]/20 text-[var(--wa-teal-2)]"
+                    : "wa-dim hover:bg-black/5",
                 )}
               >
                 {f}
@@ -180,33 +207,34 @@ export function AdminChat() {
             ))}
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto px-2 pb-2">
+
+        <div className="wa-panel flex-1 overflow-y-auto pb-2">
           {threads.map((t) => (
             <button
               key={t.id}
               onClick={() => setSelected(t.id)}
               className={cn(
-                "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition",
-                activeId === t.id ? "bg-primary/12" : "hover:bg-accent",
+                "flex w-full items-center gap-3 px-3 py-2.5 text-left transition",
+                activeId === t.id ? "bg-black/5" : "hover:bg-black/[0.03]",
               )}
             >
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full gradient-cool text-xs font-black text-primary-foreground">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--wa-teal-2)] text-xs font-black text-white">
                 {initials(t.name)}
               </span>
-              <span className="min-w-0 flex-1">
+              <span className="min-w-0 flex-1 border-b border-black/5 pb-2">
                 <span className="flex items-center gap-2">
                   <span className="truncate text-sm font-semibold">{t.name}</span>
-                  <span className="ml-auto shrink-0 text-[10px] text-muted-foreground">
+                  <span className="ml-auto shrink-0 text-[10px] wa-dim">
                     {t.last ? timeOf(t.last.createdAt) : ""}
                   </span>
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="line-clamp-1 flex-1 text-xs text-muted-foreground">
+                  <span className="line-clamp-1 flex-1 text-xs wa-dim">
                     {t.last?.from === "support" ? "You: " : ""}
                     {t.last?.text ?? "No messages"}
                   </span>
                   {t.unread ? (
-                    <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-success px-1 text-[10px] font-bold text-primary-foreground">
+                    <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-[var(--wa-green)] px-1 text-[10px] font-bold text-white">
                       {t.unread}
                     </span>
                   ) : null}
@@ -215,34 +243,35 @@ export function AdminChat() {
             </button>
           ))}
           {threads.length === 0 ? (
-            <p className="p-4 text-sm text-muted-foreground">No conversations.</p>
+            <p className="p-4 text-sm wa-dim">No conversations.</p>
           ) : null}
         </div>
       </div>
 
-      {/* Thread */}
-      <div className="glass flex h-[34rem] flex-col overflow-hidden rounded-3xl">
-        <div className="flex items-center gap-3 bg-[var(--gradient-cool)] px-3 py-2.5 text-primary-foreground">
-          <button
-            onClick={() => setSelected("")}
-            aria-label="Back to inbox"
-            className="shrink-0 lg:hidden"
-          >
+      {/* ---- Thread ---- */}
+      <div
+        className={cn(
+          "wa flex h-[32rem] flex-col overflow-hidden rounded-2xl sm:h-[34rem]",
+          !selected && "hidden lg:flex",
+        )}
+      >
+        <div className="wa-header flex items-center gap-3 px-3 py-2.5">
+          <button onClick={() => setSelected("")} aria-label="Back to inbox" className="shrink-0 lg:hidden">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary-foreground/20 text-xs font-black">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/20 text-xs font-black">
             {person ? initials(person.name) : "?"}
           </span>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{person?.name ?? "Select a chat"}</p>
-            <p className="truncate text-[11px] opacity-90">
+            <p className="truncate text-[11px] opacity-80">
               {person ? `${person.phone ?? person.email} · ${money(person.balance)}` : "—"}
             </p>
           </div>
           <button
             onClick={() => setShowInfo((s) => !s)}
             aria-label="User details"
-            className="hidden shrink-0 rounded-lg bg-primary-foreground/15 p-1.5 xl:block"
+            className="hidden shrink-0 rounded-lg bg-white/15 p-1.5 xl:block"
           >
             <UserRound className="h-4 w-4" />
           </button>
@@ -256,13 +285,13 @@ export function AdminChat() {
               });
               toast.success("Conversation cleared.");
             }}
-            className="shrink-0 rounded-lg bg-primary-foreground/15 p-1.5"
+            className="shrink-0 rounded-lg bg-white/15 p-1.5"
           >
             <Trash2 className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="chat-wallpaper flex-1 space-y-1.5 overflow-y-auto px-3 py-4">
+        <div className="wa-wall flex-1 space-y-1.5 overflow-y-auto px-3 py-4">
           {messages.map((m) => {
             const label = dayLabel(m.createdAt);
             const showDay = label !== lastDay;
@@ -271,33 +300,30 @@ export function AdminChat() {
             return (
               <div key={m.id}>
                 {showDay ? (
-                  <p className="mx-auto my-3 w-fit rounded-lg bg-background/70 px-3 py-1 text-[10px] font-semibold tracking-wide text-muted-foreground">
+                  <p className="wa-divider mx-auto my-3 w-fit rounded-md px-3 py-1 text-[11px] font-semibold">
                     {label}
                   </p>
                 ) : null}
                 <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
-                  <div
-                    className={cn(
-                      "relative max-w-[78%] px-2.5 py-1.5 text-sm shadow-sm",
-                      mine
-                        ? "rounded-xl rounded-br-sm bg-[color-mix(in_oklab,var(--color-success)_28%,var(--color-card))] text-foreground"
-                        : "rounded-xl rounded-bl-sm bg-card text-foreground",
-                    )}
-                  >
+                  <div className={cn("wa-bubble", mine ? "wa-out wa-bubble-out" : "wa-in wa-bubble-in")}>
                     {m.attachment ? (
-                      <div className="mb-1 flex items-center gap-2 rounded-md bg-background/60 px-2 py-1.5 text-[12px]">
-                        <Paperclip className="h-3.5 w-3.5 shrink-0 text-primary" />
+                      <div className="mb-1 flex items-center gap-2 rounded-md bg-black/5 px-2 py-1.5 text-[12px]">
+                        {m.attachment.kind === "image" ? (
+                          <ImageIcon className="h-3.5 w-3.5 shrink-0" />
+                        ) : (
+                          <FileText className="h-3.5 w-3.5 shrink-0" />
+                        )}
                         <span className="truncate">{m.attachment.name}</span>
                       </div>
                     ) : null}
-                    <p className="whitespace-pre-wrap break-words pr-12">{m.text}</p>
-                    <span className="absolute bottom-1 right-2 flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                    <span className="whitespace-pre-wrap">{m.text}</span>
+                    <span className="wa-meta">
                       {timeOf(m.createdAt)}
                       {mine ? (
                         m.status === "read" ? (
-                          <CheckCheck className="h-3 w-3 text-primary" />
+                          <CheckCheck className="h-[15px] w-[15px] text-[var(--wa-tick)]" />
                         ) : (
-                          <Check className="h-3 w-3" />
+                          <Check className="h-[15px] w-[15px]" />
                         )
                       ) : null}
                     </span>
@@ -307,20 +333,18 @@ export function AdminChat() {
             );
           })}
           {messages.length === 0 ? (
-            <p className="mx-auto w-fit rounded-lg bg-background/70 px-3 py-1 text-xs text-muted-foreground">
-              No messages yet
-            </p>
+            <p className="wa-divider mx-auto w-fit rounded-md px-3 py-1 text-xs">No messages yet</p>
           ) : null}
           <div ref={endRef} />
         </div>
 
         {canned ? (
-          <div className="space-y-1 border-t border-border/60 bg-card px-3 py-2">
+          <div className="wa-panel space-y-1 px-3 py-2">
             {CANNED.map((c) => (
               <button
                 key={c}
                 onClick={() => send(c)}
-                className="block w-full truncate rounded-lg px-2 py-1.5 text-left text-xs hover:bg-accent"
+                className="block w-full truncate rounded-lg px-2 py-1.5 text-left text-xs hover:bg-black/5"
               >
                 {c}
               </button>
@@ -329,33 +353,25 @@ export function AdminChat() {
         ) : null}
 
         {emoji ? (
-          <div className="grid grid-cols-12 gap-1 border-t border-border/60 bg-card px-3 py-2 text-lg">
+          <div className="wa-panel grid grid-cols-8 gap-1 px-3 py-2 text-lg">
             {EMOJIS.map((e) => (
-              <button
-                key={e}
-                onClick={() => setText((t) => t + e)}
-                className="rounded hover:bg-accent"
-              >
+              <button key={e} onClick={() => setText((t) => t + e)} className="rounded hover:bg-black/5">
                 {e}
               </button>
             ))}
           </div>
         ) : null}
 
-        <div className="flex items-end gap-2 border-t border-border/60 bg-card p-2">
+        <div className="wa-panel flex items-end gap-2 p-2">
           <button
             onClick={() => setCanned((c) => !c)}
             aria-label="Quick replies"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full glass-soft text-primary"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--wa-in)] text-[var(--wa-teal-2)]"
           >
             <Zap className="h-4 w-4" />
           </button>
-          <div className="flex min-w-0 flex-1 items-end gap-1 rounded-3xl border border-input bg-background px-3 py-1.5">
-            <button
-              onClick={() => setEmoji((e) => !e)}
-              aria-label="Emoji"
-              className="pb-1.5 text-muted-foreground"
-            >
+          <div className="flex min-w-0 flex-1 items-end gap-1 rounded-3xl bg-[var(--wa-in)] px-3 py-1.5">
+            <button onClick={() => setEmoji((e) => !e)} aria-label="Emoji" className="pb-1.5 wa-dim">
               <Smile className="h-5 w-5" />
             </button>
             <textarea
@@ -371,12 +387,8 @@ export function AdminChat() {
               placeholder="Reply as HopeX Support"
               className="max-h-24 flex-1 resize-none bg-transparent py-1.5 text-sm outline-none"
             />
-            <button
-              onClick={() => fileRef.current?.click()}
-              aria-label="Attach file"
-              className="pb-1.5 text-muted-foreground"
-            >
-              <Paperclip className="h-5 w-5" />
+            <button onClick={() => fileRef.current?.click()} aria-label="Attach file" className="pb-1.5 wa-dim">
+              <Paperclip className="h-5 w-5 -rotate-45" />
             </button>
             <input
               ref={fileRef}
@@ -384,8 +396,7 @@ export function AdminChat() {
               className="hidden"
               onChange={(e) => {
                 const f = e.target.files?.[0];
-                if (f)
-                  send("", { name: f.name, kind: f.type.startsWith("image") ? "image" : "file" });
+                if (f) send("", { name: f.name, kind: f.type.startsWith("image") ? "image" : "file" });
                 e.target.value = "";
               }}
             />
@@ -393,14 +404,14 @@ export function AdminChat() {
           <button
             onClick={() => send()}
             aria-label="Send"
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full gradient-brand text-primary-foreground"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--wa-teal-2)] text-white"
           >
             <Send className="h-5 w-5" />
           </button>
         </div>
       </div>
 
-      {/* User panel */}
+      {/* ---- User control panel ---- */}
       {person && showInfo ? (
         <div className="glass hidden h-[34rem] flex-col gap-3 overflow-y-auto rounded-3xl p-4 xl:flex">
           <div className="text-center">
@@ -410,6 +421,7 @@ export function AdminChat() {
             <p className="mt-2 font-display text-lg font-extrabold">{person.name}</p>
             <p className="text-xs text-muted-foreground">{person.phone ?? person.email}</p>
           </div>
+
           <div className="space-y-1.5 rounded-2xl glass-soft p-3 text-sm">
             <Line label="Balance" value={money(person.balance)} />
             <Line label="Invested" value={money(person.invested)} />
@@ -417,73 +429,105 @@ export function AdminChat() {
             <Line label="Referral code" value={person.referralCode} />
             <Line label="Referred by" value={person.referredBy ?? "—"} />
             <Line
-              label="Active plans"
+              label="Plans"
               value={String(db.investments.filter((i) => i.userId === person.id).length)}
             />
             <Line
               label="Pending txns"
               value={String(
                 db.transactions.filter(
-                  (t) =>
-                    t.userId === person.id && (t.status === "pending" || t.status === "processing"),
+                  (t) => t.userId === person.id && (t.status === "pending" || t.status === "processing"),
                 ).length,
               )}
             />
+            <Line label="Payout" value={person.accountNumber ? `${person.bankName} · ${person.accountNumber}` : "Not bound"} />
             <Line label="Status" value={person.blocked ? "Frozen" : "Active"} />
           </div>
 
-          <button
-            onClick={() => {
-              const v = prompt(`Add funds to ${person.name} (PKR)`, "1000");
-              if (!v || isNaN(Number(v))) return;
-              adjust(Number(v), "Admin credit");
-              toast.success("Funds added.");
-            }}
-            className="btn-glass btn-glass-primary flex h-11 w-full items-center justify-center gap-2 text-xs font-bold"
-          >
-            <PlusCircle className="h-4 w-4" /> Add funds
-          </button>
-          <button
-            onClick={() => {
-              const v = prompt(`Deduct funds from ${person.name} (PKR)`, "1000");
-              if (!v || isNaN(Number(v))) return;
-              adjust(-Number(v), "Admin adjustment");
-              toast.success("Funds deducted.");
-            }}
-            className="btn-glass flex h-11 w-full items-center justify-center gap-2 text-xs font-semibold text-foreground"
-          >
-            <MinusCircle className="h-4 w-4" /> Deduct funds
-          </button>
-          <button
-            onClick={() => {
-              const plan = db.plans.find((p) => p.active);
-              if (!plan) return toast.error("No active plan available.");
-              const v = prompt(
-                `Activate ${plan.name} for ${person.name} — amount (PKR)`,
-                String(plan.min),
-              );
-              if (!v || isNaN(Number(v))) return;
-              update((d) => {
-                d.investments.unshift({
-                  id: newId(),
-                  userId: person.id,
-                  planId: plan.id,
-                  planName: plan.name,
-                  amount: Number(v),
-                  dailyRoi: plan.dailyRoi,
-                  durationDays: plan.durationDays,
-                  earned: 0,
-                  startedAt: timestamp(),
-                  lastPayoutAt: timestamp(),
-                });
-                return d;
+          <Action icon={PlusCircle} label="Add funds" onClick={() => {
+            const v = prompt(`Add funds to ${person.name} (PKR)`, "1000");
+            if (!v || isNaN(Number(v))) return;
+            adjust(Number(v), "Admin credit");
+            addNotification(person.id, { title: "Funds added", body: `${money(Number(v))} was credited by support.`, kind: "success" });
+            toast.success("Funds added.");
+          }} primary />
+
+          <Action icon={MinusCircle} label="Deduct funds" onClick={() => {
+            const v = prompt(`Deduct funds from ${person.name} (PKR)`, "1000");
+            if (!v || isNaN(Number(v))) return;
+            adjust(-Number(v), "Admin adjustment");
+            toast.success("Funds deducted.");
+          }} />
+
+          <Action icon={Wallet} label="Set exact balance" onClick={() => {
+            const v = prompt(`Set balance for ${person.name}`, String(person.balance));
+            if (v == null || isNaN(Number(v))) return;
+            update((d) => {
+              const u = d.users.find((x) => x.id === person.id);
+              if (u) u.balance = Number(v);
+              return d;
+            });
+            toast.success("Balance updated.");
+          }} />
+
+          <Action icon={Coins} label="Give referral bonus" onClick={() => {
+            const v = prompt(`Referral bonus for ${person.name} (PKR)`, "500");
+            if (!v || isNaN(Number(v))) return;
+            update((d) => {
+              const u = d.users.find((x) => x.id === person.id);
+              if (!u) return d;
+              u.balance += Number(v);
+              u.referralEarnings += Number(v);
+              d.transactions.unshift({
+                id: newId(), userId: u.id, type: "commission", amount: Number(v),
+                method: "Admin referral bonus", status: "completed", createdAt: timestamp(),
               });
-              toast.success("Plan activated.");
-            }}
-            className="btn-glass flex h-11 w-full items-center justify-center gap-2 text-xs font-semibold text-foreground"
-          >
-            <Rocket className="h-4 w-4" /> Activate a plan
-          </button>
+              return d;
+            });
+            toast.success("Bonus credited.");
+          }} />
+
+          <Action icon={Rocket} label="Activate a plan" onClick={() => {
+            const plan = db.plans.find((p) => p.active);
+            if (!plan) return toast.error("No active plan available.");
+            const v = prompt(`Activate ${plan.name} for ${person.name} — amount (PKR)`, String(plan.min));
+            if (!v || isNaN(Number(v))) return;
+            update((d) => {
+              d.investments.unshift({
+                id: newId(), userId: person.id, planId: plan.id, planName: plan.name,
+                amount: Number(v), dailyRoi: plan.dailyRoi, durationDays: plan.durationDays,
+                earned: 0, startedAt: timestamp(), lastPayoutAt: timestamp(),
+              });
+              return d;
+            });
+            toast.success("Plan activated.");
+          }} />
+
+          <Action icon={Bell} label="Send notification" onClick={() => {
+            const body = prompt(`Message to ${person.name}`);
+            if (!body) return;
+            addNotification(person.id, { title: "Message from HopeX", body, kind: "info", popup: true });
+            toast.success("Notification sent.");
+          }} />
+
+          <Action icon={PenLine} label="Reset payout account" onClick={() => {
+            update((d) => {
+              const u = d.users.find((x) => x.id === person.id);
+              if (u) { u.bankName = ""; u.accountName = ""; u.accountNumber = ""; }
+              return d;
+            });
+            toast.success("Payout account cleared — user can bind a new one.");
+          }} />
+
+          <Action icon={BadgeCheck} label={person.verified ? "Mark unverified" : "Mark verified"} onClick={() => {
+            update((d) => {
+              const u = d.users.find((x) => x.id === person.id);
+              if (u) u.verified = !u.verified;
+              return d;
+            });
+            toast.success("Verification updated.");
+          }} />
+
           <button
             onClick={() => {
               update((d) => {
@@ -498,15 +542,88 @@ export function AdminChat() {
             <Ban className="h-4 w-4" />
             {person.blocked ? "Unfreeze account" : "Freeze account"}
           </button>
-          <button
-            onClick={() => setShowInfo(false)}
-            className="flex items-center justify-center gap-1 text-[11px] font-semibold text-muted-foreground"
-          >
-            <ChevronDown className="h-3 w-3" /> Hide details
-          </button>
+        </div>
+      ) : null}
+
+      {/* ---- New chat sheet ---- */}
+      {composeOpen ? (
+        <div
+          className="fixed inset-0 z-[90] grid place-items-center bg-background/70 p-4 backdrop-blur-sm"
+          onClick={() => setComposeOpen(false)}
+        >
+          <div className="glass w-full max-w-sm overflow-hidden rounded-3xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
+              <p className="text-sm font-bold">Start a new chat</p>
+              <button onClick={() => setComposeOpen(false)} aria-label="Close" className="ml-auto">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="px-4 py-2">
+              <input
+                autoFocus
+                value={composeQuery}
+                onChange={(e) => setComposeQuery(e.target.value)}
+                placeholder="Search members…"
+                className="h-10 w-full rounded-xl border border-input bg-background/50 px-3 text-sm outline-none"
+              />
+            </div>
+            <div className="max-h-72 overflow-y-auto px-2 pb-3">
+              {contacts.map((u) => (
+                <button
+                  key={u.id}
+                  onClick={() => {
+                    setSelected(u.id);
+                    setComposeOpen(false);
+                    setComposeQuery("");
+                    if (!db.chats.some((c) => c.userId === u.id)) {
+                      send("Hi 👋 HopeX support here — how can we help you today?", undefined, u.id);
+                    }
+                  }}
+                  className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left hover:bg-accent"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full gradient-cool text-xs font-black text-primary-foreground">
+                    {initials(u.name)}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold">{u.name}</span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {u.phone ?? u.email}
+                    </span>
+                  </span>
+                </button>
+              ))}
+              {contacts.length === 0 ? (
+                <p className="p-4 text-sm text-muted-foreground">No members found.</p>
+              ) : null}
+            </div>
+          </div>
         </div>
       ) : null}
     </div>
+  );
+}
+
+function Action({
+  icon: Icon,
+  label,
+  onClick,
+  primary,
+}: {
+  icon: typeof PlusCircle;
+  label: string;
+  onClick: () => void;
+  primary?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "btn-glass flex h-11 w-full items-center justify-center gap-2 text-xs font-semibold",
+        primary ? "btn-glass-primary font-bold" : "text-foreground",
+      )}
+    >
+      <Icon className="h-4 w-4" /> {label}
+    </button>
   );
 }
 
