@@ -12,3 +12,11 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /withdraw
+Disallow: /deposit
+Disallow: /transactions
+
+Sitemap: https://hopex.site/sitemap.xml
