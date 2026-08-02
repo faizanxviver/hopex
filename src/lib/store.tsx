@@ -997,3 +997,112 @@ export const STATUS_LABEL: Record<string, string> = {
 };
 
 export const statusLabel = (s: string) => STATUS_LABEL[s] ?? s;
+
+/* ---------------- salary programme ---------------- */
+
+const SALARY_CYCLE_MS = 30 * DAY_MS;
+
+/** Direct (level 1) team members. */
+export function directTeamCount(db: DB, referralCode: string) {
+  return db.users.filter((u) => u.referredBy === referralCode).length;
+}
+
+export interface SalaryStatus {
+  tiers: SalaryTier[];
+  current: SalaryTier | null;
+  next: SalaryTier | null;
+  team: number;
+  invested: number;
+  lastClaimAt: string | null;
+  nextClaimIn: number;
+  claimable: boolean;
+}
+
+export function salaryStatus(db: DB, user: User, atMs = Date.now()): SalaryStatus {
+  const tiers = [...db.settings.salaryTiers].sort((a, b) => a.salary - b.salary);
+  const team = directTeamCount(db, user.referralCode);
+  const reached = tiers.filter((t) => team >= t.team && user.invested >= t.invested);
+  const current = reached.length ? reached[reached.length - 1] : null;
+  const next = tiers.find((t) => !reached.includes(t)) ?? null;
+
+  const last = db.transactions
+    .filter((t) => t.userId === user.id && t.type === "bonus" && (t.method ?? "").startsWith("Salary"))
+    .map((t) => t.createdAt)
+    .sort()
+    .pop();
+
+  const nextClaimIn = last ? Math.max(0, new Date(last).getTime() + SALARY_CYCLE_MS - atMs) : 0;
+
+  return {
+    tiers,
+    current,
+    next,
+    team,
+    invested: user.invested,
+    lastClaimAt: last ?? null,
+    nextClaimIn,
+    claimable: Boolean(current) && nextClaimIn === 0,
+  };
+}
+
+/* ---------------- admin audit log ---------------- */
+
+export async function logAudit(entry: {
+  adminId: string;
+  adminName: string;
+  action: string;
+  targetId?: string;
+  targetName?: string;
+  detail?: string;
+}) {
+  const { error } = await supabase.from("audit_log").insert({
+    admin_id: entry.adminId,
+    admin_name: entry.adminName,
+    action: entry.action,
+    target_id: entry.targetId ?? null,
+    target_name: entry.targetName ?? "",
+    detail: entry.detail ?? "",
+  });
+  if (error) console.error("audit", error);
+}
+
+export async function fetchAuditLog(): Promise<AuditEntry[]> {
+  const { data } = await supabase
+    .from("audit_log")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(200);
+  return ((data as Row[]) ?? []).map((r) => ({
+    id: r.id as string,
+    adminId: r.admin_id as string,
+    adminName: (r.admin_name as string) ?? "",
+    action: r.action as string,
+    targetId: (r.target_id as string) ?? undefined,
+    targetName: (r.target_name as string) ?? "",
+    detail: (r.detail as string) ?? "",
+    createdAt: r.created_at as string,
+  }));
+}
+
+/* ---------------- leaderboard ---------------- */
+
+export interface LeaderRow {
+  name: string;
+  earnings: number;
+  invested: number;
+  referralEarnings: number;
+}
+
+export async function fetchLeaderboard(): Promise<LeaderRow[]> {
+  const { data, error } = await supabase.rpc("leaderboard");
+  if (error) {
+    console.error("leaderboard", error);
+    return [];
+  }
+  return ((data as Row[]) ?? []).map((r) => ({
+    name: (r.display_name as string) ?? "Investor",
+    earnings: num(r.earnings),
+    invested: num(r.invested),
+    referralEarnings: num(r.referral_earnings),
+  }));
+}
