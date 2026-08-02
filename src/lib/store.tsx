@@ -625,6 +625,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<"dark" | "light">("light");
   const [chatOpen, setChatOpen] = useState(false);
   const sessionRef = useRef<string | null>(null);
+  const dbRef = useRef<DB>(db);
+  dbRef.current = db;
+
 
   const load = useCallback(async (sessionId: string | null) => {
     sessionRef.current = sessionId;
@@ -733,7 +736,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       queued = setTimeout(() => {
         queued = null;
         void load(sessionRef.current);
-      }, 400);
+      }, 120);
     };
     const channel = supabase.channel("hopex-live");
     [
@@ -759,13 +762,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 
+  /* Applied outside the setState updater so React StrictMode's double
+     invocation can never create duplicate rows (e.g. two chat messages). */
   const update = useCallback((fn: (d: DB) => DB) => {
-    setDb((prev) => {
-      const next = fn(structuredClone(prev));
-      void persistDiff(prev, next);
-      return next;
-    });
+    const prev = dbRef.current;
+    const next = fn(structuredClone(prev));
+    dbRef.current = next;
+    setDb(next);
+    void persistDiff(prev, next);
   }, []);
+
 
   const refresh = useCallback(async () => {
     await load(sessionRef.current);

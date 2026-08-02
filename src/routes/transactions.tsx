@@ -5,7 +5,7 @@ import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { TxList } from "@/components/tx-list";
 import { useT } from "@/lib/i18n";
-import { useStore } from "@/lib/store";
+import { money, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/transactions")({
@@ -78,13 +78,13 @@ function Transactions() {
         <GlassCard className="p-4">
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground">In</p>
           <p className="mt-1 font-display text-xl font-extrabold text-success">
-            +${inflow.toLocaleString()}
+            +{money(inflow)}
           </p>
         </GlassCard>
         <GlassCard className="p-4">
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Out</p>
           <p className="mt-1 font-display text-xl font-extrabold text-destructive">
-            −${outflow.toLocaleString()}
+            −{money(outflow)}
           </p>
         </GlassCard>
       </div>

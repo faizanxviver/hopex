@@ -19,6 +19,8 @@ import {
   Wrench,
   Globe,
   type LucideIcon,
+  Menu,
+  X,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -88,6 +90,7 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
 function Admin() {
   const { db, update, addNotification, user: admin } = useStore();
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
+  const [menuOpen, setMenuOpen] = useState(false);
   const [proof, setProof] = useState<string | null>(null);
   const [bucket, setBucket] = useState<"Pending" | "Approved" | "Rejected">("Pending");
   const [selected, setSelected] = useState<string[]>([]);
@@ -163,6 +166,50 @@ function Admin() {
   ];
   const recent = db.transactions.slice(0, 6);
 
+  const navList = (
+    <nav className="space-y-3">
+      {groups.map((g) => (
+        <div key={g.label}>
+          <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            {g.label}
+          </p>
+          {g.items.map((t) => {
+            const Icon = tabIcons[t];
+            return (
+              <button
+                key={t}
+                onClick={() => {
+                  setTab(t);
+                  setMenuOpen(false);
+                }}
+                className={cn(
+                  "flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition",
+                  tab === t
+                    ? "gradient-cool text-primary-foreground shadow-[var(--shadow-elegant)]"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{t}</span>
+                {counts[t] ? (
+                  <span
+                    className={cn(
+                      "ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold",
+                      tab === t ? "bg-background/25" : "bg-primary/15 text-primary",
+                    )}
+                  >
+                    {counts[t]}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      ))}
+    </nav>
+  );
+
+
   return (
     <div>
       {/* Console header */}
@@ -202,50 +249,53 @@ function Admin() {
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[15.5rem_minmax(0,1fr)]">
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="glass rounded-3xl p-3">
-            <nav className="flex gap-2 overflow-x-auto pb-1 lg:block lg:space-y-3 lg:overflow-visible lg:pb-0">
-              {groups.map((g) => (
-                <div key={g.label} className="flex gap-2 lg:block">
-                  <p className="hidden px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground lg:block">
-                    {g.label}
-                  </p>
-                  {g.items.map((t) => {
-                    const Icon = tabIcons[t];
-                    return (
-                      <button
-                        key={t}
-                        onClick={() => setTab(t)}
-                        className={cn(
-                          "flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition lg:w-full",
-                          tab === t
-                            ? "gradient-cool text-primary-foreground shadow-[var(--shadow-elegant)]"
-                            : "text-muted-foreground hover:bg-accent hover:text-foreground",
-                        )}
-                      >
-                        <Icon className="h-4 w-4 shrink-0" />
-                        <span className="truncate">{t}</span>
-                        {counts[t] ? (
-                          <span
-                            className={cn(
-                              "ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold",
-                              tab === t ? "bg-background/25" : "bg-primary/15 text-primary",
-                            )}
-                          >
-                            {counts[t]}
-                          </span>
-                        ) : null}
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
-            </nav>
+      {/* Mobile section switcher */}
+      <div className="mb-4 lg:hidden">
+        <button
+          onClick={() => setMenuOpen(true)}
+          className="glass flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left"
+        >
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl gradient-cool text-primary-foreground">
+            {(() => {
+              const Icon = tabIcons[tab];
+              return <Icon className="h-4 w-4" />;
+            })()}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Section
+            </span>
+            <span className="block truncate text-sm font-bold">{tab}</span>
+          </span>
+          <Menu className="h-5 w-5 shrink-0 text-muted-foreground" />
+        </button>
+      </div>
+
+      {menuOpen ? (
+        <div className="fixed inset-0 z-[70] lg:hidden">
+          <div
+            className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+            onClick={() => setMenuOpen(false)}
+          />
+          <div className="glass animate-rise absolute inset-y-0 left-0 flex w-[17rem] max-w-[85vw] flex-col overflow-y-auto rounded-r-3xl p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="font-display text-base font-extrabold">Console menu</p>
+              <button onClick={() => setMenuOpen(false)} aria-label="Close menu">
+                <X className="h-5 w-5 text-muted-foreground" />
+              </button>
+            </div>
+            {navList}
           </div>
+        </div>
+      ) : null}
+
+      <div className="grid gap-5 lg:grid-cols-[15.5rem_minmax(0,1fr)]">
+        <aside className="hidden lg:sticky lg:top-24 lg:block lg:self-start">
+          <div className="glass rounded-3xl p-3">{navList}</div>
         </aside>
 
-        <div>
+        <div className="min-w-0">
+
           {tab === "Overview" ? (
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

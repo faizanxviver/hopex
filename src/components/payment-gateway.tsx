@@ -162,39 +162,93 @@ export function PaymentGateway({
       </div>
 
       <div className="mx-auto w-full max-w-lg flex-1 px-4 py-6">
-        {/* step progress */}
-        <div className="gw-steps mb-5">
-          {[0, 1, 2, 3].map((i) => (
-            <span
-              key={i}
-              className={cn(
-                "gw-step",
-                i <= ["connecting", "method", "pay", "proof", "processing", "done"].indexOf(step) - 1 &&
-                  "is-on",
-              )}
-            />
-          ))}
-        </div>
+        {/* labelled step rail */}
+        {(() => {
+          const order: Step[] = ["connecting", "method", "pay", "proof", "processing", "done"];
+          const idx = order.indexOf(step);
+          const labels = ["Method", "Pay", "Proof", "Done"];
+          const active = Math.min(3, Math.max(0, idx - 1));
+          return (
+            <div className="mb-6 flex items-center">
+              {labels.map((l, i) => (
+                <div key={l} className="flex flex-1 items-center last:flex-none">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <span
+                      className="grid h-8 w-8 place-items-center rounded-full text-[12px] font-black transition"
+                      style={
+                        i <= active
+                          ? {
+                              background:
+                                "linear-gradient(135deg,var(--gw-accent),var(--gw-accent-2))",
+                              color: "#04231b",
+                              boxShadow: "0 0 0 4px #ffffff10",
+                            }
+                          : { background: "#ffffff10", color: "var(--gw-dim)" }
+                      }
+                    >
+                      {i < active ? <Check className="h-4 w-4" /> : i + 1}
+                    </span>
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-wider"
+                      style={{ color: i <= active ? "var(--gw-accent)" : "var(--gw-dim)" }}
+                    >
+                      {l}
+                    </span>
+                  </div>
+                  {i < labels.length - 1 ? (
+                    <span
+                      className="mx-1 -mt-4 h-[3px] flex-1 rounded-full transition-all"
+                      style={{
+                        background:
+                          i < active
+                            ? "linear-gradient(90deg,var(--gw-accent),var(--gw-accent-2))"
+                            : "#ffffff14",
+                      }}
+                    />
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* amount summary */}
-        <div className="gw-panel gw-shine mb-5 p-5 text-center">
-          <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: "var(--gw-dim)" }}>
+        <div className="gw-panel gw-shine relative mb-5 overflow-hidden p-6 text-center">
+          <span
+            className="pointer-events-none absolute -top-16 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full blur-3xl"
+            style={{ background: "var(--gw-accent)", opacity: 0.22 }}
+          />
+          <p
+            className="relative text-[11px] uppercase tracking-[0.25em]"
+            style={{ color: "var(--gw-dim)" }}
+          >
             Amount to pay
           </p>
-          <p className="mt-1 text-4xl font-black">Rs {amount.toLocaleString("en-PK")}</p>
-          <p className="mt-1 text-xs" style={{ color: "var(--gw-dim)" }}>
+          <p className="relative mt-1 text-[2.6rem] font-black leading-none tracking-tight">
+            <span className="text-xl align-super" style={{ color: "var(--gw-dim)" }}>
+              Rs
+            </span>{" "}
+            {amount.toLocaleString("en-PK")}
+          </p>
+          <p className="relative mt-2 text-xs" style={{ color: "var(--gw-dim)" }}>
             Merchant: HopeX · Order #{String(Math.abs(amount * 7919)).slice(0, 8)}
           </p>
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+          <div className="relative mt-3 flex flex-wrap items-center justify-center gap-2">
             <span
               className="flex items-center gap-1 rounded-full px-3 py-1 text-[11px]"
               style={{ background: "#ffffff10", color: "var(--gw-dim)" }}
             >
               <BadgeCheck className="h-3 w-3" /> Verified merchant
             </span>
+            <span
+              className="flex items-center gap-1 rounded-full px-3 py-1 text-[11px]"
+              style={{ background: "#ffffff10", color: "var(--gw-dim)" }}
+            >
+              <Lock className="h-3 w-3" /> Escrow protected
+            </span>
             {step === "pay" ? (
               <span
-                className="flex items-center gap-1 rounded-full px-3 py-1 text-[11px]"
+                className="flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold"
                 style={{ background: "#ffffff10", color: "var(--gw-accent)" }}
               >
                 <Clock3 className="h-3 w-3" /> {mmss}
@@ -202,6 +256,7 @@ export function PaymentGateway({
             ) : null}
           </div>
         </div>
+
 
         {step === "connecting" ? (
           <div className="gw-panel flex flex-col items-center gap-4 p-10 text-center">

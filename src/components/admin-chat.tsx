@@ -28,6 +28,7 @@ import {
 import { toast } from "sonner";
 import { money, newId, timestamp, useStore } from "@/lib/store";
 import type { ChatMessage } from "@/lib/store";
+import { useTyping } from "@/lib/typing";
 import { cn } from "@/lib/utils";
 
 const EMOJIS = ["👍","🙏","✅","❌","🔥","💰","📈","🎉","😀","😎","🤝","💎","⏳","🧾","🏦","💯"];
@@ -102,6 +103,8 @@ export function AdminChat() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length, activeId]);
 
+  const { peerTyping, notifyTyping } = useTyping(activeId || null, "support");
+
   useEffect(() => {
     if (!activeId) return;
     const t = setTimeout(() => {
@@ -127,7 +130,7 @@ export function AdminChat() {
         userId: to,
         from: "support",
         text: body || (attachment?.name ?? ""),
-        status: "read",
+        status: "sent",
         attachment,
         createdAt: timestamp(),
       });
@@ -265,7 +268,11 @@ export function AdminChat() {
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{person?.name ?? "Select a chat"}</p>
             <p className="truncate text-[11px] opacity-80">
-              {person ? `${person.phone ?? person.email} · ${money(person.balance)}` : "—"}
+              {peerTyping
+                ? "typing…"
+                : person
+                  ? `${person.phone ?? person.email} · ${money(person.balance)}`
+                  : "—"}
             </p>
           </div>
           <button
@@ -316,7 +323,7 @@ export function AdminChat() {
                         <span className="truncate">{m.attachment.name}</span>
                       </div>
                     ) : null}
-                    <span className="whitespace-pre-wrap">{m.text}</span>
+                    <span className="whitespace-pre-wrap font-semibold">{m.text}</span>
                     <span className="wa-meta">
                       {timeOf(m.createdAt)}
                       {mine ? (
@@ -334,6 +341,19 @@ export function AdminChat() {
           })}
           {messages.length === 0 ? (
             <p className="wa-divider mx-auto w-fit rounded-md px-3 py-1 text-xs">No messages yet</p>
+          ) : null}
+          {peerTyping ? (
+            <div className="flex justify-start">
+              <div className="wa-bubble wa-in wa-bubble-in flex items-center gap-1 py-2.5">
+                {[0, 1, 2].map((i) => (
+                  <span
+                    key={i}
+                    className="h-1.5 w-1.5 animate-bounce rounded-full bg-current opacity-50"
+                    style={{ animationDelay: `${i * 0.15}s` }}
+                  />
+                ))}
+              </div>
+            </div>
           ) : null}
           <div ref={endRef} />
         </div>
@@ -377,7 +397,10 @@ export function AdminChat() {
             <textarea
               rows={1}
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => {
+                setText(e.target.value);
+                notifyTyping();
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
