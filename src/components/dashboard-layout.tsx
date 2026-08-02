@@ -99,7 +99,7 @@ function NotificationBell() {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           {/* Anchored to the viewport so the panel can never overflow on mobile. */}
-          <div className="animate-rise fixed inset-x-3 top-[4.5rem] z-50 overflow-hidden rounded-2xl glass sm:inset-x-auto sm:right-4 sm:w-80">
+          <div className="animate-rise fixed inset-x-3 top-[4.5rem] z-50 overflow-hidden rounded-2xl border border-border bg-popover text-popover-foreground shadow-[var(--shadow-elegant)] sm:inset-x-auto sm:right-4 sm:w-80">
             <div className="flex items-center justify-between gap-2 border-b border-border/60 px-4 py-3">
               <p className="font-semibold">{t("Notifications")}</p>
               <button
