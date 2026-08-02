@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Activity,
@@ -14,6 +14,8 @@ import {
   Ticket,
   TrendingUp,
   Users,
+  ScrollText,
+  Crown,
   type LucideIcon,
 } from "lucide-react";
 
@@ -21,7 +23,8 @@ import { toast } from "sonner";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { AdminChat } from "@/components/admin-chat";
 import { GlassCard, StatCard, StatusBadge } from "@/components/glass";
-import { money, newId, timestamp, useStore } from "@/lib/store";
+import { money, newId, timestamp, useStore, fetchAuditLog } from "@/lib/store";
+import type { AuditEntry, SalaryTier } from "@/lib/store";
 import { uploadProofImage } from "@/lib/uploads.functions";
 import type { TxStatus } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -57,6 +60,7 @@ const tabs = [
   "Promo Codes",
   "Support Chat",
   "Broadcast",
+  "Audit Log",
   "Settings",
 ] as const;
 
@@ -70,6 +74,7 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
   "Promo Codes": Ticket,
   "Support Chat": MessageSquare,
   Broadcast: Megaphone,
+  "Audit Log": ScrollText,
   Settings: Settings,
 };
 
@@ -479,10 +484,15 @@ function Admin() {
             </GlassCard>
           ) : null}
 
+          {tab === "Audit Log" ? <AuditLogPanel /> : null}
+
           {tab === "Settings" ? (
             <GlassCard className="max-w-xl space-y-4">
               <h2 className="text-lg font-bold">Platform settings</h2>
               <BrandingSettings />
+              <AnnouncementSettings />
+              <MaintenanceSettings />
+              <SalarySettings />
               {(
                 [
                   ["minDeposit", "Minimum deposit"],
@@ -1285,5 +1295,197 @@ function Ctl({ label, onClick, danger }: { label: string; onClick: () => void; d
     >
       {label}
     </button>
+  );
+}
+
+/** Scrolling announcement banner shown to every signed-in user. */
+function AnnouncementSettings() {
+  const { db, update } = useStore();
+  return (
+    <div className="rounded-2xl border border-border/60 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-bold">Announcement banner</p>
+        <button
+          onClick={() =>
+            update((d) => {
+              d.settings.announcementActive = !d.settings.announcementActive;
+              return d;
+            })
+          }
+          className={cn(
+            "rounded-full px-3 py-1 text-xs font-bold",
+            db.settings.announcementActive
+              ? "bg-success/15 text-success"
+              : "bg-muted text-muted-foreground",
+          )}
+        >
+          {db.settings.announcementActive ? "Live" : "Off"}
+        </button>
+      </div>
+      <textarea
+        defaultValue={db.settings.announcementText}
+        onBlur={(e) =>
+          update((d) => {
+            d.settings.announcementText = e.target.value;
+            return d;
+          })
+        }
+        rows={2}
+        placeholder="e.g. Withdrawals are processed daily between 8am and 8pm."
+        className="mt-3 w-full rounded-xl border border-input bg-background/40 p-3 text-sm outline-none"
+      />
+    </div>
+  );
+}
+
+/** Freezes the user-facing app while keeping admin access open. */
+function MaintenanceSettings() {
+  const { db, update } = useStore();
+  return (
+    <div className="rounded-2xl border border-border/60 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-bold">Maintenance mode</p>
+        <button
+          onClick={() =>
+            update((d) => {
+              d.settings.maintenanceMode = !d.settings.maintenanceMode;
+              return d;
+            })
+          }
+          className={cn(
+            "rounded-full px-3 py-1 text-xs font-bold",
+            db.settings.maintenanceMode
+              ? "bg-warning/15 text-warning"
+              : "bg-muted text-muted-foreground",
+          )}
+        >
+          {db.settings.maintenanceMode ? "Enabled" : "Disabled"}
+        </button>
+      </div>
+      <input
+        defaultValue={db.settings.maintenanceMessage}
+        onBlur={(e) =>
+          update((d) => {
+            d.settings.maintenanceMessage = e.target.value;
+            return d;
+          })
+        }
+        placeholder="We'll be back shortly."
+        className="mt-3 h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none"
+      />
+    </div>
+  );
+}
+
+/** Rank salary tiers: team size + invested requirement pays a monthly salary. */
+function SalarySettings() {
+  const { db, update } = useStore();
+  const tiers = db.settings.salaryTiers;
+
+  const patch = (i: number, key: keyof SalaryTier, value: string) =>
+    update((d) => {
+      const t = d.settings.salaryTiers[i];
+      if (!t) return d;
+      if (key === "rank") t.rank = value;
+      else t[key] = Number(value) as never;
+      return d;
+    });
+
+  return (
+    <div className="rounded-2xl border border-border/60 p-4">
+      <div className="flex items-center gap-2">
+        <Crown className="h-4 w-4 text-gold" />
+        <p className="text-sm font-bold">Rank salary tiers</p>
+      </div>
+      <div className="mt-3 space-y-2">
+        {tiers.map((t, i) => (
+          <div key={i} className="grid grid-cols-4 gap-2">
+            {(["rank", "team", "invested", "salary"] as const).map((k) => (
+              <input
+                key={k}
+                defaultValue={String(t[k])}
+                onBlur={(e) => patch(i, k, e.target.value)}
+                placeholder={k}
+                className="h-11 rounded-xl border border-input bg-background/40 px-3 text-xs outline-none"
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex gap-2">
+        <button
+          onClick={() =>
+            update((d) => {
+              d.settings.salaryTiers = [
+                ...d.settings.salaryTiers,
+                { rank: "New rank", team: 5, invested: 5000, salary: 500 },
+              ];
+              return d;
+            })
+          }
+          className="btn-glass h-10 px-4 text-xs font-bold text-foreground"
+        >
+          Add tier
+        </button>
+        {tiers.length ? (
+          <button
+            onClick={() =>
+              update((d) => {
+                d.settings.salaryTiers = d.settings.salaryTiers.slice(0, -1);
+                return d;
+              })
+            }
+            className="btn-glass h-10 px-4 text-xs font-bold text-destructive"
+          >
+            Remove last
+          </button>
+        ) : null}
+      </div>
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        Columns: rank name, direct team required, personal investment required, monthly salary.
+      </p>
+    </div>
+  );
+}
+
+/** Read-only trail of admin actions. */
+function AuditLogPanel() {
+  const [rows, setRows] = useState<AuditEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    fetchAuditLog()
+      .then((r) => alive && setRows(r))
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  return (
+    <GlassCard>
+      <h2 className="text-lg font-bold">Audit log</h2>
+      <p className="text-xs text-muted-foreground">Every admin action, newest first.</p>
+      <div className="mt-4 divide-y divide-border/40">
+        {loading ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>
+        ) : rows.length === 0 ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">No activity yet.</p>
+        ) : (
+          rows.map((r) => (
+            <div key={r.id} className="flex items-start justify-between gap-3 py-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">{r.action}</p>
+                <p className="truncate text-xs text-muted-foreground">{r.detail}</p>
+              </div>
+              <p className="shrink-0 text-[11px] text-muted-foreground">
+                {new Date(r.createdAt).toLocaleString()}
+              </p>
+            </div>
+          ))
+        )}
+      </div>
+    </GlassCard>
   );
 }
