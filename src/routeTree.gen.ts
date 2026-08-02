@@ -17,11 +17,13 @@ import { Route as DepositRouteImport } from './routes/deposit'
 import { Route as DepositHistoryRouteImport } from './routes/deposit-history'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as InvestmentsRouteImport } from './routes/investments'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as MoreRouteImport } from './routes/more'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PromoRouteImport } from './routes/promo'
 import { Route as ReferralsRouteImport } from './routes/referrals'
+import { Route as SalaryRouteImport } from './routes/salary'
 import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as WithdrawRouteImport } from './routes/withdraw'
 import { Route as WithdrawHistoryRouteImport } from './routes/withdraw-history'
@@ -66,6 +68,11 @@ const InvestmentsRoute = InvestmentsRouteImport.update({
   path: '/investments',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MoreRoute = MoreRouteImport.update({
   id: '/more',
   path: '/more',
@@ -89,6 +96,11 @@ const PromoRoute = PromoRouteImport.update({
 const ReferralsRoute = ReferralsRouteImport.update({
   id: '/referrals',
   path: '/referrals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalaryRoute = SalaryRouteImport.update({
+  id: '/salary',
+  path: '/salary',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TransactionsRoute = TransactionsRouteImport.update({
@@ -116,11 +128,13 @@ export interface FileRoutesByFullPath {
   '/deposit-history': typeof DepositHistoryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/investments': typeof InvestmentsRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/more': typeof MoreRoute
   '/plans': typeof PlansRoute
   '/profile': typeof ProfileRoute
   '/promo': typeof PromoRoute
   '/referrals': typeof ReferralsRoute
+  '/salary': typeof SalaryRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
@@ -134,11 +148,13 @@ export interface FileRoutesByTo {
   '/deposit-history': typeof DepositHistoryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/investments': typeof InvestmentsRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/more': typeof MoreRoute
   '/plans': typeof PlansRoute
   '/profile': typeof ProfileRoute
   '/promo': typeof PromoRoute
   '/referrals': typeof ReferralsRoute
+  '/salary': typeof SalaryRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
@@ -153,11 +169,13 @@ export interface FileRoutesById {
   '/deposit-history': typeof DepositHistoryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/investments': typeof InvestmentsRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/more': typeof MoreRoute
   '/plans': typeof PlansRoute
   '/profile': typeof ProfileRoute
   '/promo': typeof PromoRoute
   '/referrals': typeof ReferralsRoute
+  '/salary': typeof SalaryRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
@@ -173,11 +191,13 @@ export interface FileRouteTypes {
     | '/deposit-history'
     | '/forgot-password'
     | '/investments'
+    | '/leaderboard'
     | '/more'
     | '/plans'
     | '/profile'
     | '/promo'
     | '/referrals'
+    | '/salary'
     | '/transactions'
     | '/withdraw'
     | '/withdraw-history'
@@ -191,11 +211,13 @@ export interface FileRouteTypes {
     | '/deposit-history'
     | '/forgot-password'
     | '/investments'
+    | '/leaderboard'
     | '/more'
     | '/plans'
     | '/profile'
     | '/promo'
     | '/referrals'
+    | '/salary'
     | '/transactions'
     | '/withdraw'
     | '/withdraw-history'
@@ -209,11 +231,13 @@ export interface FileRouteTypes {
     | '/deposit-history'
     | '/forgot-password'
     | '/investments'
+    | '/leaderboard'
     | '/more'
     | '/plans'
     | '/profile'
     | '/promo'
     | '/referrals'
+    | '/salary'
     | '/transactions'
     | '/withdraw'
     | '/withdraw-history'
@@ -228,11 +252,13 @@ export interface RootRouteChildren {
   DepositHistoryRoute: typeof DepositHistoryRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   InvestmentsRoute: typeof InvestmentsRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   MoreRoute: typeof MoreRoute
   PlansRoute: typeof PlansRoute
   ProfileRoute: typeof ProfileRoute
   PromoRoute: typeof PromoRoute
   ReferralsRoute: typeof ReferralsRoute
+  SalaryRoute: typeof SalaryRoute
   TransactionsRoute: typeof TransactionsRoute
   WithdrawRoute: typeof WithdrawRoute
   WithdrawHistoryRoute: typeof WithdrawHistoryRoute
@@ -296,6 +322,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvestmentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/more': {
       id: '/more'
       path: '/more'
@@ -331,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReferralsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/salary': {
+      id: '/salary'
+      path: '/salary'
+      fullPath: '/salary'
+      preLoaderRoute: typeof SalaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/transactions': {
       id: '/transactions'
       path: '/transactions'
@@ -364,11 +404,13 @@ const rootRouteChildren: RootRouteChildren = {
   DepositHistoryRoute: DepositHistoryRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   InvestmentsRoute: InvestmentsRoute,
+  LeaderboardRoute: LeaderboardRoute,
   MoreRoute: MoreRoute,
   PlansRoute: PlansRoute,
   ProfileRoute: ProfileRoute,
   PromoRoute: PromoRoute,
   ReferralsRoute: ReferralsRoute,
+  SalaryRoute: SalaryRoute,
   TransactionsRoute: TransactionsRoute,
   WithdrawRoute: WithdrawRoute,
   WithdrawHistoryRoute: WithdrawHistoryRoute,

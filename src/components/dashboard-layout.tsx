@@ -13,6 +13,8 @@ import {
   UsersRound,
   House,
   MessageCircle,
+  Megaphone,
+  X,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useStore } from "@/lib/store";
@@ -54,7 +56,7 @@ export function Brand({ compact }: { compact?: boolean }) {
 
 
 export function AuthGuard({ children, admin }: { children: ReactNode; admin?: boolean }) {
-  const { user, hydrated } = useStore();
+  const { db, user, hydrated } = useStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -70,8 +72,55 @@ export function AuthGuard({ children, admin }: { children: ReactNode; admin?: bo
       </div>
     );
   }
+
+  if (db.settings.maintenanceMode && user.role !== "admin") {
+    return (
+      <div className="grid min-h-screen place-items-center px-6 text-center">
+        <div className="max-w-md">
+          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-warning/20 text-warning">
+            <Megaphone className="h-7 w-7" />
+          </span>
+          <h1 className="mt-5 font-display text-2xl font-black">Under maintenance</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{db.settings.maintenanceMessage}</p>
+        </div>
+      </div>
+    );
+  }
   return <>{children}</>;
 }
+
+
+/** Admin-controlled scrolling notice shown above every dashboard page. */
+function AnnouncementBanner() {
+  const { db, user } = useStore();
+  const [closed, setClosed] = useState(false);
+  const text = db.settings.announcementText.trim();
+  if (!db.settings.announcementActive || !text || closed) return null;
+
+  const maintenance = db.settings.maintenanceMode && user?.role !== "admin";
+
+  return (
+    <div
+      className={cn(
+        "relative mx-auto mt-3 flex max-w-7xl items-center gap-3 overflow-hidden rounded-2xl px-4 py-2.5",
+        maintenance ? "bg-warning/15 text-warning" : "glass",
+      )}
+    >
+      <Megaphone className="h-4 w-4 shrink-0 text-primary" />
+      <div className="marquee min-w-0 flex-1 text-xs font-semibold">
+        <span>{maintenance ? db.settings.maintenanceMessage : text}</span>
+      </div>
+      <button
+        onClick={() => setClosed(true)}
+        aria-label="Dismiss announcement"
+        className="shrink-0 text-muted-foreground transition hover:text-foreground"
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
+
 
 function NotificationBell() {
   const { db, user, update } = useStore();
@@ -270,11 +319,14 @@ export function DashboardLayout({ children, wide }: { children: ReactNode; wide?
         </div>
       </header>
 
+      <AnnouncementBanner />
+
       <main
         className={cn("mx-auto px-4 pb-32 pt-6 md:pb-12", wide ? "max-w-[100rem]" : "max-w-7xl")}
       >
         {children}
       </main>
+
 
       <ChatFab />
 

@@ -13,6 +13,8 @@ import {
   LogOut,
   CircleDollarSign,
   Layers,
+  Trophy,
+  Crown,
 
   Ticket,
   ChevronRight,
@@ -76,6 +78,12 @@ const account = [
   },
   { to: "/plans", label: "Investment plans", desc: "Compare and invest", icon: TrendingUp },
   { to: "/referrals", label: "Referral center", desc: "4-level commissions", icon: Gift },
+] as const;
+
+const rewards = [
+  { to: "/salary", label: "Rank salary", desc: "Monthly income for your rank", icon: Crown },
+  { to: "/leaderboard", label: "Leaderboard", desc: "Top earners and referrers", icon: Trophy },
+  { to: "/promo", label: "Promo codes", desc: "Redeem a bonus code", icon: Ticket },
 ] as const;
 
 
@@ -235,6 +243,27 @@ function More() {
               <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
             </Link>
           ) : null}
+        </GlassCard>
+      </section>
+
+      {/* Rewards */}
+      <section>
+        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          {t("Rewards")}
+        </p>
+        <GlassCard className="divide-y divide-border/40 p-2">
+          {rewards.map((l) => (
+            <Link key={l.label} to={l.to} className="flex items-center gap-3 rounded-2xl p-3 transition hover:bg-accent/40">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-success/15 text-success">
+                <l.icon className="h-4.5 w-4.5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold">{t(l.label)}</span>
+                <span className="block truncate text-xs text-muted-foreground">{t(l.desc)}</span>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </Link>
+          ))}
         </GlassCard>
       </section>
 

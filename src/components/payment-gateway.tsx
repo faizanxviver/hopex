@@ -9,6 +9,8 @@ import {
   ChevronLeft,
   Loader2,
   CheckCircle2,
+  BadgeCheck,
+  Clock3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { uploadProofImage } from "@/lib/uploads.functions";
@@ -160,8 +162,22 @@ export function PaymentGateway({
       </div>
 
       <div className="mx-auto w-full max-w-lg flex-1 px-4 py-6">
+        {/* step progress */}
+        <div className="gw-steps mb-5">
+          {[0, 1, 2, 3].map((i) => (
+            <span
+              key={i}
+              className={cn(
+                "gw-step",
+                i <= ["connecting", "method", "pay", "proof", "processing", "done"].indexOf(step) - 1 &&
+                  "is-on",
+              )}
+            />
+          ))}
+        </div>
+
         {/* amount summary */}
-        <div className="gw-panel mb-5 p-5 text-center">
+        <div className="gw-panel gw-shine mb-5 p-5 text-center">
           <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: "var(--gw-dim)" }}>
             Amount to pay
           </p>
@@ -169,6 +185,22 @@ export function PaymentGateway({
           <p className="mt-1 text-xs" style={{ color: "var(--gw-dim)" }}>
             Merchant: HopeX · Order #{String(Math.abs(amount * 7919)).slice(0, 8)}
           </p>
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+            <span
+              className="flex items-center gap-1 rounded-full px-3 py-1 text-[11px]"
+              style={{ background: "#ffffff10", color: "var(--gw-dim)" }}
+            >
+              <BadgeCheck className="h-3 w-3" /> Verified merchant
+            </span>
+            {step === "pay" ? (
+              <span
+                className="flex items-center gap-1 rounded-full px-3 py-1 text-[11px]"
+                style={{ background: "#ffffff10", color: "var(--gw-accent)" }}
+              >
+                <Clock3 className="h-3 w-3" /> {mmss}
+              </span>
+            ) : null}
+          </div>
         </div>
 
         {step === "connecting" ? (
@@ -184,6 +216,9 @@ export function PaymentGateway({
         {step === "method" ? (
           <div className="space-y-3">
             <p className="text-sm font-semibold">Select a payment method</p>
+            <p className="text-xs" style={{ color: "var(--gw-dim)" }}>
+              Choose where you want to send Rs {amount.toLocaleString("en-PK")}.
+            </p>
             {gwMethods.length === 0 ? (
               <p className="gw-panel p-5 text-sm" style={{ color: "var(--gw-dim)" }}>
                 No payment methods are available right now. Please try again shortly.

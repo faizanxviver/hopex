@@ -11,10 +11,16 @@ import {
   TrendingUp,
   UserPlus,
   Sparkle,
+  Search,
+  Trophy,
+  ChevronRight,
+  Wallet,
 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
-import { money, referralTree, useStore } from "@/lib/store";
+import { Link } from "@tanstack/react-router";
+import { Progress } from "@/components/ui/progress";
+import { money, referralTree, salaryStatus, useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +52,7 @@ function Referrals() {
   const { db, user, setChatOpen } = useStore();
   const { t } = useT();
   const [tab, setTab] = useState(0);
+  const [q, setQ] = useState("");
   if (!user) return null;
 
   const levels = referralTree(db, user.referralCode);
@@ -58,6 +65,8 @@ function Referrals() {
     members.reduce((sum, m) => sum + (m.invested * db.settings.levels[i]) / 100, 0),
   );
   const teamVolume = levels.reduce((a, l) => a + l.reduce((s, m) => s + m.invested, 0), 0);
+  const salary = salaryStatus(db, user);
+  const activeMembers = levels.flat().filter((m) => m.invested > 0).length;
 
   const copy = (value: string, label: string) => {
     navigator.clipboard?.writeText(value);
@@ -67,7 +76,11 @@ function Referrals() {
   const share = async () => {
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
-        await navigator.share({ title: "HopeX", text: `Join HopeX with my code ${user.referralCode}`, url: link });
+        await navigator.share({
+          title: "HopeX",
+          text: `Join HopeX with my code ${user.referralCode}`,
+          url: link,
+        });
         return;
       } catch {
         /* user dismissed */
@@ -75,6 +88,10 @@ function Referrals() {
     }
     copy(link, t("Referral link"));
   };
+
+  const members = levels[tab].filter((m) =>
+    q.trim() ? m.name.toLowerCase().includes(q.toLowerCase()) : true,
+  );
 
   return (
     <div className="space-y-5">
@@ -84,44 +101,57 @@ function Referrals() {
       />
 
       {/* Hero invite card */}
-      <GlassCard glow className="relative overflow-hidden p-5 sm:p-6">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-gold/30 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-10 h-52 w-52 rounded-full bg-primary/30 blur-3xl" />
+      <GlassCard glow className="relative overflow-hidden p-0">
+        <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-gold/30 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-12 h-56 w-56 rounded-full bg-primary/30 blur-3xl" />
 
-        <div className="relative flex flex-wrap items-center gap-3">
-          <span className="grid h-12 w-12 place-items-center rounded-2xl gradient-brand text-primary-foreground">
-            <Crown className="h-5 w-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="font-display text-xl font-extrabold">{t("Invite & earn")}</p>
-            <p className="text-xs text-muted-foreground">
-              {t("Commission is credited the moment your member invests.")}
-            </p>
+        <div className="relative p-5 sm:p-6">
+          <div className="flex items-center gap-3">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl gradient-brand text-primary-foreground">
+              <Crown className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-display text-xl font-extrabold">{t("Invite & earn")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("Commission is credited the moment your member invests.")}
+              </p>
+            </div>
           </div>
-          <span className="rounded-full border border-gold/40 bg-gold/10 px-3 py-1 font-mono text-sm font-bold text-gold">
-            {user.referralCode}
-          </span>
-        </div>
 
-        <div className="relative mt-4 flex flex-col gap-2 sm:flex-row">
-          <div className="flex h-12 min-w-0 flex-1 items-center gap-2 rounded-2xl border border-border/60 bg-background/40 px-4">
+          <button
+            onClick={() => copy(user.referralCode, t("Referral code"))}
+            className="mt-4 flex w-full items-center justify-between gap-3 rounded-2xl border border-gold/40 bg-gold/10 px-4 py-3 text-left"
+          >
+            <span className="min-w-0">
+              <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">
+                {t("Referral code")}
+              </span>
+              <span className="block truncate font-mono text-xl font-black text-gold">
+                {user.referralCode}
+              </span>
+            </span>
+            <Copy className="h-4 w-4 shrink-0 text-gold" />
+          </button>
+
+          <div className="mt-3 flex h-12 items-center gap-2 rounded-2xl border border-border/60 bg-background/40 px-4">
             <Link2 className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
               readOnly
               value={link}
-              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+              className="min-w-0 flex-1 bg-transparent text-xs outline-none"
             />
           </div>
-          <div className="flex gap-2">
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
             <button
               onClick={() => copy(link, t("Referral link"))}
-              className="btn-glass btn-glass-primary flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl px-5 text-sm font-semibold sm:flex-none"
+              className="btn-glass btn-glass-primary flex h-12 items-center justify-center gap-2 text-sm font-bold"
             >
               <Copy className="h-4 w-4" /> {t("Copy")}
             </button>
             <button
               onClick={share}
-              className="btn-glass flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl px-5 text-sm font-semibold sm:flex-none"
+              className="btn-glass flex h-12 items-center justify-center gap-2 text-sm font-bold text-foreground"
             >
               <Share2 className="h-4 w-4" /> {t("Share")}
             </button>
@@ -134,10 +164,10 @@ function Referrals() {
         {[
           { label: t("Team size"), value: String(teamSize), icon: Users, tone: "text-primary" },
           {
-            label: t("Direct refs"),
-            value: String(levels[0].length),
+            label: t("Active members"),
+            value: String(activeMembers),
             icon: UserPlus,
-            tone: "text-primary",
+            tone: "text-success",
           },
           {
             label: t("Team volume"),
@@ -159,12 +189,48 @@ function Referrals() {
                 {s.label}
               </p>
             </div>
-            <p className={cn("mt-2 truncate font-display text-xl font-extrabold sm:text-2xl", s.tone)}>
+            <p
+              className={cn(
+                "mt-2 truncate font-display text-xl font-extrabold sm:text-2xl",
+                s.tone,
+              )}
+            >
               {s.value}
             </p>
           </GlassCard>
         ))}
       </div>
+
+      {/* Rank progress */}
+      <GlassCard>
+        <div className="flex items-center gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold/20 text-gold">
+            <Trophy className="h-4 w-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold">
+              {salary.current ? `${salary.current.rank} ${t("rank")}` : t("Unranked")}
+            </p>
+            <p className="truncate text-xs text-muted-foreground">
+              {salary.next
+                ? `${t("Next")} ${salary.next.rank} · ${salary.team}/${salary.next.team} ${t("members")}`
+                : t("Highest rank reached")}
+            </p>
+          </div>
+          <Link
+            to="/salary"
+            className="btn-glass flex h-10 shrink-0 items-center gap-1 px-3 text-xs font-bold text-foreground"
+          >
+            {t("Salary")} <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+        {salary.next ? (
+          <Progress
+            value={Math.min(100, (salary.team / salary.next.team) * 100)}
+            className="mt-3 h-2"
+          />
+        ) : null}
+      </GlassCard>
 
       {/* Level ladder */}
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -193,7 +259,7 @@ function Referrals() {
 
       {/* Members */}
       <GlassCard className="p-5">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="font-display text-lg font-extrabold">
             {t("Level")} {tab + 1} {t("members")}
           </p>
@@ -202,7 +268,19 @@ function Referrals() {
           </span>
         </div>
 
-        <div className="mt-4 divide-y divide-border/40">
+        {levels[tab].length > 0 ? (
+          <div className="mt-3 flex h-11 items-center gap-2 rounded-2xl border border-border/60 bg-background/40 px-3">
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder={t("Search member")}
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+            />
+          </div>
+        ) : null}
+
+        <div className="mt-3 divide-y divide-border/40">
           {levels[tab].length === 0 ? (
             <div className="py-10 text-center">
               <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary">
@@ -219,14 +297,21 @@ function Referrals() {
               </button>
             </div>
           ) : (
-            levels[tab].map((m) => (
+            members.map((m) => (
               <div key={m.id} className="flex items-center justify-between gap-3 py-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/15 font-bold text-primary">
                     {m.name[0]}
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{m.name}</p>
+                    <p className="truncate text-sm font-semibold">
+                      {m.name}
+                      {m.invested > 0 ? (
+                        <span className="ml-2 rounded-full bg-success/15 px-2 py-0.5 text-[9px] font-bold uppercase text-success">
+                          {t("active")}
+                        </span>
+                      ) : null}
+                    </p>
                     <p className="truncate text-xs text-muted-foreground">
                       {new Date(m.createdAt).toLocaleDateString()}
                     </p>
@@ -243,6 +328,37 @@ function Referrals() {
           )}
         </div>
       </GlassCard>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Link
+          to="/leaderboard"
+          className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5"
+        >
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gold/20 text-gold">
+            <Trophy className="h-5 w-5" />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold">{t("Leaderboard")}</span>
+            <span className="block truncate text-xs text-muted-foreground">
+              {t("See the top referrers")}
+            </span>
+          </span>
+        </Link>
+        <Link
+          to="/withdraw"
+          className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5"
+        >
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
+            <Wallet className="h-5 w-5" />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold">{t("Withdraw earnings")}</span>
+            <span className="block truncate text-xs text-muted-foreground">
+              {money(user.balance)}
+            </span>
+          </span>
+        </Link>
+      </div>
 
       {/* Live support */}
       <button
