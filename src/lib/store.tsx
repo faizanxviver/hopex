@@ -125,6 +125,13 @@ interface Settings {
   siteName: string;
   siteTitle: string;
   siteLogo: string;
+  siteFavicon: string;
+  seoDescription: string;
+  seoKeywords: string;
+  ogImage: string;
+  supportWhatsapp: string;
+  withdrawOpenHour: number;
+  withdrawCloseHour: number;
   minDeposit: number;
   minWithdraw: number;
   levels: [number, number, number, number];
