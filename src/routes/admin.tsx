@@ -79,7 +79,7 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
 };
 
 function Admin() {
-  const { db, update, addNotification } = useStore();
+  const { db, update, addNotification, user: admin } = useStore();
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
   const [proof, setProof] = useState<string | null>(null);
   const [bucket, setBucket] = useState<"Pending" | "Approved" | "Rejected">("Pending");
@@ -117,7 +117,10 @@ function Admin() {
     const t = db.transactions.find((x) => x.id === id);
     if (t) {
       const owner = db.users.find((u) => u.id === t.userId);
-      void logAudit(`${t.type} ${status}`, {
+      void logAudit({
+        adminId: admin?.id ?? "",
+        adminName: admin?.name ?? "Admin",
+        action: `${t.type} ${status}`,
         targetId: t.userId,
         targetName: owner?.name ?? "",
         detail: `${money(t.amount)} via ${t.method ?? "-"}`,
