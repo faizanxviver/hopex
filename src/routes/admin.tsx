@@ -90,6 +90,7 @@ function Admin() {
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
   const [proof, setProof] = useState<string | null>(null);
   const [bucket, setBucket] = useState<"Pending" | "Approved" | "Rejected">("Pending");
+  const [selected, setSelected] = useState<string[]>([]);
 
   const users = db.users.filter((u) => u.role === "user");
   const deposits = db.transactions.filter((t) => t.type === "deposit");
