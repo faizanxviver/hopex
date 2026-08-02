@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { AdminChat } from "@/components/admin-chat";
 import { GlassCard, StatCard, StatusBadge } from "@/components/glass";
-import { money, newId, timestamp, useStore, fetchAuditLog } from "@/lib/store";
+import { money, newId, timestamp, useStore, fetchAuditLog, logAudit } from "@/lib/store";
 import type { AuditEntry, SalaryTier } from "@/lib/store";
 import { uploadProofImage } from "@/lib/uploads.functions";
 import type { TxStatus } from "@/lib/store";
@@ -114,6 +114,15 @@ function Admin() {
       });
       return d;
     });
+    const t = db.transactions.find((x) => x.id === id);
+    if (t) {
+      const owner = db.users.find((u) => u.id === t.userId);
+      void logAudit(`${t.type} ${status}`, {
+        targetId: t.userId,
+        targetName: owner?.name ?? "",
+        detail: `${money(t.amount)} via ${t.method ?? "-"}`,
+      });
+    }
     toast.success(`Marked as ${status}.`);
   };
 
@@ -1476,8 +1485,14 @@ function AuditLogPanel() {
           rows.map((r) => (
             <div key={r.id} className="flex items-start justify-between gap-3 py-3">
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">{r.action}</p>
-                <p className="truncate text-xs text-muted-foreground">{r.detail}</p>
+                <p className="truncate text-sm font-semibold">
+                  {r.action}
+                  {r.targetName ? ` · ${r.targetName}` : ""}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {r.detail}
+                  {r.adminName ? ` — by ${r.adminName}` : ""}
+                </p>
               </div>
               <p className="shrink-0 text-[11px] text-muted-foreground">
                 {new Date(r.createdAt).toLocaleString()}
