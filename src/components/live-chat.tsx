@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useStore, newId, timestamp } from "@/lib/store";
 import type { ChatMessage } from "@/lib/store";
+import { useTyping } from "@/lib/typing";
 import { cn } from "@/lib/utils";
 
 const EMOJIS = [
@@ -152,7 +153,7 @@ export function LiveChat() {
           <div className="min-w-0 flex-1 leading-tight">
             <p className="truncate text-[15px] font-semibold">HopeX Support</p>
             <p className="truncate text-[11px] opacity-80">
-              {agentOnline ? "online" : "typically replies in minutes"}
+              {peerTyping ? "typing…" : agentOnline ? "online" : "typically replies in minutes"}
             </p>
           </div>
           <button aria-label="Video call" className="shrink-0 opacity-90">
@@ -277,7 +278,7 @@ export function LiveChat() {
                         <span className="truncate">{m.attachment.name}</span>
                       </div>
                     ) : null}
-                    <span className="whitespace-pre-wrap">{m.text}</span>
+                    <span className="whitespace-pre-wrap font-semibold">{m.text}</span>
                     <span className="wa-meta">
                       {timeOf(m.createdAt)}
                       {mine ? (
@@ -304,6 +305,19 @@ export function LiveChat() {
               </div>
             );
           })}
+          {peerTyping ? (
+            <div className="flex justify-start">
+              <div className="wa-bubble wa-in wa-bubble-in flex items-center gap-1 py-2.5">
+                {[0, 1, 2].map((i) => (
+                  <span
+                    key={i}
+                    className="h-1.5 w-1.5 animate-bounce rounded-full bg-current opacity-50"
+                    style={{ animationDelay: `${i * 0.15}s` }}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
           <div ref={endRef} />
         </div>
 
@@ -399,7 +413,10 @@ export function LiveChat() {
             <textarea
               rows={1}
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => {
+                setText(e.target.value);
+                notifyTyping();
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
