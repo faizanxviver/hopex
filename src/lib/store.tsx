@@ -759,13 +759,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 
+  /* Applied outside the setState updater so React StrictMode's double
+     invocation can never create duplicate rows (e.g. two chat messages). */
   const update = useCallback((fn: (d: DB) => DB) => {
-    setDb((prev) => {
-      const next = fn(structuredClone(prev));
-      void persistDiff(prev, next);
-      return next;
-    });
+    const prev = dbRef.current;
+    const next = fn(structuredClone(prev));
+    dbRef.current = next;
+    setDb(next);
+    void persistDiff(prev, next);
   }, []);
+
 
   const refresh = useCallback(async () => {
     await load(sessionRef.current);
