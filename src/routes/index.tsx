@@ -32,6 +32,20 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Daily ROI plans, secure wallet, and a 4-level affiliate program.",
       },
+      { property: "og:url", content: "https://hopex.site/" },
+      { property: "og:type", content: "website" },
+    ],
+    links: [{ rel: "canonical", href: "https://hopex.site/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "HopeX",
+          url: "https://hopex.site",
+        }),
+      },
     ],
   }),
   component: Landing,
