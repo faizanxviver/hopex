@@ -158,7 +158,7 @@ function Admin() {
     { label: "Operations", items: ["Overview", "Users", "Support Chat"] },
     { label: "Money flow", items: ["Deposits", "Withdrawals", "Methods"] },
     { label: "Growth", items: ["Plans", "Promo Codes", "Broadcast"] },
-    { label: "System", items: ["Tools", "SEO", "Settings"] },
+    { label: "System", items: ["Tools", "SEO", "Audit Log", "Settings"] },
   ];
   const recent = db.transactions.slice(0, 6);
 
