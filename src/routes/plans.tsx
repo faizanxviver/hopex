@@ -53,7 +53,7 @@ function Plans() {
   const [busy, setBusy] = useState(false);
 
   if (!user) return null;
-  const investments = db.investments.filter((i) => i.userId === user.id);
+  const deposited = depositBalance(db, user.id);
   const deposited = depositBalance(db, user.id);
 
   const price = active ? active.min : 0;
