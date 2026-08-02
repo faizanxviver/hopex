@@ -19,6 +19,8 @@ import {
   Wrench,
   Globe,
   type LucideIcon,
+  Menu,
+  X,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -88,6 +90,7 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
 function Admin() {
   const { db, update, addNotification, user: admin } = useStore();
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
+  const [menuOpen, setMenuOpen] = useState(false);
   const [proof, setProof] = useState<string | null>(null);
   const [bucket, setBucket] = useState<"Pending" | "Approved" | "Rejected">("Pending");
   const [selected, setSelected] = useState<string[]>([]);
