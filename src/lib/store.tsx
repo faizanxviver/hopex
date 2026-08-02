@@ -736,7 +736,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       queued = setTimeout(() => {
         queued = null;
         void load(sessionRef.current);
-      }, 400);
+      }, 120);
     };
     const channel = supabase.channel("hopex-live");
     [
