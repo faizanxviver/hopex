@@ -37,6 +37,7 @@ export function useVoiceRecorder(onDone: (url: string, seconds: number) => void)
   const [seconds, setSeconds] = useState(0);
   const recRef = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
+  const secRef = useRef(0);
   const cancelled = useRef(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -60,7 +61,7 @@ export function useVoiceRecorder(onDone: (url: string, seconds: number) => void)
         recRef.current = null;
         stopTimer();
         setRecording(false);
-        const secs = seconds;
+        const secs = secRef.current;
         setSeconds(0);
         if (cancelled.current || !chunks.current.length) return;
         const blob = new Blob(chunks.current, { type: rec.mimeType || "audio/webm" });
@@ -71,11 +72,13 @@ export function useVoiceRecorder(onDone: (url: string, seconds: number) => void)
       recRef.current = rec;
       setRecording(true);
       setSeconds(0);
+      secRef.current = 0;
       timer.current = setInterval(
         () =>
-          setSeconds((s) => {
-            if (s + 1 >= MAX_VOICE_SECONDS) recRef.current?.stop();
-            return s + 1;
+          setSeconds(() => {
+            secRef.current += 1;
+            if (secRef.current >= MAX_VOICE_SECONDS) recRef.current?.stop();
+            return secRef.current;
           }),
         1000,
       );
@@ -83,7 +86,7 @@ export function useVoiceRecorder(onDone: (url: string, seconds: number) => void)
       setRecording(false);
       throw new Error("Microphone permission denied");
     }
-  }, [onDone, seconds]);
+  }, [onDone]);
 
   const stop = useCallback(() => recRef.current?.stop(), []);
   const cancel = useCallback(() => {
