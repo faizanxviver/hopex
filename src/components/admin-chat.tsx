@@ -12,6 +12,7 @@ import {
   MessagesSquare,
   MinusCircle,
   Paperclip,
+  Mic,
   PenLine,
   PlusCircle,
   Rocket,
@@ -29,6 +30,8 @@ import { toast } from "sonner";
 import { money, newId, timestamp, useStore } from "@/lib/store";
 import type { ChatMessage } from "@/lib/store";
 import { useTyping } from "@/lib/typing";
+import { ChatAttachment, ImageLightbox } from "@/components/chat-media";
+import { uploadChatImage, useVoiceRecorder, formatDuration } from "@/lib/chat-media";
 import { cn } from "@/lib/utils";
 
 const EMOJIS = ["👍","🙏","✅","❌","🔥","💰","📈","🎉","😀","😎","🤝","💎","⏳","🧾","🏦","💯"];
@@ -104,6 +107,8 @@ export function AdminChat() {
   }, [messages.length, activeId]);
 
   const { peerTyping, notifyTyping } = useTyping(activeId || null, "support");
+  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!activeId) return;
@@ -136,6 +141,24 @@ export function AdminChat() {
       });
       return d;
     });
+  };
+
+  const { recording, seconds, start, stop, cancel } = useVoiceRecorder((url, secs) => {
+    send("", { name: "Voice message", kind: "audio", url, duration: secs });
+  });
+
+  const sendImage = async (file: File) => {
+    if (!file.type.startsWith("image/")) return toast.error("Only images can be shared.");
+    if (file.size > 8 * 1024 * 1024) return toast.error("Image must be under 8MB.");
+    setUploading(true);
+    try {
+      const url = await uploadChatImage(file);
+      send("", { name: file.name, kind: "image", url });
+    } catch {
+      toast.error("Upload failed. Try again.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const adjust = (delta: number, label: string) =>
@@ -314,16 +337,11 @@ export function AdminChat() {
                 <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
                   <div className={cn("wa-bubble", mine ? "wa-out wa-bubble-out" : "wa-in wa-bubble-in")}>
                     {m.attachment ? (
-                      <div className="mb-1 flex items-center gap-2 rounded-md bg-black/5 px-2 py-1.5 text-[12px]">
-                        {m.attachment.kind === "image" ? (
-                          <ImageIcon className="h-3.5 w-3.5 shrink-0" />
-                        ) : (
-                          <FileText className="h-3.5 w-3.5 shrink-0" />
-                        )}
-                        <span className="truncate">{m.attachment.name}</span>
-                      </div>
+                      <ChatAttachment attachment={m.attachment} mine={mine} onOpenImage={setLightbox} />
                     ) : null}
-                    <span className="whitespace-pre-wrap font-semibold">{m.text}</span>
+                    {m.text && m.text !== m.attachment?.name ? (
+                      <span className="whitespace-pre-wrap font-semibold">{m.text}</span>
+                    ) : null}
                     <span className="wa-meta">
                       {timeOf(m.createdAt)}
                       {mine ? (
@@ -416,20 +434,35 @@ export function AdminChat() {
             <input
               ref={fileRef}
               type="file"
+              accept="image/*"
               className="hidden"
               onChange={(e) => {
                 const f = e.target.files?.[0];
-                if (f) send("", { name: f.name, kind: f.type.startsWith("image") ? "image" : "file" });
                 e.target.value = "";
+                if (f) void sendImage(f);
               }}
             />
           </div>
+          {recording ? (
+            <div className="flex items-center gap-2 rounded-full bg-[var(--wa-in)] px-3 py-2 text-xs font-semibold">
+              <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-destructive" />
+              <span className="tabular-nums">{formatDuration(seconds)}</span>
+              <button onClick={cancel} className="wa-dim" aria-label="Cancel recording">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : null}
           <button
-            onClick={() => send()}
-            aria-label="Send"
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--wa-teal-2)] text-white"
+            onClick={() => {
+              if (recording) return stop();
+              if (text.trim()) return send();
+              void start().catch(() => toast.error("Microphone permission denied."));
+            }}
+            disabled={uploading}
+            aria-label={recording ? "Send voice message" : "Send"}
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--wa-teal-2)] text-white disabled:opacity-60"
           >
-            <Send className="h-5 w-5" />
+            {recording || text.trim() ? <Send className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </button>
         </div>
       </div>
