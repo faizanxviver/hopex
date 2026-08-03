@@ -42,6 +42,9 @@ export const DICT = {
     "Daily income": "روزانہ آمدنی",
     "Active plans": "فعال پلانز",
     "Good to see you": "خوش آمدید",
+    "Free reward": "مفت انعام",
+    "Complete one simple task and get it free": "ایک آسان ٹاسک مکمل کریں اور مفت انعام حاصل کریں",
+    "Get free": "حاصل کریں",
 
     // common
     Amount: "رقم",
