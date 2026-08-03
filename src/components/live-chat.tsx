@@ -104,6 +104,22 @@ export function LiveChat() {
   }, [chatOpen, user, all, update]);
 
 
+  const { recording, seconds, start, stop, cancel } = useVoiceRecorder((url, secs) => {
+    if (!user) return;
+    update((d) => {
+      d.chats.push({
+        id: newId(),
+        userId: user.id,
+        createdAt: timestamp(),
+        from: "user",
+        text: "",
+        status: "sent",
+        attachment: { name: "Voice message", kind: "audio", url, duration: secs },
+      });
+      return d;
+    });
+  });
+
   if (!user || user.role === "admin" || !chatOpen) return null;
 
   const push = (msg: Omit<ChatMessage, "id" | "userId" | "createdAt">) =>
@@ -337,6 +353,11 @@ export function LiveChat() {
               </div>
             </div>
           ) : null}
+          {uploading ? (
+            <div className="flex justify-end">
+              <div className="wa-bubble wa-out wa-bubble-out text-xs opacity-70">Uploading image…</div>
+            </div>
+          ) : null}
           <div ref={endRef} />
         </div>
 
@@ -418,6 +439,16 @@ export function LiveChat() {
 
         {/* Composer */}
         <div className="wa-panel flex items-end gap-2 p-2">
+          {recording ? (
+            <div className="flex min-w-0 flex-1 items-center gap-3 rounded-3xl bg-[var(--wa-in)] px-4 py-3">
+              <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-destructive" />
+              <span className="text-sm font-semibold tabular-nums">{formatDuration(seconds)}</span>
+              <span className="truncate text-xs wa-dim">Recording… slide to cancel</span>
+              <button onClick={cancel} className="ml-auto shrink-0 wa-dim" aria-label="Cancel recording">
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
           <div className="flex min-w-0 flex-1 items-end gap-1 rounded-3xl bg-[var(--wa-in)] px-3 py-1.5">
             <button
               onClick={() => {
@@ -470,15 +501,22 @@ export function LiveChat() {
               }}
             />
           </div>
+          )}
           <button
-            onClick={() => (text.trim() ? send() : undefined)}
-            aria-label={text.trim() ? "Send message" : "Voice message"}
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--wa-teal-2)] text-white"
+            onClick={() => {
+              if (recording) return stop();
+              if (text.trim()) return send();
+              void start().catch(() => toast.error("Microphone permission denied."));
+            }}
+            disabled={uploading}
+            aria-label={recording ? "Send voice message" : text.trim() ? "Send message" : "Record voice message"}
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--wa-teal-2)] text-white disabled:opacity-60"
           >
-            {text.trim() ? <Send className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            {recording || text.trim() ? <Send className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </button>
         </div>
       </div>
+      {lightbox ? <ImageLightbox url={lightbox} onClose={() => setLightbox(null)} /> : null}
     </div>
   );
 }
