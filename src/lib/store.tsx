@@ -682,6 +682,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           invested: Number(t.invested),
           salary: Number(t.salary),
         })),
+        rewardAmount: num(s.reward_amount),
+        rewardCooldownHours: Number(s.reward_cooldown_hours ?? 24),
+        rewardActive: Boolean(s.reward_active ?? true),
       };
     }
 
