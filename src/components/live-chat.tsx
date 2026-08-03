@@ -28,9 +28,38 @@ import { useTyping } from "@/lib/typing";
 import { cn } from "@/lib/utils";
 
 const EMOJIS = [
-  "😀","😁","😂","🤣","😊","😍","🥰","😎","🤝","👍","👏","🙏",
-  "🔥","💰","💵","📈","📉","✅","❌","❓","😢","😡","🎉","💎",
-  "⏳","📷","🧾","🏦","🤔","🙌","💯","⭐",
+  "😀",
+  "😁",
+  "😂",
+  "🤣",
+  "😊",
+  "😍",
+  "🥰",
+  "😎",
+  "🤝",
+  "👍",
+  "👏",
+  "🙏",
+  "🔥",
+  "💰",
+  "💵",
+  "📈",
+  "📉",
+  "✅",
+  "❌",
+  "❓",
+  "😢",
+  "😡",
+  "🎉",
+  "💎",
+  "⏳",
+  "📷",
+  "🧾",
+  "🏦",
+  "🤔",
+  "🙌",
+  "💯",
+  "⭐",
 ];
 
 const QUICK_REPLIES = [
@@ -102,7 +131,6 @@ export function LiveChat() {
     }, 500);
     return () => clearTimeout(t);
   }, [chatOpen, user, all, update]);
-
 
   const { recording, seconds, start, stop, cancel } = useVoiceRecorder((url, secs) => {
     if (!user) return;
@@ -199,7 +227,11 @@ export function LiveChat() {
             <Phone className="h-[17px] w-[17px]" />
           </button>
           <div className="relative shrink-0">
-            <button aria-label="Chat menu" onClick={() => setMenu((m) => !m)} className="opacity-90">
+            <button
+              aria-label="Chat menu"
+              onClick={() => setMenu((m) => !m)}
+              className="opacity-90"
+            >
               <MoreVertical className="h-[18px] w-[18px]" />
             </button>
             {menu ? (
@@ -280,7 +312,12 @@ export function LiveChat() {
                     {label}
                   </p>
                 ) : null}
-                <div className={cn("group flex items-end gap-1", mine ? "justify-end" : "justify-start")}>
+                <div
+                  className={cn(
+                    "group flex items-end gap-1",
+                    mine ? "justify-end" : "justify-start",
+                  )}
+                >
                   {mine ? (
                     <button
                       onClick={() => setReply({ from: m.from, text: m.text })}
@@ -355,7 +392,9 @@ export function LiveChat() {
           ) : null}
           {uploading ? (
             <div className="flex justify-end">
-              <div className="wa-bubble wa-out wa-bubble-out text-xs opacity-70">Uploading image…</div>
+              <div className="wa-bubble wa-out wa-bubble-out text-xs opacity-70">
+                Uploading image…
+              </div>
             </div>
           ) : null}
           <div ref={endRef} />
@@ -430,7 +469,11 @@ export function LiveChat() {
         {emoji ? (
           <div className="wa-panel grid grid-cols-8 gap-1 px-3 py-2 text-xl">
             {EMOJIS.map((e) => (
-              <button key={e} onClick={() => setText((t) => t + e)} className="rounded hover:bg-black/5">
+              <button
+                key={e}
+                onClick={() => setText((t) => t + e)}
+                className="rounded hover:bg-black/5"
+              >
                 {e}
               </button>
             ))}
@@ -444,63 +487,71 @@ export function LiveChat() {
               <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-destructive" />
               <span className="text-sm font-semibold tabular-nums">{formatDuration(seconds)}</span>
               <span className="truncate text-xs wa-dim">Recording… slide to cancel</span>
-              <button onClick={cancel} className="ml-auto shrink-0 wa-dim" aria-label="Cancel recording">
+              <button
+                onClick={cancel}
+                className="ml-auto shrink-0 wa-dim"
+                aria-label="Cancel recording"
+              >
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
           ) : (
-          <div className="flex min-w-0 flex-1 items-end gap-1 rounded-3xl bg-[var(--wa-in)] px-3 py-1.5">
-            <button
-              onClick={() => {
-                setEmoji((e) => !e);
-                setAttach(false);
-              }}
-              aria-label="Emoji"
-              className="pb-1.5 wa-dim"
-            >
-              <Smile className="h-[22px] w-[22px]" />
-            </button>
-            <textarea
-              rows={1}
-              value={text}
-              onChange={(e) => {
-                setText(e.target.value);
-                notifyTyping();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  send();
-                }
-              }}
-              placeholder="Message"
-              className="max-h-28 flex-1 resize-none bg-transparent py-1.5 text-sm outline-none"
-            />
-            <button
-              onClick={() => {
-                setAttach((a) => !a);
-                setEmoji(false);
-              }}
-              aria-label="Attach"
-              className="pb-1.5 wa-dim"
-            >
-              <Paperclip className="h-[21px] w-[21px] -rotate-45" />
-            </button>
-            <button onClick={() => fileRef.current?.click()} aria-label="Camera" className="pb-1.5 wa-dim">
-              <Camera className="h-[21px] w-[21px]" />
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              className="hidden"
-              accept="image/*"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                e.target.value = "";
-                if (f) void sendImage(f);
-              }}
-            />
-          </div>
+            <div className="flex min-w-0 flex-1 items-end gap-1 rounded-3xl bg-[var(--wa-in)] px-3 py-1.5">
+              <button
+                onClick={() => {
+                  setEmoji((e) => !e);
+                  setAttach(false);
+                }}
+                aria-label="Emoji"
+                className="pb-1.5 wa-dim"
+              >
+                <Smile className="h-[22px] w-[22px]" />
+              </button>
+              <textarea
+                rows={1}
+                value={text}
+                onChange={(e) => {
+                  setText(e.target.value);
+                  notifyTyping();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    send();
+                  }
+                }}
+                placeholder="Message"
+                className="max-h-28 flex-1 resize-none bg-transparent py-1.5 text-sm outline-none"
+              />
+              <button
+                onClick={() => {
+                  setAttach((a) => !a);
+                  setEmoji(false);
+                }}
+                aria-label="Attach"
+                className="pb-1.5 wa-dim"
+              >
+                <Paperclip className="h-[21px] w-[21px] -rotate-45" />
+              </button>
+              <button
+                onClick={() => fileRef.current?.click()}
+                aria-label="Camera"
+                className="pb-1.5 wa-dim"
+              >
+                <Camera className="h-[21px] w-[21px]" />
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  e.target.value = "";
+                  if (f) void sendImage(f);
+                }}
+              />
+            </div>
           )}
           <button
             onClick={() => {
@@ -509,7 +560,13 @@ export function LiveChat() {
               void start().catch(() => toast.error("Microphone permission denied."));
             }}
             disabled={uploading}
-            aria-label={recording ? "Send voice message" : text.trim() ? "Send message" : "Record voice message"}
+            aria-label={
+              recording
+                ? "Send voice message"
+                : text.trim()
+                  ? "Send message"
+                  : "Record voice message"
+            }
             className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--wa-teal-2)] text-white disabled:opacity-60"
           >
             {recording || text.trim() ? <Send className="h-5 w-5" /> : <Mic className="h-5 w-5" />}

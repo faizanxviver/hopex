@@ -129,7 +129,11 @@ export function ImageLightbox({ url, onClose }: { url: string; onClose: () => vo
       onClick={onClose}
       className="fixed inset-0 z-[120] grid place-items-center bg-black/85 p-4 backdrop-blur-sm"
     >
-      <img src={url} alt="Attachment" className="max-h-[90vh] max-w-full rounded-xl object-contain" />
+      <img
+        src={url}
+        alt="Attachment"
+        className="max-h-[90vh] max-w-full rounded-xl object-contain"
+      />
     </div>
   );
 }

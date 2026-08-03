@@ -32,7 +32,24 @@ import { ChatAttachment, ImageLightbox } from "@/components/chat-media";
 import { uploadChatImage, useVoiceRecorder, formatDuration } from "@/lib/chat-media";
 import { cn } from "@/lib/utils";
 
-const EMOJIS = ["👍","🙏","✅","❌","🔥","💰","📈","🎉","😀","😎","🤝","💎","⏳","🧾","🏦","💯"];
+const EMOJIS = [
+  "👍",
+  "🙏",
+  "✅",
+  "❌",
+  "🔥",
+  "💰",
+  "📈",
+  "🎉",
+  "😀",
+  "😎",
+  "🤝",
+  "💎",
+  "⏳",
+  "🧾",
+  "🏦",
+  "💯",
+];
 
 const CANNED = [
   "Assalam o Alaikum! HopeX support here — how can I help you today?",
@@ -56,7 +73,12 @@ function dayLabel(iso: string) {
 }
 
 const initials = (name: string) =>
-  name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
+  name
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
 export function AdminChat() {
   const { db, update, addNotification } = useStore();
@@ -266,9 +288,7 @@ export function AdminChat() {
               </span>
             </button>
           ))}
-          {threads.length === 0 ? (
-            <p className="p-4 text-sm wa-dim">No conversations.</p>
-          ) : null}
+          {threads.length === 0 ? <p className="p-4 text-sm wa-dim">No conversations.</p> : null}
         </div>
       </div>
 
@@ -280,7 +300,11 @@ export function AdminChat() {
         )}
       >
         <div className="wa-header flex items-center gap-3 px-3 py-2.5">
-          <button onClick={() => setSelected("")} aria-label="Back to inbox" className="shrink-0 lg:hidden">
+          <button
+            onClick={() => setSelected("")}
+            aria-label="Back to inbox"
+            className="shrink-0 lg:hidden"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/20 text-xs font-black">
@@ -333,9 +357,18 @@ export function AdminChat() {
                   </p>
                 ) : null}
                 <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
-                  <div className={cn("wa-bubble", mine ? "wa-out wa-bubble-out" : "wa-in wa-bubble-in")}>
+                  <div
+                    className={cn(
+                      "wa-bubble",
+                      mine ? "wa-out wa-bubble-out" : "wa-in wa-bubble-in",
+                    )}
+                  >
                     {m.attachment ? (
-                      <ChatAttachment attachment={m.attachment} mine={mine} onOpenImage={setLightbox} />
+                      <ChatAttachment
+                        attachment={m.attachment}
+                        mine={mine}
+                        onOpenImage={setLightbox}
+                      />
                     ) : null}
                     {m.text && m.text !== m.attachment?.name ? (
                       <span className="whitespace-pre-wrap font-semibold">{m.text}</span>
@@ -391,7 +424,11 @@ export function AdminChat() {
         {emoji ? (
           <div className="wa-panel grid grid-cols-8 gap-1 px-3 py-2 text-lg">
             {EMOJIS.map((e) => (
-              <button key={e} onClick={() => setText((t) => t + e)} className="rounded hover:bg-black/5">
+              <button
+                key={e}
+                onClick={() => setText((t) => t + e)}
+                className="rounded hover:bg-black/5"
+              >
                 {e}
               </button>
             ))}
@@ -407,7 +444,11 @@ export function AdminChat() {
             <Zap className="h-4 w-4" />
           </button>
           <div className="flex min-w-0 flex-1 items-end gap-1 rounded-3xl bg-[var(--wa-in)] px-3 py-1.5">
-            <button onClick={() => setEmoji((e) => !e)} aria-label="Emoji" className="pb-1.5 wa-dim">
+            <button
+              onClick={() => setEmoji((e) => !e)}
+              aria-label="Emoji"
+              className="pb-1.5 wa-dim"
+            >
               <Smile className="h-5 w-5" />
             </button>
             <textarea
@@ -426,7 +467,11 @@ export function AdminChat() {
               placeholder="Reply as HopeX Support"
               className="max-h-24 flex-1 resize-none bg-transparent py-1.5 text-sm outline-none"
             />
-            <button onClick={() => fileRef.current?.click()} aria-label="Attach file" className="pb-1.5 wa-dim">
+            <button
+              onClick={() => fileRef.current?.click()}
+              aria-label="Attach file"
+              className="pb-1.5 wa-dim"
+            >
               <Paperclip className="h-5 w-5 -rotate-45" />
             </button>
             <input
@@ -490,97 +535,164 @@ export function AdminChat() {
               label="Pending txns"
               value={String(
                 db.transactions.filter(
-                  (t) => t.userId === person.id && (t.status === "pending" || t.status === "processing"),
+                  (t) =>
+                    t.userId === person.id && (t.status === "pending" || t.status === "processing"),
                 ).length,
               )}
             />
-            <Line label="Payout" value={person.accountNumber ? `${person.bankName} · ${person.accountNumber}` : "Not bound"} />
+            <Line
+              label="Payout"
+              value={
+                person.accountNumber ? `${person.bankName} · ${person.accountNumber}` : "Not bound"
+              }
+            />
             <Line label="Status" value={person.blocked ? "Frozen" : "Active"} />
           </div>
 
-          <Action icon={PlusCircle} label="Add funds" onClick={() => {
-            const v = prompt(`Add funds to ${person.name} (PKR)`, "1000");
-            if (!v || isNaN(Number(v))) return;
-            adjust(Number(v), "Admin credit");
-            addNotification(person.id, { title: "Funds added", body: `${money(Number(v))} was credited by support.`, kind: "success" });
-            toast.success("Funds added.");
-          }} primary />
-
-          <Action icon={MinusCircle} label="Deduct funds" onClick={() => {
-            const v = prompt(`Deduct funds from ${person.name} (PKR)`, "1000");
-            if (!v || isNaN(Number(v))) return;
-            adjust(-Number(v), "Admin adjustment");
-            toast.success("Funds deducted.");
-          }} />
-
-          <Action icon={Wallet} label="Set exact balance" onClick={() => {
-            const v = prompt(`Set balance for ${person.name}`, String(person.balance));
-            if (v == null || isNaN(Number(v))) return;
-            update((d) => {
-              const u = d.users.find((x) => x.id === person.id);
-              if (u) u.balance = Number(v);
-              return d;
-            });
-            toast.success("Balance updated.");
-          }} />
-
-          <Action icon={Coins} label="Give referral bonus" onClick={() => {
-            const v = prompt(`Referral bonus for ${person.name} (PKR)`, "500");
-            if (!v || isNaN(Number(v))) return;
-            update((d) => {
-              const u = d.users.find((x) => x.id === person.id);
-              if (!u) return d;
-              u.balance += Number(v);
-              u.referralEarnings += Number(v);
-              d.transactions.unshift({
-                id: newId(), userId: u.id, type: "commission", amount: Number(v),
-                method: "Admin referral bonus", status: "completed", createdAt: timestamp(),
+          <Action
+            icon={PlusCircle}
+            label="Add funds"
+            onClick={() => {
+              const v = prompt(`Add funds to ${person.name} (PKR)`, "1000");
+              if (!v || isNaN(Number(v))) return;
+              adjust(Number(v), "Admin credit");
+              addNotification(person.id, {
+                title: "Funds added",
+                body: `${money(Number(v))} was credited by support.`,
+                kind: "success",
               });
-              return d;
-            });
-            toast.success("Bonus credited.");
-          }} />
+              toast.success("Funds added.");
+            }}
+            primary
+          />
 
-          <Action icon={Rocket} label="Activate a plan" onClick={() => {
-            const plan = db.plans.find((p) => p.active);
-            if (!plan) return toast.error("No active plan available.");
-            const v = prompt(`Activate ${plan.name} for ${person.name} — amount (PKR)`, String(plan.min));
-            if (!v || isNaN(Number(v))) return;
-            update((d) => {
-              d.investments.unshift({
-                id: newId(), userId: person.id, planId: plan.id, planName: plan.name,
-                amount: Number(v), dailyRoi: plan.dailyRoi, durationDays: plan.durationDays,
-                earned: 0, startedAt: timestamp(), lastPayoutAt: timestamp(),
+          <Action
+            icon={MinusCircle}
+            label="Deduct funds"
+            onClick={() => {
+              const v = prompt(`Deduct funds from ${person.name} (PKR)`, "1000");
+              if (!v || isNaN(Number(v))) return;
+              adjust(-Number(v), "Admin adjustment");
+              toast.success("Funds deducted.");
+            }}
+          />
+
+          <Action
+            icon={Wallet}
+            label="Set exact balance"
+            onClick={() => {
+              const v = prompt(`Set balance for ${person.name}`, String(person.balance));
+              if (v == null || isNaN(Number(v))) return;
+              update((d) => {
+                const u = d.users.find((x) => x.id === person.id);
+                if (u) u.balance = Number(v);
+                return d;
               });
-              return d;
-            });
-            toast.success("Plan activated.");
-          }} />
+              toast.success("Balance updated.");
+            }}
+          />
 
-          <Action icon={Bell} label="Send notification" onClick={() => {
-            const body = prompt(`Message to ${person.name}`);
-            if (!body) return;
-            addNotification(person.id, { title: "Message from HopeX", body, kind: "info", popup: true });
-            toast.success("Notification sent.");
-          }} />
+          <Action
+            icon={Coins}
+            label="Give referral bonus"
+            onClick={() => {
+              const v = prompt(`Referral bonus for ${person.name} (PKR)`, "500");
+              if (!v || isNaN(Number(v))) return;
+              update((d) => {
+                const u = d.users.find((x) => x.id === person.id);
+                if (!u) return d;
+                u.balance += Number(v);
+                u.referralEarnings += Number(v);
+                d.transactions.unshift({
+                  id: newId(),
+                  userId: u.id,
+                  type: "commission",
+                  amount: Number(v),
+                  method: "Admin referral bonus",
+                  status: "completed",
+                  createdAt: timestamp(),
+                });
+                return d;
+              });
+              toast.success("Bonus credited.");
+            }}
+          />
 
-          <Action icon={PenLine} label="Reset payout account" onClick={() => {
-            update((d) => {
-              const u = d.users.find((x) => x.id === person.id);
-              if (u) { u.bankName = ""; u.accountName = ""; u.accountNumber = ""; }
-              return d;
-            });
-            toast.success("Payout account cleared — user can bind a new one.");
-          }} />
+          <Action
+            icon={Rocket}
+            label="Activate a plan"
+            onClick={() => {
+              const plan = db.plans.find((p) => p.active);
+              if (!plan) return toast.error("No active plan available.");
+              const v = prompt(
+                `Activate ${plan.name} for ${person.name} — amount (PKR)`,
+                String(plan.min),
+              );
+              if (!v || isNaN(Number(v))) return;
+              update((d) => {
+                d.investments.unshift({
+                  id: newId(),
+                  userId: person.id,
+                  planId: plan.id,
+                  planName: plan.name,
+                  amount: Number(v),
+                  dailyRoi: plan.dailyRoi,
+                  durationDays: plan.durationDays,
+                  earned: 0,
+                  startedAt: timestamp(),
+                  lastPayoutAt: timestamp(),
+                });
+                return d;
+              });
+              toast.success("Plan activated.");
+            }}
+          />
 
-          <Action icon={BadgeCheck} label={person.verified ? "Mark unverified" : "Mark verified"} onClick={() => {
-            update((d) => {
-              const u = d.users.find((x) => x.id === person.id);
-              if (u) u.verified = !u.verified;
-              return d;
-            });
-            toast.success("Verification updated.");
-          }} />
+          <Action
+            icon={Bell}
+            label="Send notification"
+            onClick={() => {
+              const body = prompt(`Message to ${person.name}`);
+              if (!body) return;
+              addNotification(person.id, {
+                title: "Message from HopeX",
+                body,
+                kind: "info",
+                popup: true,
+              });
+              toast.success("Notification sent.");
+            }}
+          />
+
+          <Action
+            icon={PenLine}
+            label="Reset payout account"
+            onClick={() => {
+              update((d) => {
+                const u = d.users.find((x) => x.id === person.id);
+                if (u) {
+                  u.bankName = "";
+                  u.accountName = "";
+                  u.accountNumber = "";
+                }
+                return d;
+              });
+              toast.success("Payout account cleared — user can bind a new one.");
+            }}
+          />
+
+          <Action
+            icon={BadgeCheck}
+            label={person.verified ? "Mark unverified" : "Mark verified"}
+            onClick={() => {
+              update((d) => {
+                const u = d.users.find((x) => x.id === person.id);
+                if (u) u.verified = !u.verified;
+                return d;
+              });
+              toast.success("Verification updated.");
+            }}
+          />
 
           <button
             onClick={() => {
@@ -605,7 +717,10 @@ export function AdminChat() {
           className="fixed inset-0 z-[90] grid place-items-center bg-background/70 p-4 backdrop-blur-sm"
           onClick={() => setComposeOpen(false)}
         >
-          <div className="glass w-full max-w-sm overflow-hidden rounded-3xl" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="glass w-full max-w-sm overflow-hidden rounded-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
               <p className="text-sm font-bold">Start a new chat</p>
               <button onClick={() => setComposeOpen(false)} aria-label="Close" className="ml-auto">
@@ -630,7 +745,11 @@ export function AdminChat() {
                     setComposeOpen(false);
                     setComposeQuery("");
                     if (!db.chats.some((c) => c.userId === u.id)) {
-                      send("Hi 👋 HopeX support here — how can we help you today?", undefined, u.id);
+                      send(
+                        "Hi 👋 HopeX support here — how can we help you today?",
+                        undefined,
+                        u.id,
+                      );
                     }
                   }}
                   className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left hover:bg-accent"
