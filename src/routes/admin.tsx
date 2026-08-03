@@ -16,6 +16,8 @@ import {
   Users,
   ScrollText,
   Crown,
+  Gift,
+  Wallet,
   Wrench,
   Globe,
   type LucideIcon,
@@ -26,6 +28,7 @@ import {
 import { toast } from "sonner";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { AdminChat } from "@/components/admin-chat";
+import { BalanceControl, LeaderPlansAdmin, RewardsAdmin } from "@/components/admin-rewards";
 import {
   AdminCommandPalette,
   AdminTools,
@@ -68,6 +71,9 @@ const tabs = [
   "Methods",
   "Plans",
   "Promo Codes",
+  "Rewards",
+  "Leader Plans",
+  "Balance Control",
   "Support Chat",
   "Broadcast",
   "Audit Log",
@@ -84,6 +90,9 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
   Methods: CreditCard,
   Plans: TrendingUp,
   "Promo Codes": Ticket,
+  Rewards: Gift,
+  "Leader Plans": Crown,
+  "Balance Control": Wallet,
   "Support Chat": MessageSquare,
   Broadcast: Megaphone,
   "Audit Log": ScrollText,
@@ -165,8 +174,9 @@ function Admin() {
 
   const groups: { label: string; items: (typeof tabs)[number][] }[] = [
     { label: "Operations", items: ["Overview", "Users", "Support Chat"] },
+    { label: "Money flow", items: ["Balance Control"] },
     { label: "Money flow", items: ["Deposits", "Withdrawals", "Methods"] },
-    { label: "Growth", items: ["Plans", "Promo Codes", "Broadcast"] },
+    { label: "Growth", items: ["Plans", "Promo Codes", "Rewards", "Leader Plans", "Broadcast"] },
     { label: "System", items: ["Tools", "SEO", "Audit Log", "Settings"] },
   ];
   const recent = db.transactions.slice(0, 6);
@@ -573,6 +583,12 @@ function Admin() {
               </div>
             </div>
           ) : null}
+
+          {tab === "Rewards" ? <RewardsAdmin /> : null}
+
+          {tab === "Leader Plans" ? <LeaderPlansAdmin /> : null}
+
+          {tab === "Balance Control" ? <BalanceControl /> : null}
 
           {tab === "Support Chat" ? <AdminChat /> : null}
 
