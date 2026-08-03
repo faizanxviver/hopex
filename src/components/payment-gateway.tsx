@@ -257,7 +257,6 @@ export function PaymentGateway({
           </div>
         </div>
 
-
         {step === "connecting" ? (
           <div className="gw-panel flex flex-col items-center gap-4 p-10 text-center">
             <span className="relative grid h-16 w-16 place-items-center">
