@@ -12,6 +12,7 @@ import {
   Gem,
   Share2,
   TicketPercent,
+  Crown,
 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard } from "@/components/glass";
@@ -23,8 +24,11 @@ import {
   liveEarnings,
   money,
   nextPayoutIn,
+  salaryStatus,
   useStore,
 } from "@/lib/store";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -56,9 +60,10 @@ function countdown(ms: number) {
 }
 
 function Dashboard() {
-  const { db, user, claimEarnings } = useStore();
+  const { db, user, claimEarnings, refresh } = useStore();
   const { t } = useT();
   const [tick, setTick] = useState(() => Date.now());
+  const [claiming, setClaiming] = useState(false);
 
   // Smooth, fast-looking ticker: repaint on every animation frame.
   useEffect(() => {
@@ -82,6 +87,17 @@ function Dashboard() {
   }, [nextIn, claimEarnings]);
 
   if (!user) return null;
+
+  const salary = salaryStatus(db, user, tick);
+
+  const claimSalary = async () => {
+    setClaiming(true);
+    const { data, error } = await supabase.rpc("claim_salary");
+    setClaiming(false);
+    if (error) return toast.error(error.message.replace(/^.*?:\s*/, ""));
+    toast.success(`${t("Salary credited")} — ${money(Number(data))}`);
+    void refresh();
+  };
 
   return (
     <div className="space-y-5">
@@ -284,7 +300,6 @@ function Dashboard() {
           <p className="mt-1 font-display text-xl font-extrabold">{running.length}</p>
         </GlassCard>
       </div>
-
 
       <Link
         to="/transactions"
