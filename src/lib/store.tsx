@@ -617,6 +617,9 @@ async function persistDiff(prev: DB, next: DB) {
           maintenance_mode: next.settings.maintenanceMode,
           maintenance_message: next.settings.maintenanceMessage,
           salary_tiers: next.settings.salaryTiers,
+          reward_amount: next.settings.rewardAmount,
+          reward_cooldown_hours: next.settings.rewardCooldownHours,
+          reward_active: next.settings.rewardActive,
         })
         .eq("id", 1),
     );
