@@ -122,6 +122,54 @@ export type Database = {
         }
         Relationships: []
       }
+      leader_plans: {
+        Row: {
+          amount: number
+          check_hours: number
+          created_at: string
+          created_by: string | null
+          deadline_at: string
+          id: string
+          investment_id: string | null
+          plan_id: string
+          plan_name: string
+          required_investment: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          check_hours?: number
+          created_at?: string
+          created_by?: string | null
+          deadline_at: string
+          id?: string
+          investment_id?: string | null
+          plan_id: string
+          plan_name: string
+          required_investment?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          check_hours?: number
+          created_at?: string
+          created_by?: string | null
+          deadline_at?: string
+          id?: string
+          investment_id?: string | null
+          plan_id?: string
+          plan_name?: string
+          required_investment?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string
@@ -344,6 +392,45 @@ export type Database = {
         }
         Relationships: []
       }
+      reward_claims: {
+        Row: {
+          admin_note: string
+          amount: number
+          created_at: string
+          facebook_proof: string | null
+          id: string
+          reviewed_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          whatsapp_proof: string | null
+        }
+        Insert: {
+          admin_note?: string
+          amount?: number
+          created_at?: string
+          facebook_proof?: string | null
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          whatsapp_proof?: string | null
+        }
+        Update: {
+          admin_note?: string
+          amount?: number
+          created_at?: string
+          facebook_proof?: string | null
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          whatsapp_proof?: string | null
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           announcement_active: boolean
@@ -356,6 +443,9 @@ export type Database = {
           min_withdraw: number
           og_image: string | null
           quick_amounts: number[]
+          reward_active: boolean
+          reward_amount: number
+          reward_cooldown_hours: number
           salary_tiers: Json
           seo_description: string
           seo_keywords: string
@@ -379,6 +469,9 @@ export type Database = {
           min_withdraw?: number
           og_image?: string | null
           quick_amounts?: number[]
+          reward_active?: boolean
+          reward_amount?: number
+          reward_cooldown_hours?: number
           salary_tiers?: Json
           seo_description?: string
           seo_keywords?: string
@@ -402,6 +495,9 @@ export type Database = {
           min_withdraw?: number
           og_image?: string | null
           quick_amounts?: number[]
+          reward_active?: boolean
+          reward_amount?: number
+          reward_cooldown_hours?: number
           salary_tiers?: Json
           seo_description?: string
           seo_keywords?: string
@@ -481,6 +577,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_activate_leader_plan: {
+        Args: {
+          _amount: number
+          _check_hours: number
+          _plan_id: string
+          _required: number
+          _user_id: string
+        }
+        Returns: string
+      }
+      admin_adjust_balance: {
+        Args: {
+          _amount: number
+          _kind: string
+          _note?: string
+          _user_id: string
+        }
+        Returns: number
+      }
+      admin_remove_leader_plan: { Args: { _id: string }; Returns: undefined }
       buy_plan: { Args: { _amount: number; _plan_id: string }; Returns: string }
       claim_earnings: { Args: never; Returns: number }
       claim_salary: { Args: never; Returns: number }
@@ -508,6 +624,15 @@ export type Database = {
           bonus: number
           code: string
         }[]
+      }
+      review_reward_claim: {
+        Args: { _approve: boolean; _id: string; _note?: string }
+        Returns: number
+      }
+      run_leader_plan_checks: { Args: never; Returns: number }
+      submit_reward_claim: {
+        Args: { _facebook: string; _whatsapp: string }
+        Returns: string
       }
     }
     Enums: {
