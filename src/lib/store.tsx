@@ -241,6 +241,9 @@ const emptyDb = (): DB => ({
     maintenanceMode: false,
     maintenanceMessage: "HopeX is under scheduled maintenance. Please check back shortly.",
     salaryTiers: DEFAULT_SALARY_TIERS,
+    rewardAmount: 100,
+    rewardCooldownHours: 24,
+    rewardActive: true,
   },
   sessionId: null,
 });
