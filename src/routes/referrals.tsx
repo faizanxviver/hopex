@@ -12,15 +12,12 @@ import {
   UserPlus,
   Sparkle,
   Search,
-  Trophy,
-  ChevronRight,
   Wallet,
 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { Link } from "@tanstack/react-router";
-import { Progress } from "@/components/ui/progress";
-import { money, referralTree, salaryStatus, useStore } from "@/lib/store";
+import { money, referralTree, useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -200,37 +197,6 @@ function Referrals() {
           </GlassCard>
         ))}
       </div>
-
-      {/* Rank progress */}
-      <GlassCard>
-        <div className="flex items-center gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold/20 text-gold">
-            <Trophy className="h-4 w-4" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold">
-              {salary.current ? `${salary.current.rank} ${t("rank")}` : t("Unranked")}
-            </p>
-            <p className="truncate text-xs text-muted-foreground">
-              {salary.next
-                ? `${t("Next")} ${salary.next.rank} · ${salary.team}/${salary.next.team} ${t("members")}`
-                : t("Highest rank reached")}
-            </p>
-          </div>
-          <Link
-            to="/salary"
-            className="btn-glass flex h-10 shrink-0 items-center gap-1 px-3 text-xs font-bold text-foreground"
-          >
-            {t("Salary")} <ChevronRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-        {salary.next ? (
-          <Progress
-            value={Math.min(100, (salary.team / salary.next.team) * 100)}
-            className="mt-3 h-2"
-          />
-        ) : null}
-      </GlassCard>
 
       {/* Level ladder */}
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
