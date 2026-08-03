@@ -71,7 +71,12 @@ export interface ChatMessage {
   text: string;
   createdAt: string;
   status?: "sent" | "delivered" | "read";
-  attachment?: { name: string; kind: "image" | "file"; url?: string } | null;
+  attachment?: {
+    name: string;
+    kind: "image" | "file" | "audio";
+    url?: string;
+    duration?: number;
+  } | null;
   replyTo?: { from: "user" | "support"; text: string } | null;
 }
 
