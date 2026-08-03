@@ -200,27 +200,47 @@ function Referrals() {
 
       {/* Level ladder */}
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        {db.settings.levels.map((rate, i) => (
-          <button
-            key={i}
-            onClick={() => setTab(i)}
-            className={cn(
-              "glass rounded-2xl p-4 text-left transition hover:-translate-y-0.5",
-              tab === i && "ring-2 ring-primary/60",
-            )}
-          >
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                {t("Level")} {i + 1}
-              </p>
-              <span className="font-display text-lg font-extrabold text-gradient">{rate}%</span>
-            </div>
-            <p className="mt-2 text-sm font-semibold">
-              {levels[i].length} {t("members")}
-            </p>
-            <p className="text-xs text-success">{money(levelEarnings[i])}</p>
-          </button>
-        ))}
+        {db.settings.levels.map((rate, i) => {
+          const share = teamSize ? (levels[i].length / teamSize) * 100 : 0;
+          return (
+            <button
+              key={i}
+              onClick={() => setTab(i)}
+              className={cn(
+                "relative overflow-hidden rounded-3xl p-4 text-left transition duration-300 hover:-translate-y-1",
+                tab === i
+                  ? "reward-3d shadow-[var(--shadow-elegant)]"
+                  : "glass hover:shadow-[var(--shadow-elegant)]",
+              )}
+            >
+              <div
+                className={cn(
+                  "pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full blur-2xl transition",
+                  tab === i ? "bg-gold/40" : "bg-primary/20",
+                )}
+              />
+              <div className="relative">
+                <div className="flex items-center justify-between">
+                  <span className="rounded-full glass-soft px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    {t("Level")} {i + 1}
+                  </span>
+                  <span className="font-display text-xl font-black text-gradient">{rate}%</span>
+                </div>
+                <p className="mt-3 font-display text-2xl font-extrabold tabular-nums">
+                  {levels[i].length}
+                </p>
+                <p className="text-[11px] text-muted-foreground">{t("members")}</p>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full gradient-brand transition-all duration-500"
+                    style={{ width: `${Math.max(6, share)}%` }}
+                  />
+                </div>
+                <p className="mt-2 text-xs font-semibold text-success">{money(levelEarnings[i])}</p>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Members */}

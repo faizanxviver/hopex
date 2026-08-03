@@ -146,6 +146,9 @@ interface Settings {
   maintenanceMode: boolean;
   maintenanceMessage: string;
   salaryTiers: SalaryTier[];
+  rewardAmount: number;
+  rewardCooldownHours: number;
+  rewardActive: boolean;
 }
 
 export interface SalaryTier {
@@ -238,6 +241,9 @@ const emptyDb = (): DB => ({
     maintenanceMode: false,
     maintenanceMessage: "HopeX is under scheduled maintenance. Please check back shortly.",
     salaryTiers: DEFAULT_SALARY_TIERS,
+    rewardAmount: 100,
+    rewardCooldownHours: 24,
+    rewardActive: true,
   },
   sessionId: null,
 });
@@ -611,6 +617,9 @@ async function persistDiff(prev: DB, next: DB) {
           maintenance_mode: next.settings.maintenanceMode,
           maintenance_message: next.settings.maintenanceMessage,
           salary_tiers: next.settings.salaryTiers,
+          reward_amount: next.settings.rewardAmount,
+          reward_cooldown_hours: next.settings.rewardCooldownHours,
+          reward_active: next.settings.rewardActive,
         })
         .eq("id", 1),
     );
@@ -676,6 +685,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           invested: Number(t.invested),
           salary: Number(t.salary),
         })),
+        rewardAmount: num(s.reward_amount),
+        rewardCooldownHours: Number(s.reward_cooldown_hours ?? 24),
+        rewardActive: Boolean(s.reward_active ?? true),
       };
     }
 

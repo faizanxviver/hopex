@@ -13,6 +13,7 @@ import {
   Share2,
   TicketPercent,
   Crown,
+  Gift,
 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard } from "@/components/glass";
@@ -161,6 +162,32 @@ function Dashboard() {
           </div>
         </div>
       </GlassCard>
+
+      {/* Free reward task */}
+      {db.settings.rewardActive && db.settings.rewardAmount > 0 ? (
+        <Link to="/reward" className="reward-3d relative block overflow-hidden rounded-[2rem] p-5">
+          <div className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-gold/35 blur-3xl" />
+          <div className="relative flex items-center gap-4">
+            <span className="reward-coin grid h-14 w-14 shrink-0 place-items-center rounded-2xl">
+              <Gift className="h-6 w-6 text-primary-foreground" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">
+                {t("Free reward")}
+              </p>
+              <p className="truncate font-display text-2xl font-black text-gradient">
+                {money(db.settings.rewardAmount)}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                {t("Complete one simple task and get it free")}
+              </p>
+            </div>
+            <span className="btn-glass btn-glass-gold grid h-11 shrink-0 place-items-center px-4 text-xs font-black">
+              {t("Get free")}
+            </span>
+          </div>
+        </Link>
+      ) : null}
 
       {/* Live earnings */}
       {running.length > 0 ? (
