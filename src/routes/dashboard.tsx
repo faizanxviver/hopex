@@ -13,6 +13,7 @@ import {
   Share2,
   TicketPercent,
   Crown,
+  Gift,
 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard } from "@/components/glass";
