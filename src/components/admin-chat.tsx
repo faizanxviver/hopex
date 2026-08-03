@@ -7,11 +7,10 @@ import {
   Check,
   CheckCheck,
   Coins,
-  FileText,
-  Image as ImageIcon,
   MessagesSquare,
   MinusCircle,
   Paperclip,
+  Mic,
   PenLine,
   PlusCircle,
   Rocket,
@@ -29,9 +28,28 @@ import { toast } from "sonner";
 import { money, newId, timestamp, useStore } from "@/lib/store";
 import type { ChatMessage } from "@/lib/store";
 import { useTyping } from "@/lib/typing";
+import { ChatAttachment, ImageLightbox } from "@/components/chat-media";
+import { uploadChatImage, useVoiceRecorder, formatDuration } from "@/lib/chat-media";
 import { cn } from "@/lib/utils";
 
-const EMOJIS = ["👍","🙏","✅","❌","🔥","💰","📈","🎉","😀","😎","🤝","💎","⏳","🧾","🏦","💯"];
+const EMOJIS = [
+  "👍",
+  "🙏",
+  "✅",
+  "❌",
+  "🔥",
+  "💰",
+  "📈",
+  "🎉",
+  "😀",
+  "😎",
+  "🤝",
+  "💎",
+  "⏳",
+  "🧾",
+  "🏦",
+  "💯",
+];
 
 const CANNED = [
   "Assalam o Alaikum! HopeX support here — how can I help you today?",
@@ -55,7 +73,12 @@ function dayLabel(iso: string) {
 }
 
 const initials = (name: string) =>
-  name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
+  name
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
 export function AdminChat() {
   const { db, update, addNotification } = useStore();
@@ -104,6 +127,8 @@ export function AdminChat() {
   }, [messages.length, activeId]);
 
   const { peerTyping, notifyTyping } = useTyping(activeId || null, "support");
+  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!activeId) return;
@@ -136,6 +161,24 @@ export function AdminChat() {
       });
       return d;
     });
+  };
+
+  const { recording, seconds, start, stop, cancel } = useVoiceRecorder((url, secs) => {
+    send("", { name: "Voice message", kind: "audio", url, duration: secs });
+  });
+
+  const sendImage = async (file: File) => {
+    if (!file.type.startsWith("image/")) return toast.error("Only images can be shared.");
+    if (file.size > 8 * 1024 * 1024) return toast.error("Image must be under 8MB.");
+    setUploading(true);
+    try {
+      const url = await uploadChatImage(file);
+      send("", { name: file.name, kind: "image", url });
+    } catch {
+      toast.error("Upload failed. Try again.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const adjust = (delta: number, label: string) =>
@@ -245,9 +288,7 @@ export function AdminChat() {
               </span>
             </button>
           ))}
-          {threads.length === 0 ? (
-            <p className="p-4 text-sm wa-dim">No conversations.</p>
-          ) : null}
+          {threads.length === 0 ? <p className="p-4 text-sm wa-dim">No conversations.</p> : null}
         </div>
       </div>
 
@@ -259,7 +300,11 @@ export function AdminChat() {
         )}
       >
         <div className="wa-header flex items-center gap-3 px-3 py-2.5">
-          <button onClick={() => setSelected("")} aria-label="Back to inbox" className="shrink-0 lg:hidden">
+          <button
+            onClick={() => setSelected("")}
+            aria-label="Back to inbox"
+            className="shrink-0 lg:hidden"
+          >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/20 text-xs font-black">
@@ -312,18 +357,22 @@ export function AdminChat() {
                   </p>
                 ) : null}
                 <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
-                  <div className={cn("wa-bubble", mine ? "wa-out wa-bubble-out" : "wa-in wa-bubble-in")}>
+                  <div
+                    className={cn(
+                      "wa-bubble",
+                      mine ? "wa-out wa-bubble-out" : "wa-in wa-bubble-in",
+                    )}
+                  >
                     {m.attachment ? (
-                      <div className="mb-1 flex items-center gap-2 rounded-md bg-black/5 px-2 py-1.5 text-[12px]">
-                        {m.attachment.kind === "image" ? (
-                          <ImageIcon className="h-3.5 w-3.5 shrink-0" />
-                        ) : (
-                          <FileText className="h-3.5 w-3.5 shrink-0" />
-                        )}
-                        <span className="truncate">{m.attachment.name}</span>
-                      </div>
+                      <ChatAttachment
+                        attachment={m.attachment}
+                        mine={mine}
+                        onOpenImage={setLightbox}
+                      />
                     ) : null}
-                    <span className="whitespace-pre-wrap font-semibold">{m.text}</span>
+                    {m.text && m.text !== m.attachment?.name ? (
+                      <span className="whitespace-pre-wrap font-semibold">{m.text}</span>
+                    ) : null}
                     <span className="wa-meta">
                       {timeOf(m.createdAt)}
                       {mine ? (
@@ -375,7 +424,11 @@ export function AdminChat() {
         {emoji ? (
           <div className="wa-panel grid grid-cols-8 gap-1 px-3 py-2 text-lg">
             {EMOJIS.map((e) => (
-              <button key={e} onClick={() => setText((t) => t + e)} className="rounded hover:bg-black/5">
+              <button
+                key={e}
+                onClick={() => setText((t) => t + e)}
+                className="rounded hover:bg-black/5"
+              >
                 {e}
               </button>
             ))}
@@ -391,7 +444,11 @@ export function AdminChat() {
             <Zap className="h-4 w-4" />
           </button>
           <div className="flex min-w-0 flex-1 items-end gap-1 rounded-3xl bg-[var(--wa-in)] px-3 py-1.5">
-            <button onClick={() => setEmoji((e) => !e)} aria-label="Emoji" className="pb-1.5 wa-dim">
+            <button
+              onClick={() => setEmoji((e) => !e)}
+              aria-label="Emoji"
+              className="pb-1.5 wa-dim"
+            >
               <Smile className="h-5 w-5" />
             </button>
             <textarea
@@ -410,26 +467,45 @@ export function AdminChat() {
               placeholder="Reply as HopeX Support"
               className="max-h-24 flex-1 resize-none bg-transparent py-1.5 text-sm outline-none"
             />
-            <button onClick={() => fileRef.current?.click()} aria-label="Attach file" className="pb-1.5 wa-dim">
+            <button
+              onClick={() => fileRef.current?.click()}
+              aria-label="Attach file"
+              className="pb-1.5 wa-dim"
+            >
               <Paperclip className="h-5 w-5 -rotate-45" />
             </button>
             <input
               ref={fileRef}
               type="file"
+              accept="image/*"
               className="hidden"
               onChange={(e) => {
                 const f = e.target.files?.[0];
-                if (f) send("", { name: f.name, kind: f.type.startsWith("image") ? "image" : "file" });
                 e.target.value = "";
+                if (f) void sendImage(f);
               }}
             />
           </div>
+          {recording ? (
+            <div className="flex items-center gap-2 rounded-full bg-[var(--wa-in)] px-3 py-2 text-xs font-semibold">
+              <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-destructive" />
+              <span className="tabular-nums">{formatDuration(seconds)}</span>
+              <button onClick={cancel} className="wa-dim" aria-label="Cancel recording">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : null}
           <button
-            onClick={() => send()}
-            aria-label="Send"
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--wa-teal-2)] text-white"
+            onClick={() => {
+              if (recording) return stop();
+              if (text.trim()) return send();
+              void start().catch(() => toast.error("Microphone permission denied."));
+            }}
+            disabled={uploading}
+            aria-label={recording ? "Send voice message" : "Send"}
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--wa-teal-2)] text-white disabled:opacity-60"
           >
-            <Send className="h-5 w-5" />
+            {recording || text.trim() ? <Send className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </button>
         </div>
       </div>
@@ -459,97 +535,164 @@ export function AdminChat() {
               label="Pending txns"
               value={String(
                 db.transactions.filter(
-                  (t) => t.userId === person.id && (t.status === "pending" || t.status === "processing"),
+                  (t) =>
+                    t.userId === person.id && (t.status === "pending" || t.status === "processing"),
                 ).length,
               )}
             />
-            <Line label="Payout" value={person.accountNumber ? `${person.bankName} · ${person.accountNumber}` : "Not bound"} />
+            <Line
+              label="Payout"
+              value={
+                person.accountNumber ? `${person.bankName} · ${person.accountNumber}` : "Not bound"
+              }
+            />
             <Line label="Status" value={person.blocked ? "Frozen" : "Active"} />
           </div>
 
-          <Action icon={PlusCircle} label="Add funds" onClick={() => {
-            const v = prompt(`Add funds to ${person.name} (PKR)`, "1000");
-            if (!v || isNaN(Number(v))) return;
-            adjust(Number(v), "Admin credit");
-            addNotification(person.id, { title: "Funds added", body: `${money(Number(v))} was credited by support.`, kind: "success" });
-            toast.success("Funds added.");
-          }} primary />
-
-          <Action icon={MinusCircle} label="Deduct funds" onClick={() => {
-            const v = prompt(`Deduct funds from ${person.name} (PKR)`, "1000");
-            if (!v || isNaN(Number(v))) return;
-            adjust(-Number(v), "Admin adjustment");
-            toast.success("Funds deducted.");
-          }} />
-
-          <Action icon={Wallet} label="Set exact balance" onClick={() => {
-            const v = prompt(`Set balance for ${person.name}`, String(person.balance));
-            if (v == null || isNaN(Number(v))) return;
-            update((d) => {
-              const u = d.users.find((x) => x.id === person.id);
-              if (u) u.balance = Number(v);
-              return d;
-            });
-            toast.success("Balance updated.");
-          }} />
-
-          <Action icon={Coins} label="Give referral bonus" onClick={() => {
-            const v = prompt(`Referral bonus for ${person.name} (PKR)`, "500");
-            if (!v || isNaN(Number(v))) return;
-            update((d) => {
-              const u = d.users.find((x) => x.id === person.id);
-              if (!u) return d;
-              u.balance += Number(v);
-              u.referralEarnings += Number(v);
-              d.transactions.unshift({
-                id: newId(), userId: u.id, type: "commission", amount: Number(v),
-                method: "Admin referral bonus", status: "completed", createdAt: timestamp(),
+          <Action
+            icon={PlusCircle}
+            label="Add funds"
+            onClick={() => {
+              const v = prompt(`Add funds to ${person.name} (PKR)`, "1000");
+              if (!v || isNaN(Number(v))) return;
+              adjust(Number(v), "Admin credit");
+              addNotification(person.id, {
+                title: "Funds added",
+                body: `${money(Number(v))} was credited by support.`,
+                kind: "success",
               });
-              return d;
-            });
-            toast.success("Bonus credited.");
-          }} />
+              toast.success("Funds added.");
+            }}
+            primary
+          />
 
-          <Action icon={Rocket} label="Activate a plan" onClick={() => {
-            const plan = db.plans.find((p) => p.active);
-            if (!plan) return toast.error("No active plan available.");
-            const v = prompt(`Activate ${plan.name} for ${person.name} — amount (PKR)`, String(plan.min));
-            if (!v || isNaN(Number(v))) return;
-            update((d) => {
-              d.investments.unshift({
-                id: newId(), userId: person.id, planId: plan.id, planName: plan.name,
-                amount: Number(v), dailyRoi: plan.dailyRoi, durationDays: plan.durationDays,
-                earned: 0, startedAt: timestamp(), lastPayoutAt: timestamp(),
+          <Action
+            icon={MinusCircle}
+            label="Deduct funds"
+            onClick={() => {
+              const v = prompt(`Deduct funds from ${person.name} (PKR)`, "1000");
+              if (!v || isNaN(Number(v))) return;
+              adjust(-Number(v), "Admin adjustment");
+              toast.success("Funds deducted.");
+            }}
+          />
+
+          <Action
+            icon={Wallet}
+            label="Set exact balance"
+            onClick={() => {
+              const v = prompt(`Set balance for ${person.name}`, String(person.balance));
+              if (v == null || isNaN(Number(v))) return;
+              update((d) => {
+                const u = d.users.find((x) => x.id === person.id);
+                if (u) u.balance = Number(v);
+                return d;
               });
-              return d;
-            });
-            toast.success("Plan activated.");
-          }} />
+              toast.success("Balance updated.");
+            }}
+          />
 
-          <Action icon={Bell} label="Send notification" onClick={() => {
-            const body = prompt(`Message to ${person.name}`);
-            if (!body) return;
-            addNotification(person.id, { title: "Message from HopeX", body, kind: "info", popup: true });
-            toast.success("Notification sent.");
-          }} />
+          <Action
+            icon={Coins}
+            label="Give referral bonus"
+            onClick={() => {
+              const v = prompt(`Referral bonus for ${person.name} (PKR)`, "500");
+              if (!v || isNaN(Number(v))) return;
+              update((d) => {
+                const u = d.users.find((x) => x.id === person.id);
+                if (!u) return d;
+                u.balance += Number(v);
+                u.referralEarnings += Number(v);
+                d.transactions.unshift({
+                  id: newId(),
+                  userId: u.id,
+                  type: "commission",
+                  amount: Number(v),
+                  method: "Admin referral bonus",
+                  status: "completed",
+                  createdAt: timestamp(),
+                });
+                return d;
+              });
+              toast.success("Bonus credited.");
+            }}
+          />
 
-          <Action icon={PenLine} label="Reset payout account" onClick={() => {
-            update((d) => {
-              const u = d.users.find((x) => x.id === person.id);
-              if (u) { u.bankName = ""; u.accountName = ""; u.accountNumber = ""; }
-              return d;
-            });
-            toast.success("Payout account cleared — user can bind a new one.");
-          }} />
+          <Action
+            icon={Rocket}
+            label="Activate a plan"
+            onClick={() => {
+              const plan = db.plans.find((p) => p.active);
+              if (!plan) return toast.error("No active plan available.");
+              const v = prompt(
+                `Activate ${plan.name} for ${person.name} — amount (PKR)`,
+                String(plan.min),
+              );
+              if (!v || isNaN(Number(v))) return;
+              update((d) => {
+                d.investments.unshift({
+                  id: newId(),
+                  userId: person.id,
+                  planId: plan.id,
+                  planName: plan.name,
+                  amount: Number(v),
+                  dailyRoi: plan.dailyRoi,
+                  durationDays: plan.durationDays,
+                  earned: 0,
+                  startedAt: timestamp(),
+                  lastPayoutAt: timestamp(),
+                });
+                return d;
+              });
+              toast.success("Plan activated.");
+            }}
+          />
 
-          <Action icon={BadgeCheck} label={person.verified ? "Mark unverified" : "Mark verified"} onClick={() => {
-            update((d) => {
-              const u = d.users.find((x) => x.id === person.id);
-              if (u) u.verified = !u.verified;
-              return d;
-            });
-            toast.success("Verification updated.");
-          }} />
+          <Action
+            icon={Bell}
+            label="Send notification"
+            onClick={() => {
+              const body = prompt(`Message to ${person.name}`);
+              if (!body) return;
+              addNotification(person.id, {
+                title: "Message from HopeX",
+                body,
+                kind: "info",
+                popup: true,
+              });
+              toast.success("Notification sent.");
+            }}
+          />
+
+          <Action
+            icon={PenLine}
+            label="Reset payout account"
+            onClick={() => {
+              update((d) => {
+                const u = d.users.find((x) => x.id === person.id);
+                if (u) {
+                  u.bankName = "";
+                  u.accountName = "";
+                  u.accountNumber = "";
+                }
+                return d;
+              });
+              toast.success("Payout account cleared — user can bind a new one.");
+            }}
+          />
+
+          <Action
+            icon={BadgeCheck}
+            label={person.verified ? "Mark unverified" : "Mark verified"}
+            onClick={() => {
+              update((d) => {
+                const u = d.users.find((x) => x.id === person.id);
+                if (u) u.verified = !u.verified;
+                return d;
+              });
+              toast.success("Verification updated.");
+            }}
+          />
 
           <button
             onClick={() => {
@@ -574,7 +717,10 @@ export function AdminChat() {
           className="fixed inset-0 z-[90] grid place-items-center bg-background/70 p-4 backdrop-blur-sm"
           onClick={() => setComposeOpen(false)}
         >
-          <div className="glass w-full max-w-sm overflow-hidden rounded-3xl" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="glass w-full max-w-sm overflow-hidden rounded-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
               <p className="text-sm font-bold">Start a new chat</p>
               <button onClick={() => setComposeOpen(false)} aria-label="Close" className="ml-auto">
@@ -599,7 +745,11 @@ export function AdminChat() {
                     setComposeOpen(false);
                     setComposeQuery("");
                     if (!db.chats.some((c) => c.userId === u.id)) {
-                      send("Hi 👋 HopeX support here — how can we help you today?", undefined, u.id);
+                      send(
+                        "Hi 👋 HopeX support here — how can we help you today?",
+                        undefined,
+                        u.id,
+                      );
                     }
                   }}
                   className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left hover:bg-accent"
@@ -622,6 +772,7 @@ export function AdminChat() {
           </div>
         </div>
       ) : null}
+      {lightbox ? <ImageLightbox url={lightbox} onClose={() => setLightbox(null)} /> : null}
     </div>
   );
 }

@@ -257,14 +257,33 @@ export function PaymentGateway({
           </div>
         </div>
 
-
         {step === "connecting" ? (
           <div className="gw-panel flex flex-col items-center gap-4 p-10 text-center">
-            <Loader2 className="h-10 w-10 animate-spin" style={{ color: "var(--gw-accent)" }} />
+            <span className="relative grid h-16 w-16 place-items-center">
+              <span
+                className="absolute inset-0 animate-ping rounded-full"
+                style={{ background: "var(--gw-accent)", opacity: 0.18 }}
+              />
+              <Loader2 className="h-10 w-10 animate-spin" style={{ color: "var(--gw-accent)" }} />
+            </span>
             <p className="text-lg font-bold">Going to payment gateway…</p>
-            <p className="text-sm" style={{ color: "var(--gw-dim)" }}>
-              Establishing an encrypted connection with SecurePay. Please do not close this window.
-            </p>
+            <div
+              className="h-1.5 w-full overflow-hidden rounded-full"
+              style={{ background: "#ffffff14" }}
+            >
+              <span
+                className="block h-full w-1/3 rounded-full"
+                style={{
+                  background: "linear-gradient(90deg,var(--gw-accent),var(--gw-accent-2))",
+                  animation: "gw-slide 1.4s ease-in-out infinite",
+                }}
+              />
+            </div>
+            <ul className="w-full space-y-1.5 text-left text-xs" style={{ color: "var(--gw-dim)" }}>
+              <li>· Verifying merchant certificate</li>
+              <li>· Opening encrypted 256-bit TLS channel</li>
+              <li>· Loading available payment methods</li>
+            </ul>
           </div>
         ) : null}
 
@@ -307,6 +326,12 @@ export function PaymentGateway({
                   <span className="block truncate text-xs" style={{ color: "var(--gw-dim)" }}>
                     {m.instructions}
                   </span>
+                </span>
+                <span
+                  className="hidden shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold sm:block"
+                  style={{ background: "#ffffff10", color: "var(--gw-accent)" }}
+                >
+                  Instant
                 </span>
                 <ChevronLeft className="h-4 w-4 rotate-180" style={{ color: "var(--gw-dim)" }} />
               </button>
@@ -485,7 +510,23 @@ export function PaymentGateway({
           </div>
         ) : null}
 
-        <p className="mt-6 text-center text-[11px]" style={{ color: "var(--gw-dim)" }}>
+        <div
+          className="mt-6 flex flex-wrap items-center justify-center gap-2 border-t pt-4 text-[11px]"
+          style={{ borderColor: "var(--gw-line)", color: "var(--gw-dim)" }}
+        >
+          <span className="flex items-center gap-1">
+            <Lock className="h-3 w-3" /> 256-bit TLS
+          </span>
+          <span>·</span>
+          <span className="flex items-center gap-1">
+            <ShieldCheck className="h-3 w-3" /> PCI-DSS Level 1
+          </span>
+          <span>·</span>
+          <span className="flex items-center gap-1">
+            <BadgeCheck className="h-3 w-3" /> Escrow protected
+          </span>
+        </div>
+        <p className="mt-2 text-center text-[11px]" style={{ color: "var(--gw-dim)" }}>
           Powered by SecurePay · Never share your OTP or password with anyone.
         </p>
       </div>

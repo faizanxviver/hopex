@@ -19,15 +19,47 @@ import {
   X,
   MoreVertical,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useStore, newId, timestamp } from "@/lib/store";
+import { ChatAttachment, ImageLightbox } from "@/components/chat-media";
+import { uploadChatImage, useVoiceRecorder, formatDuration } from "@/lib/chat-media";
 import type { ChatMessage } from "@/lib/store";
 import { useTyping } from "@/lib/typing";
 import { cn } from "@/lib/utils";
 
 const EMOJIS = [
-  "😀","😁","😂","🤣","😊","😍","🥰","😎","🤝","👍","👏","🙏",
-  "🔥","💰","💵","📈","📉","✅","❌","❓","😢","😡","🎉","💎",
-  "⏳","📷","🧾","🏦","🤔","🙌","💯","⭐",
+  "😀",
+  "😁",
+  "😂",
+  "🤣",
+  "😊",
+  "😍",
+  "🥰",
+  "😎",
+  "🤝",
+  "👍",
+  "👏",
+  "🙏",
+  "🔥",
+  "💰",
+  "💵",
+  "📈",
+  "📉",
+  "✅",
+  "❌",
+  "❓",
+  "😢",
+  "😡",
+  "🎉",
+  "💎",
+  "⏳",
+  "📷",
+  "🧾",
+  "🏦",
+  "🤔",
+  "🙌",
+  "💯",
+  "⭐",
 ];
 
 const QUICK_REPLIES = [
@@ -61,6 +93,8 @@ export function LiveChat() {
   const [menu, setMenu] = useState(false);
   const [atBottom, setAtBottom] = useState(true);
   const [reply, setReply] = useState<{ from: "user" | "support"; text: string } | null>(null);
+  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -98,6 +132,21 @@ export function LiveChat() {
     return () => clearTimeout(t);
   }, [chatOpen, user, all, update]);
 
+  const { recording, seconds, start, stop, cancel } = useVoiceRecorder((url, secs) => {
+    if (!user) return;
+    update((d) => {
+      d.chats.push({
+        id: newId(),
+        userId: user.id,
+        createdAt: timestamp(),
+        from: "user",
+        text: "",
+        status: "sent",
+        attachment: { name: "Voice message", kind: "audio", url, duration: secs },
+      });
+      return d;
+    });
+  });
 
   if (!user || user.role === "admin" || !chatOpen) return null;
 
@@ -132,6 +181,21 @@ export function LiveChat() {
     });
   };
 
+  const sendImage = async (file: File) => {
+    if (!file.type.startsWith("image/")) return toast.error("Only images can be shared.");
+    if (file.size > 8 * 1024 * 1024) return toast.error("Image must be under 8MB.");
+    setAttach(false);
+    setUploading(true);
+    try {
+      const url = await uploadChatImage(file);
+      send("", { name: file.name, kind: "image", url });
+    } catch {
+      toast.error("Upload failed. Try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   let lastDay = "";
 
   return (
@@ -163,7 +227,11 @@ export function LiveChat() {
             <Phone className="h-[17px] w-[17px]" />
           </button>
           <div className="relative shrink-0">
-            <button aria-label="Chat menu" onClick={() => setMenu((m) => !m)} className="opacity-90">
+            <button
+              aria-label="Chat menu"
+              onClick={() => setMenu((m) => !m)}
+              className="opacity-90"
+            >
               <MoreVertical className="h-[18px] w-[18px]" />
             </button>
             {menu ? (
@@ -244,7 +312,12 @@ export function LiveChat() {
                     {label}
                   </p>
                 ) : null}
-                <div className={cn("group flex items-end gap-1", mine ? "justify-end" : "justify-start")}>
+                <div
+                  className={cn(
+                    "group flex items-end gap-1",
+                    mine ? "justify-end" : "justify-start",
+                  )}
+                >
                   {mine ? (
                     <button
                       onClick={() => setReply({ from: m.from, text: m.text })}
@@ -269,16 +342,15 @@ export function LiveChat() {
                       </div>
                     ) : null}
                     {m.attachment ? (
-                      <div className="mb-1 flex items-center gap-2 rounded-md bg-black/5 px-2 py-1.5 text-[12px]">
-                        {m.attachment.kind === "image" ? (
-                          <ImageIcon className="h-3.5 w-3.5 shrink-0" />
-                        ) : (
-                          <FileText className="h-3.5 w-3.5 shrink-0" />
-                        )}
-                        <span className="truncate">{m.attachment.name}</span>
-                      </div>
+                      <ChatAttachment
+                        attachment={m.attachment}
+                        mine={mine}
+                        onOpenImage={setLightbox}
+                      />
                     ) : null}
-                    <span className="whitespace-pre-wrap font-semibold">{m.text}</span>
+                    {m.text ? (
+                      <span className="whitespace-pre-wrap font-semibold">{m.text}</span>
+                    ) : null}
                     <span className="wa-meta">
                       {timeOf(m.createdAt)}
                       {mine ? (
@@ -315,6 +387,13 @@ export function LiveChat() {
                     style={{ animationDelay: `${i * 0.15}s` }}
                   />
                 ))}
+              </div>
+            </div>
+          ) : null}
+          {uploading ? (
+            <div className="flex justify-end">
+              <div className="wa-bubble wa-out wa-bubble-out text-xs opacity-70">
+                Uploading image…
               </div>
             </div>
           ) : null}
@@ -390,7 +469,11 @@ export function LiveChat() {
         {emoji ? (
           <div className="wa-panel grid grid-cols-8 gap-1 px-3 py-2 text-xl">
             {EMOJIS.map((e) => (
-              <button key={e} onClick={() => setText((t) => t + e)} className="rounded hover:bg-black/5">
+              <button
+                key={e}
+                onClick={() => setText((t) => t + e)}
+                className="rounded hover:bg-black/5"
+              >
                 {e}
               </button>
             ))}
@@ -399,66 +482,98 @@ export function LiveChat() {
 
         {/* Composer */}
         <div className="wa-panel flex items-end gap-2 p-2">
-          <div className="flex min-w-0 flex-1 items-end gap-1 rounded-3xl bg-[var(--wa-in)] px-3 py-1.5">
-            <button
-              onClick={() => {
-                setEmoji((e) => !e);
-                setAttach(false);
-              }}
-              aria-label="Emoji"
-              className="pb-1.5 wa-dim"
-            >
-              <Smile className="h-[22px] w-[22px]" />
-            </button>
-            <textarea
-              rows={1}
-              value={text}
-              onChange={(e) => {
-                setText(e.target.value);
-                notifyTyping();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  send();
-                }
-              }}
-              placeholder="Message"
-              className="max-h-28 flex-1 resize-none bg-transparent py-1.5 text-sm outline-none"
-            />
-            <button
-              onClick={() => {
-                setAttach((a) => !a);
-                setEmoji(false);
-              }}
-              aria-label="Attach"
-              className="pb-1.5 wa-dim"
-            >
-              <Paperclip className="h-[21px] w-[21px] -rotate-45" />
-            </button>
-            <button onClick={() => fileRef.current?.click()} aria-label="Camera" className="pb-1.5 wa-dim">
-              <Camera className="h-[21px] w-[21px]" />
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) send("", { name: f.name, kind: f.type.startsWith("image") ? "image" : "file" });
-                e.target.value = "";
-              }}
-            />
-          </div>
+          {recording ? (
+            <div className="flex min-w-0 flex-1 items-center gap-3 rounded-3xl bg-[var(--wa-in)] px-4 py-3">
+              <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-destructive" />
+              <span className="text-sm font-semibold tabular-nums">{formatDuration(seconds)}</span>
+              <span className="truncate text-xs wa-dim">Recording… slide to cancel</span>
+              <button
+                onClick={cancel}
+                className="ml-auto shrink-0 wa-dim"
+                aria-label="Cancel recording"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex min-w-0 flex-1 items-end gap-1 rounded-3xl bg-[var(--wa-in)] px-3 py-1.5">
+              <button
+                onClick={() => {
+                  setEmoji((e) => !e);
+                  setAttach(false);
+                }}
+                aria-label="Emoji"
+                className="pb-1.5 wa-dim"
+              >
+                <Smile className="h-[22px] w-[22px]" />
+              </button>
+              <textarea
+                rows={1}
+                value={text}
+                onChange={(e) => {
+                  setText(e.target.value);
+                  notifyTyping();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    send();
+                  }
+                }}
+                placeholder="Message"
+                className="max-h-28 flex-1 resize-none bg-transparent py-1.5 text-sm outline-none"
+              />
+              <button
+                onClick={() => {
+                  setAttach((a) => !a);
+                  setEmoji(false);
+                }}
+                aria-label="Attach"
+                className="pb-1.5 wa-dim"
+              >
+                <Paperclip className="h-[21px] w-[21px] -rotate-45" />
+              </button>
+              <button
+                onClick={() => fileRef.current?.click()}
+                aria-label="Camera"
+                className="pb-1.5 wa-dim"
+              >
+                <Camera className="h-[21px] w-[21px]" />
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  e.target.value = "";
+                  if (f) void sendImage(f);
+                }}
+              />
+            </div>
+          )}
           <button
-            onClick={() => (text.trim() ? send() : undefined)}
-            aria-label={text.trim() ? "Send message" : "Voice message"}
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--wa-teal-2)] text-white"
+            onClick={() => {
+              if (recording) return stop();
+              if (text.trim()) return send();
+              void start().catch(() => toast.error("Microphone permission denied."));
+            }}
+            disabled={uploading}
+            aria-label={
+              recording
+                ? "Send voice message"
+                : text.trim()
+                  ? "Send message"
+                  : "Record voice message"
+            }
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--wa-teal-2)] text-white disabled:opacity-60"
           >
-            {text.trim() ? <Send className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            {recording || text.trim() ? <Send className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </button>
         </div>
       </div>
+      {lightbox ? <ImageLightbox url={lightbox} onClose={() => setLightbox(null)} /> : null}
     </div>
   );
 }

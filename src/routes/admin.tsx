@@ -26,7 +26,12 @@ import {
 import { toast } from "sonner";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { AdminChat } from "@/components/admin-chat";
-import { AdminCommandPalette, AdminTools, BulkActionBar, SeoSettings } from "@/components/admin-tools";
+import {
+  AdminCommandPalette,
+  AdminTools,
+  BulkActionBar,
+  SeoSettings,
+} from "@/components/admin-tools";
 import { GlassCard, StatCard, StatusBadge } from "@/components/glass";
 import { money, newId, timestamp, useStore, fetchAuditLog, logAudit } from "@/lib/store";
 import type { AuditEntry, SalaryTier } from "@/lib/store";
@@ -209,23 +214,26 @@ function Admin() {
     </nav>
   );
 
-
   return (
     <div>
       {/* Console header */}
       <div className="glass relative mb-5 overflow-hidden rounded-3xl p-5 sm:p-6">
         <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-primary/25 blur-3xl" />
-        <div className="relative flex flex-wrap items-center gap-4">
-          <span className="grid h-12 w-12 place-items-center rounded-2xl gradient-brand text-primary-foreground">
-            <ShieldCheck className="h-6 w-6" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h1 className="font-display text-2xl font-extrabold sm:text-3xl">HopeX Console</h1>
-            <p className="text-sm text-muted-foreground">
-              Live control over users, money flow, plans and support.
-            </p>
+        <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:flex-wrap">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl gradient-brand text-primary-foreground sm:h-12 sm:w-12">
+              <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate font-display text-xl font-extrabold sm:text-3xl">
+                HopeX Console
+              </h1>
+              <p className="hidden text-sm text-muted-foreground sm:block">
+                Live control over users, money flow, plans and support.
+              </p>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="col-span-2 flex flex-wrap items-center gap-2 sm:col-auto">
             <AdminCommandPalette onJump={(t) => setTab(t as (typeof tabs)[number])} />
             <button
               onClick={() => setTab("Deposits")}
@@ -234,7 +242,9 @@ function Admin() {
                 pendingDeps ? "bg-destructive/15 text-destructive" : "glass-soft",
               )}
             >
-              <Clock className="h-3.5 w-3.5" /> {pendingDeps} deposits waiting
+              <Clock className="h-3.5 w-3.5" /> {pendingDeps}{" "}
+              <span className="hidden xs:inline">deposits waiting</span>
+              <span className="xs:hidden">deposits</span>
             </button>
             <button
               onClick={() => setTab("Withdrawals")}
@@ -243,14 +253,16 @@ function Admin() {
                 pendingWds ? "bg-destructive/15 text-destructive" : "glass-soft",
               )}
             >
-              <Clock className="h-3.5 w-3.5" /> {pendingWds} withdrawals waiting
+              <Clock className="h-3.5 w-3.5" /> {pendingWds}{" "}
+              <span className="hidden xs:inline">withdrawals waiting</span>
+              <span className="xs:hidden">withdrawals</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Mobile section switcher */}
-      <div className="mb-4 lg:hidden">
+      <div className="sticky top-[4.25rem] z-30 mb-4 lg:hidden">
         <button
           onClick={() => setMenuOpen(true)}
           className="glass flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left"
@@ -295,11 +307,14 @@ function Admin() {
         </aside>
 
         <div className="min-w-0">
-
           {tab === "Overview" ? (
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                <StatCard label="Total users" value={String(users.length)} icon={<Users className="h-5 w-5" />} />
+                <StatCard
+                  label="Total users"
+                  value={String(users.length)}
+                  icon={<Users className="h-5 w-5" />}
+                />
                 <StatCard
                   label="Total deposits"
                   value={money(totalDeposits)}
@@ -361,9 +376,7 @@ function Admin() {
             </div>
           ) : null}
 
-
           {tab === "Users" ? <UsersManager /> : null}
-
 
           {tab === "Deposits" || tab === "Withdrawals" ? (
             <>
@@ -503,7 +516,6 @@ function Admin() {
           {tab === "Methods" ? <MethodsManager /> : null}
 
           {tab === "Plans" ? <PlansManager /> : null}
-
 
           {tab === "Promo Codes" ? (
             <div className="space-y-4">
@@ -751,9 +763,6 @@ function BroadcastForm({
   );
 }
 
-
-
-
 /* ---------------- Payment methods manager ---------------- */
 function MethodsManager() {
   const { db, update } = useStore();
@@ -928,7 +937,9 @@ function BrandingSettings() {
       <p className="text-sm font-bold">Site branding</p>
 
       <div>
-        <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Site name</label>
+        <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
+          Site name
+        </label>
         <input
           defaultValue={siteName}
           onBlur={(e) => setField("siteName", e.target.value)}
@@ -948,7 +959,9 @@ function BrandingSettings() {
       </div>
 
       <div>
-        <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Site logo</label>
+        <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
+          Site logo
+        </label>
         <div className="flex items-center gap-3">
           <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl gradient-brand font-display text-base font-black text-primary-foreground">
             {siteLogo ? (
@@ -1006,26 +1019,50 @@ function PlanEditor({
   const n = Number(days) || 0;
   const total = d * n;
 
-  const field = "h-11 w-full rounded-xl border border-input bg-background/40 px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
+  const field =
+    "h-11 w-full rounded-xl border border-input bg-background/40 px-3 text-sm outline-none focus:ring-2 focus:ring-ring";
 
   return (
     <GlassCard className="space-y-3">
       <div>
-        <label className="text-[11px] uppercase tracking-widest text-muted-foreground">Plan name</label>
+        <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
+          Plan name
+        </label>
         <input value={name} onChange={(e) => setName(e.target.value)} className={field} />
       </div>
       <div className="grid grid-cols-3 gap-2">
         <div>
-          <label className="text-[11px] uppercase tracking-widest text-muted-foreground">Price</label>
-          <input value={price} onChange={(e) => setPrice(e.target.value)} type="number" className={field} />
+          <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            Price
+          </label>
+          <input
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            type="number"
+            className={field}
+          />
         </div>
         <div>
-          <label className="text-[11px] uppercase tracking-widest text-muted-foreground">Daily income</label>
-          <input value={daily} onChange={(e) => setDaily(e.target.value)} type="number" className={field} />
+          <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            Daily income
+          </label>
+          <input
+            value={daily}
+            onChange={(e) => setDaily(e.target.value)}
+            type="number"
+            className={field}
+          />
         </div>
         <div>
-          <label className="text-[11px] uppercase tracking-widest text-muted-foreground">Days</label>
-          <input value={days} onChange={(e) => setDays(e.target.value)} type="number" className={field} />
+          <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            Days
+          </label>
+          <input
+            value={days}
+            onChange={(e) => setDays(e.target.value)}
+            type="number"
+            className={field}
+          />
         </div>
       </div>
       <div className="rounded-xl glass-soft p-3 text-sm">
@@ -1039,12 +1076,16 @@ function PlanEditor({
         </div>
       </div>
       <div className="flex gap-2">
-        <button onClick={onCancel} className="flex-1 rounded-xl glass-soft py-2.5 text-sm font-semibold">
+        <button
+          onClick={onCancel}
+          className="flex-1 rounded-xl glass-soft py-2.5 text-sm font-semibold"
+        >
           Cancel
         </button>
         <button
           onClick={() => {
-            if (!name.trim() || p <= 0 || d <= 0 || n <= 0) return toast.error("Fill name, price, daily income and days.");
+            if (!name.trim() || p <= 0 || d <= 0 || n <= 0)
+              return toast.error("Fill name, price, daily income and days.");
             onSave({ name: name.trim(), price: p, daily: d, days: n });
           }}
           className="flex-1 rounded-xl gradient-brand py-2.5 text-sm font-bold text-primary-foreground"
@@ -1194,7 +1235,11 @@ function UsersManager() {
   const users = db.users
     .filter((u) => u.role === "user")
     .filter((u) =>
-      q.trim() ? `${u.name} ${u.phone ?? ""} ${u.email} ${u.referralCode}`.toLowerCase().includes(q.toLowerCase()) : true,
+      q.trim()
+        ? `${u.name} ${u.phone ?? ""} ${u.email} ${u.referralCode}`
+            .toLowerCase()
+            .includes(q.toLowerCase())
+        : true,
     )
     .filter((u) =>
       view === "frozen"
@@ -1213,7 +1258,12 @@ function UsersManager() {
       return d;
     });
 
-  const ledger = (id: string, type: "bonus" | "withdraw" | "commission", amount: number, method: string) =>
+  const ledger = (
+    id: string,
+    type: "bonus" | "withdraw" | "commission",
+    amount: number,
+    method: string,
+  ) =>
     update((d) => {
       d.transactions.unshift({
         id: newId(),
@@ -1277,7 +1327,9 @@ function UsersManager() {
                   ["Plans", String(plans)],
                 ].map(([l, v]) => (
                   <div key={l} className="rounded-xl glass-soft px-2 py-2">
-                    <p className="truncate text-[9px] uppercase tracking-widest text-muted-foreground">{l}</p>
+                    <p className="truncate text-[9px] uppercase tracking-widest text-muted-foreground">
+                      {l}
+                    </p>
                     <p className="truncate text-[11px] font-bold">{v}</p>
                   </div>
                 ))}
@@ -1292,84 +1344,150 @@ function UsersManager() {
 
               {open ? (
                 <div className="mt-3 grid grid-cols-2 gap-2">
-                  <Ctl label="Add funds" onClick={() => {
-                    const v = Number(prompt(`Add funds to ${u.name}`, "1000"));
-                    if (!v) return;
-                    patch(u.id, (x) => { x.balance += v; });
-                    ledger(u.id, "bonus", v, "Admin credit");
-                    addNotification(u.id, { title: "Funds added", body: `${money(v)} credited by support.`, kind: "success" });
-                    toast.success("Funds added.");
-                  }} />
-                  <Ctl label="Deduct funds" onClick={() => {
-                    const v = Number(prompt(`Deduct from ${u.name}`, "1000"));
-                    if (!v) return;
-                    patch(u.id, (x) => { x.balance = Math.max(0, x.balance - v); });
-                    ledger(u.id, "withdraw", v, "Admin adjustment");
-                    toast.success("Funds deducted.");
-                  }} />
-                  <Ctl label="Set balance" onClick={() => {
-                    const v = prompt(`Set balance for ${u.name}`, String(u.balance));
-                    if (v == null || isNaN(Number(v))) return;
-                    patch(u.id, (x) => { x.balance = Number(v); });
-                    toast.success("Balance updated.");
-                  }} />
-                  <Ctl label="Referral bonus" onClick={() => {
-                    const v = Number(prompt(`Referral bonus for ${u.name}`, "500"));
-                    if (!v) return;
-                    patch(u.id, (x) => { x.balance += v; x.referralEarnings += v; });
-                    ledger(u.id, "commission", v, "Admin referral bonus");
-                    toast.success("Bonus credited.");
-                  }} />
-                  <Ctl label="Activate plan" onClick={() => {
-                    const plan = db.plans.find((p) => p.active);
-                    if (!plan) return toast.error("No active plan.");
-                    update((d) => {
-                      d.investments.unshift({
-                        id: newId(), userId: u.id, planId: plan.id, planName: plan.name,
-                        amount: plan.min, dailyRoi: plan.dailyRoi, durationDays: plan.durationDays,
-                        earned: 0, startedAt: timestamp(), lastPayoutAt: timestamp(),
+                  <Ctl
+                    label="Add funds"
+                    onClick={() => {
+                      const v = Number(prompt(`Add funds to ${u.name}`, "1000"));
+                      if (!v) return;
+                      patch(u.id, (x) => {
+                        x.balance += v;
                       });
-                      return d;
-                    });
-                    toast.success(`${plan.name} activated.`);
-                  }} />
-                  <Ctl label="End all plans" onClick={() => {
-                    update((d) => {
-                      d.investments = d.investments.filter((i) => i.userId !== u.id);
-                      return d;
-                    });
-                    toast.success("Plans removed.");
-                  }} />
-                  <Ctl label="Notify user" onClick={() => {
-                    const body = prompt(`Message to ${u.name}`);
-                    if (!body) return;
-                    addNotification(u.id, { title: "Message from HopeX", body, kind: "info", popup: true });
-                    toast.success("Notification sent.");
-                  }} />
-                  <Ctl label="Reset payout acct" onClick={() => {
-                    patch(u.id, (x) => { x.bankName = ""; x.accountName = ""; x.accountNumber = ""; });
-                    toast.success("Payout account cleared.");
-                  }} />
-                  <Ctl label={u.verified ? "Unverify" : "Verify"} onClick={() => {
-                    patch(u.id, (x) => { x.verified = !x.verified; });
-                    toast.success("Verification updated.");
-                  }} />
-                  <Ctl label="Clear chat" onClick={() => {
-                    update((d) => {
-                      d.chats = d.chats.filter((c) => c.userId !== u.id);
-                      return d;
-                    });
-                    toast.success("Chat cleared.");
-                  }} />
-                  <Ctl label="Copy contact" onClick={() => {
-                    navigator.clipboard?.writeText(u.phone ?? u.email);
-                    toast.success("Contact copied.");
-                  }} />
+                      ledger(u.id, "bonus", v, "Admin credit");
+                      addNotification(u.id, {
+                        title: "Funds added",
+                        body: `${money(v)} credited by support.`,
+                        kind: "success",
+                      });
+                      toast.success("Funds added.");
+                    }}
+                  />
+                  <Ctl
+                    label="Deduct funds"
+                    onClick={() => {
+                      const v = Number(prompt(`Deduct from ${u.name}`, "1000"));
+                      if (!v) return;
+                      patch(u.id, (x) => {
+                        x.balance = Math.max(0, x.balance - v);
+                      });
+                      ledger(u.id, "withdraw", v, "Admin adjustment");
+                      toast.success("Funds deducted.");
+                    }}
+                  />
+                  <Ctl
+                    label="Set balance"
+                    onClick={() => {
+                      const v = prompt(`Set balance for ${u.name}`, String(u.balance));
+                      if (v == null || isNaN(Number(v))) return;
+                      patch(u.id, (x) => {
+                        x.balance = Number(v);
+                      });
+                      toast.success("Balance updated.");
+                    }}
+                  />
+                  <Ctl
+                    label="Referral bonus"
+                    onClick={() => {
+                      const v = Number(prompt(`Referral bonus for ${u.name}`, "500"));
+                      if (!v) return;
+                      patch(u.id, (x) => {
+                        x.balance += v;
+                        x.referralEarnings += v;
+                      });
+                      ledger(u.id, "commission", v, "Admin referral bonus");
+                      toast.success("Bonus credited.");
+                    }}
+                  />
+                  <Ctl
+                    label="Activate plan"
+                    onClick={() => {
+                      const plan = db.plans.find((p) => p.active);
+                      if (!plan) return toast.error("No active plan.");
+                      update((d) => {
+                        d.investments.unshift({
+                          id: newId(),
+                          userId: u.id,
+                          planId: plan.id,
+                          planName: plan.name,
+                          amount: plan.min,
+                          dailyRoi: plan.dailyRoi,
+                          durationDays: plan.durationDays,
+                          earned: 0,
+                          startedAt: timestamp(),
+                          lastPayoutAt: timestamp(),
+                        });
+                        return d;
+                      });
+                      toast.success(`${plan.name} activated.`);
+                    }}
+                  />
+                  <Ctl
+                    label="End all plans"
+                    onClick={() => {
+                      update((d) => {
+                        d.investments = d.investments.filter((i) => i.userId !== u.id);
+                        return d;
+                      });
+                      toast.success("Plans removed.");
+                    }}
+                  />
+                  <Ctl
+                    label="Notify user"
+                    onClick={() => {
+                      const body = prompt(`Message to ${u.name}`);
+                      if (!body) return;
+                      addNotification(u.id, {
+                        title: "Message from HopeX",
+                        body,
+                        kind: "info",
+                        popup: true,
+                      });
+                      toast.success("Notification sent.");
+                    }}
+                  />
+                  <Ctl
+                    label="Reset payout acct"
+                    onClick={() => {
+                      patch(u.id, (x) => {
+                        x.bankName = "";
+                        x.accountName = "";
+                        x.accountNumber = "";
+                      });
+                      toast.success("Payout account cleared.");
+                    }}
+                  />
+                  <Ctl
+                    label={u.verified ? "Unverify" : "Verify"}
+                    onClick={() => {
+                      patch(u.id, (x) => {
+                        x.verified = !x.verified;
+                      });
+                      toast.success("Verification updated.");
+                    }}
+                  />
+                  <Ctl
+                    label="Clear chat"
+                    onClick={() => {
+                      update((d) => {
+                        d.chats = d.chats.filter((c) => c.userId !== u.id);
+                        return d;
+                      });
+                      toast.success("Chat cleared.");
+                    }}
+                  />
+                  <Ctl
+                    label="Copy contact"
+                    onClick={() => {
+                      navigator.clipboard?.writeText(u.phone ?? u.email);
+                      toast.success("Contact copied.");
+                    }}
+                  />
                   <Ctl
                     danger
                     label={u.blocked ? "Unfreeze" : "Freeze"}
                     onClick={() => {
-                      patch(u.id, (x) => { x.blocked = !x.blocked; });
+                      patch(u.id, (x) => {
+                        x.blocked = !x.blocked;
+                      });
                       toast.success(u.blocked ? "Account unfrozen." : "Account frozen.");
                     }}
                   />
@@ -1378,7 +1496,9 @@ function UsersManager() {
             </GlassCard>
           );
         })}
-        {users.length === 0 ? <p className="text-sm text-muted-foreground">No users match this filter.</p> : null}
+        {users.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No users match this filter.</p>
+        ) : null}
       </div>
     </div>
   );
@@ -1390,7 +1510,9 @@ function Ctl({ label, onClick, danger }: { label: string; onClick: () => void; d
       onClick={onClick}
       className={cn(
         "rounded-xl px-2 py-2.5 text-[11px] font-bold transition",
-        danger ? "bg-destructive/15 text-destructive" : "glass-soft text-foreground hover:bg-accent",
+        danger
+          ? "bg-destructive/15 text-destructive"
+          : "glass-soft text-foreground hover:bg-accent",
       )}
     >
       {label}

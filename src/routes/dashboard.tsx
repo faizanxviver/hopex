@@ -12,6 +12,7 @@ import {
   Gem,
   Share2,
   TicketPercent,
+  Crown,
 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard } from "@/components/glass";
@@ -23,8 +24,11 @@ import {
   liveEarnings,
   money,
   nextPayoutIn,
+  salaryStatus,
   useStore,
 } from "@/lib/store";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -56,9 +60,10 @@ function countdown(ms: number) {
 }
 
 function Dashboard() {
-  const { db, user, claimEarnings } = useStore();
+  const { db, user, claimEarnings, refresh } = useStore();
   const { t } = useT();
   const [tick, setTick] = useState(() => Date.now());
+  const [claiming, setClaiming] = useState(false);
 
   // Smooth, fast-looking ticker: repaint on every animation frame.
   useEffect(() => {
@@ -82,6 +87,17 @@ function Dashboard() {
   }, [nextIn, claimEarnings]);
 
   if (!user) return null;
+
+  const salary = salaryStatus(db, user, tick);
+
+  const claimSalary = async () => {
+    setClaiming(true);
+    const { data, error } = await supabase.rpc("claim_salary");
+    setClaiming(false);
+    if (error) return toast.error(error.message.replace(/^.*?:\s*/, ""));
+    toast.success(`${t("Salary credited")} — ${money(Number(data))}`);
+    void refresh();
+  };
 
   return (
     <div className="space-y-5">
@@ -209,6 +225,63 @@ function Dashboard() {
           </Link>
         </GlassCard>
       )}
+
+      {/* Rank salary */}
+      <GlassCard className="relative overflow-hidden">
+        <div className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-gold/20 blur-3xl" />
+        <div className="relative">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gold/20 text-gold">
+                <Crown className="h-5 w-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                  {t("Rank salary")}
+                </p>
+                <p className="truncate font-display text-lg font-extrabold">
+                  {salary.current ? salary.current.rank : t("Unranked")} ·{" "}
+                  <span className="text-gold">{money(salary.current?.salary ?? 0)}</span>
+                </p>
+              </div>
+            </div>
+            {salary.claimable ? (
+              <button
+                onClick={claimSalary}
+                disabled={claiming}
+                className="btn-glass btn-glass-gold h-10 shrink-0 px-4 text-xs font-bold disabled:opacity-60"
+              >
+                {claiming ? "…" : t("Claim")}
+              </button>
+            ) : (
+              <Link
+                to="/salary"
+                className="btn-glass grid h-10 shrink-0 place-items-center px-4 text-xs font-bold text-foreground"
+              >
+                {t("Details")}
+              </Link>
+            )}
+          </div>
+          {salary.next ? (
+            <>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full gradient-brand"
+                  style={{
+                    width: `${Math.min(100, (salary.team / salary.next.team) * 100)}%`,
+                  }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {salary.team}/{salary.next.team} {t("members")} → {salary.next.rank} ·{" "}
+                {money(salary.next.salary)}
+              </p>
+            </>
+          ) : (
+            <p className="mt-3 text-xs text-muted-foreground">{t("Highest rank reached")}</p>
+          )}
+        </div>
+      </GlassCard>
 
       {/* Compact wallet strip */}
       <div className="grid grid-cols-2 gap-3">
