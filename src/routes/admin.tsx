@@ -215,17 +215,21 @@ function Admin() {
       {/* Console header */}
       <div className="glass relative mb-5 overflow-hidden rounded-3xl p-5 sm:p-6">
         <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-primary/25 blur-3xl" />
-        <div className="relative flex flex-wrap items-center gap-4">
-          <span className="grid h-12 w-12 place-items-center rounded-2xl gradient-brand text-primary-foreground">
-            <ShieldCheck className="h-6 w-6" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h1 className="font-display text-2xl font-extrabold sm:text-3xl">HopeX Console</h1>
-            <p className="text-sm text-muted-foreground">
-              Live control over users, money flow, plans and support.
-            </p>
+        <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:flex sm:flex-wrap">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl gradient-brand text-primary-foreground sm:h-12 sm:w-12">
+              <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate font-display text-xl font-extrabold sm:text-3xl">
+                HopeX Console
+              </h1>
+              <p className="hidden text-sm text-muted-foreground sm:block">
+                Live control over users, money flow, plans and support.
+              </p>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="col-span-2 flex flex-wrap items-center gap-2 sm:col-auto">
             <AdminCommandPalette onJump={(t) => setTab(t as (typeof tabs)[number])} />
             <button
               onClick={() => setTab("Deposits")}
@@ -234,7 +238,7 @@ function Admin() {
                 pendingDeps ? "bg-destructive/15 text-destructive" : "glass-soft",
               )}
             >
-              <Clock className="h-3.5 w-3.5" /> {pendingDeps} deposits waiting
+              <Clock className="h-3.5 w-3.5" /> {pendingDeps} <span className="hidden xs:inline">deposits waiting</span><span className="xs:hidden">deposits</span>
             </button>
             <button
               onClick={() => setTab("Withdrawals")}
@@ -243,14 +247,14 @@ function Admin() {
                 pendingWds ? "bg-destructive/15 text-destructive" : "glass-soft",
               )}
             >
-              <Clock className="h-3.5 w-3.5" /> {pendingWds} withdrawals waiting
+              <Clock className="h-3.5 w-3.5" /> {pendingWds} <span className="hidden xs:inline">withdrawals waiting</span><span className="xs:hidden">withdrawals</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Mobile section switcher */}
-      <div className="mb-4 lg:hidden">
+      <div className="sticky top-[4.25rem] z-30 mb-4 lg:hidden">
         <button
           onClick={() => setMenuOpen(true)}
           className="glass flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left"
