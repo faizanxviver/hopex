@@ -108,9 +108,21 @@ function Promo() {
 
       <div className="grid gap-3 sm:grid-cols-3">
         {[
-          { icon: Gift, t: "Instant bonus", d: "Credited to your withdrawable balance right away." },
-          { icon: Clock, t: "Limited window", d: "Every code has limited uses and an expiry date." },
-          { icon: BellRing, t: "Stay tuned", d: "New codes drop in notifications and support chat." },
+          {
+            icon: Gift,
+            t: "Instant bonus",
+            d: "Credited to your withdrawable balance right away.",
+          },
+          {
+            icon: Clock,
+            t: "Limited window",
+            d: "Every code has limited uses and an expiry date.",
+          },
+          {
+            icon: BellRing,
+            t: "Stay tuned",
+            d: "New codes drop in notifications and support chat.",
+          },
         ].map((x) => (
           <GlassCard key={x.t} className="p-4">
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/15 text-primary">
@@ -131,4 +143,3 @@ function Promo() {
     </div>
   );
 }
-
