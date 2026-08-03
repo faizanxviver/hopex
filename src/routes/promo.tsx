@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { TicketPercent, Sparkles } from "lucide-react";
+import { TicketPercent, Sparkles, ArrowRight, Gift, Clock, BellRing } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { money, newId, timestamp, useStore } from "@/lib/store";
