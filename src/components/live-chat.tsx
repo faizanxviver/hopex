@@ -19,7 +19,10 @@ import {
   X,
   MoreVertical,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useStore, newId, timestamp } from "@/lib/store";
+import { ChatAttachment, ImageLightbox } from "@/components/chat-media";
+import { uploadChatImage, useVoiceRecorder, formatDuration } from "@/lib/chat-media";
 import type { ChatMessage } from "@/lib/store";
 import { useTyping } from "@/lib/typing";
 import { cn } from "@/lib/utils";
@@ -61,6 +64,8 @@ export function LiveChat() {
   const [menu, setMenu] = useState(false);
   const [atBottom, setAtBottom] = useState(true);
   const [reply, setReply] = useState<{ from: "user" | "support"; text: string } | null>(null);
+  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -130,6 +135,21 @@ export function LiveChat() {
       d.chats = d.chats.filter((c) => c.userId !== user.id);
       return d;
     });
+  };
+
+  const sendImage = async (file: File) => {
+    if (!file.type.startsWith("image/")) return toast.error("Only images can be shared.");
+    if (file.size > 8 * 1024 * 1024) return toast.error("Image must be under 8MB.");
+    setAttach(false);
+    setUploading(true);
+    try {
+      const url = await uploadChatImage(file);
+      send("", { name: file.name, kind: "image", url });
+    } catch {
+      toast.error("Upload failed. Try again.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   let lastDay = "";
@@ -269,16 +289,15 @@ export function LiveChat() {
                       </div>
                     ) : null}
                     {m.attachment ? (
-                      <div className="mb-1 flex items-center gap-2 rounded-md bg-black/5 px-2 py-1.5 text-[12px]">
-                        {m.attachment.kind === "image" ? (
-                          <ImageIcon className="h-3.5 w-3.5 shrink-0" />
-                        ) : (
-                          <FileText className="h-3.5 w-3.5 shrink-0" />
-                        )}
-                        <span className="truncate">{m.attachment.name}</span>
-                      </div>
+                      <ChatAttachment
+                        attachment={m.attachment}
+                        mine={mine}
+                        onOpenImage={setLightbox}
+                      />
                     ) : null}
-                    <span className="whitespace-pre-wrap font-semibold">{m.text}</span>
+                    {m.text ? (
+                      <span className="whitespace-pre-wrap font-semibold">{m.text}</span>
+                    ) : null}
                     <span className="wa-meta">
                       {timeOf(m.createdAt)}
                       {mine ? (
@@ -443,10 +462,11 @@ export function LiveChat() {
               ref={fileRef}
               type="file"
               className="hidden"
+              accept="image/*"
               onChange={(e) => {
                 const f = e.target.files?.[0];
-                if (f) send("", { name: f.name, kind: f.type.startsWith("image") ? "image" : "file" });
                 e.target.value = "";
+                if (f) void sendImage(f);
               }}
             />
           </div>
