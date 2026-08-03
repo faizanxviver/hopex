@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
+  Trophy,
   Copy,
   Share2,
   Users,
@@ -62,7 +63,6 @@ function Referrals() {
     members.reduce((sum, m) => sum + (m.invested * db.settings.levels[i]) / 100, 0),
   );
   const teamVolume = levels.reduce((a, l) => a + l.reduce((s, m) => s + m.invested, 0), 0);
-  const salary = salaryStatus(db, user);
   const activeMembers = levels.flat().filter((m) => m.invested > 0).length;
 
   const copy = (value: string, label: string) => {
