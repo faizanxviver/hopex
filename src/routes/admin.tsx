@@ -174,8 +174,7 @@ function Admin() {
 
   const groups: { label: string; items: (typeof tabs)[number][] }[] = [
     { label: "Operations", items: ["Overview", "Users", "Support Chat"] },
-    { label: "Money flow", items: ["Balance Control"] },
-    { label: "Money flow", items: ["Deposits", "Withdrawals", "Methods"] },
+    { label: "Money flow", items: ["Deposits", "Withdrawals", "Balance Control", "Methods"] },
     { label: "Growth", items: ["Plans", "Promo Codes", "Rewards", "Leader Plans", "Broadcast"] },
     { label: "System", items: ["Tools", "SEO", "Audit Log", "Settings"] },
   ];
