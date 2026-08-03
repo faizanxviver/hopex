@@ -7,8 +7,6 @@ import {
   Check,
   CheckCheck,
   Coins,
-  FileText,
-  Image as ImageIcon,
   MessagesSquare,
   MinusCircle,
   Paperclip,
@@ -655,6 +653,7 @@ export function AdminChat() {
           </div>
         </div>
       ) : null}
+      {lightbox ? <ImageLightbox url={lightbox} onClose={() => setLightbox(null)} /> : null}
     </div>
   );
 }
