@@ -146,6 +146,9 @@ interface Settings {
   maintenanceMode: boolean;
   maintenanceMessage: string;
   salaryTiers: SalaryTier[];
+  rewardAmount: number;
+  rewardCooldownHours: number;
+  rewardActive: boolean;
 }
 
 export interface SalaryTier {
