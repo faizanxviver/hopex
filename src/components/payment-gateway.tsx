@@ -92,7 +92,7 @@ export function PaymentGateway({
         reader.onerror = () => reject(new Error("Could not read the file"));
         reader.readAsDataURL(file);
       });
-      const res = await uploadProofImage({ data: { base64, name: file.name } });
+      const res = await uploadProofImage({ data: { base64, name: file.name, purpose: "proof" } });
       setProofUrl(res.url);
     } catch (err) {
       setProof("");

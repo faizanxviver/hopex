@@ -68,7 +68,7 @@ async function upload(file: File) {
     reader.onerror = () => reject(new Error("فائل نہیں پڑھی جا سکی"));
     reader.readAsDataURL(file);
   });
-  const res = await uploadProofImage({ data: { base64, name: file.name } });
+  const res = await uploadProofImage({ data: { base64, name: file.name, purpose: "reward" } });
   return res.url;
 }
 

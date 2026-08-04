@@ -232,7 +232,7 @@ function ImageField({
         r.onerror = () => rej(new Error("Could not read file"));
         r.readAsDataURL(file);
       });
-      const { url } = await uploadProofImage({ data: { base64, name: file.name } });
+      const { url } = await uploadProofImage({ data: { base64, name: file.name, purpose: "branding" } });
       onChange(url);
       toast.success(`${title} updated.`);
     } catch (err) {

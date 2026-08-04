@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          active: boolean
+          api_key: string
+          bytes: number
+          created_at: string
+          failures: number
+          id: string
+          label: string
+          last_error: string | null
+          last_used_at: string | null
+          provider: string
+          purpose: string
+          updated_at: string
+          uploads: number
+        }
+        Insert: {
+          active?: boolean
+          api_key: string
+          bytes?: number
+          created_at?: string
+          failures?: number
+          id?: string
+          label?: string
+          last_error?: string | null
+          last_used_at?: string | null
+          provider?: string
+          purpose?: string
+          updated_at?: string
+          uploads?: number
+        }
+        Update: {
+          active?: boolean
+          api_key?: string
+          bytes?: number
+          created_at?: string
+          failures?: number
+          id?: string
+          label?: string
+          last_error?: string | null
+          last_used_at?: string | null
+          provider?: string
+          purpose?: string
+          updated_at?: string
+          uploads?: number
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string

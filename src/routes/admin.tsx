@@ -20,6 +20,7 @@ import {
   Wallet,
   Wrench,
   Globe,
+  KeyRound,
   type LucideIcon,
   Menu,
   X,
@@ -35,6 +36,7 @@ import {
   BulkActionBar,
   SeoSettings,
 } from "@/components/admin-tools";
+import { ApiKeysAdmin } from "@/components/admin-api";
 import { GlassCard, StatCard, StatusBadge } from "@/components/glass";
 import { money, newId, timestamp, useStore, fetchAuditLog, logAudit } from "@/lib/store";
 import type { AuditEntry, SalaryTier } from "@/lib/store";
@@ -80,6 +82,7 @@ const tabs = [
   "Audit Log",
   "Tools",
   "SEO",
+  "API Keys",
   "Settings",
 ] as const;
 
@@ -99,6 +102,7 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
   "Audit Log": ScrollText,
   Tools: Wrench,
   SEO: Globe,
+  "API Keys": KeyRound,
   Settings: Settings,
 };
 
@@ -177,7 +181,7 @@ function Admin() {
     { label: "Operations", items: ["Overview", "Users", "Support Chat"] },
     { label: "Money flow", items: ["Deposits", "Withdrawals", "Balance Control", "Methods"] },
     { label: "Growth", items: ["Plans", "Promo Codes", "Rewards", "Leader Plans", "Broadcast"] },
-    { label: "System", items: ["Tools", "SEO", "Audit Log", "Settings"] },
+    { label: "System", items: ["Tools", "SEO", "API Keys", "Audit Log", "Settings"] },
   ];
   const recent = db.transactions.slice(0, 6);
 
@@ -614,6 +618,8 @@ function Admin() {
 
           {tab === "SEO" ? <SeoSettings /> : null}
 
+          {tab === "API Keys" ? <ApiKeysAdmin /> : null}
+
           {tab === "Settings" ? (
             <GlassCard className="max-w-xl space-y-4">
               <h2 className="text-lg font-bold">Platform settings</h2>
@@ -800,7 +806,7 @@ function MethodsManager() {
         r.onerror = () => rej(new Error("Could not read file"));
         r.readAsDataURL(file);
       });
-      const { url } = await uploadProofImage({ data: { base64, name: file.name } });
+      const { url } = await uploadProofImage({ data: { base64, name: file.name, purpose: "branding" } });
       patch(id, "imageUrl", url);
       toast.success("Logo updated.");
     } catch (err) {
@@ -938,7 +944,7 @@ function BrandingSettings() {
         r.onerror = () => rej(new Error("Could not read file"));
         r.readAsDataURL(file);
       });
-      const { url } = await uploadProofImage({ data: { base64, name: file.name } });
+      const { url } = await uploadProofImage({ data: { base64, name: file.name, purpose: "branding" } });
       setField("siteLogo", url);
       toast.success("Logo updated.");
     } catch (err) {
