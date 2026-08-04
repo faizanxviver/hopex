@@ -112,12 +112,26 @@ export const updateApiKey = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
       return { ok: true };
     }
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      active?: boolean;
+      label?: string;
+      purpose?: string;
+      uploads?: number;
+      failures?: number;
+      bytes?: number;
+      last_error?: string | null;
+    } = {};
     if (typeof data.active === "boolean") patch.active = data.active;
     if (data.label !== undefined) patch.label = data.label.trim() || "imgbb key";
     if (data.purpose !== undefined) patch.purpose = data.purpose;
-    if (data.resetStats) Object.assign(patch, { uploads: 0, failures: 0, bytes: 0, last_error: null });
+    if (data.resetStats) {
+      patch.uploads = 0;
+      patch.failures = 0;
+      patch.bytes = 0;
+      patch.last_error = null;
+    }
     const { error } = await supabaseAdmin.from("api_keys").update(patch).eq("id", data.id);
+
     if (error) throw new Error(error.message);
     return { ok: true };
   });
