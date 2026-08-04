@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/deposit")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Deposit Funds — HopeX" },
       {
         name: "description",

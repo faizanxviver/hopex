@@ -36,11 +36,13 @@ export const Route = createFileRoute("/reward")({
         content:
           "Complete one simple sharing task on WhatsApp and Facebook and receive a free HopeX reward in your withdrawable balance.",
       },
+      { property: "og:url", content: "https://hopex.site/reward" },
       { property: "og:title", content: "Free Reward Task — HopeX" },
       { property: "og:description", content: "Share once, earn a free reward every day." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://hopex.site/reward" }],
   }),
   component: () => (
     <AuthGuard>

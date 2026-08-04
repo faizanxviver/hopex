@@ -15,11 +15,13 @@ export const Route = createFileRoute("/leaderboard")({
         name: "description",
         content: "See the top HopeX referrers, earners and investors ranked in real time.",
       },
+      { property: "og:url", content: "https://hopex.site/leaderboard" },
       { property: "og:title", content: "Leaderboard — HopeX" },
       { property: "og:description", content: "Top referrers and earners on HopeX." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://hopex.site/leaderboard" }],
   }),
   component: () => (
     <AuthGuard>

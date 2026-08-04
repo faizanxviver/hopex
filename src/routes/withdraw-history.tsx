@@ -8,6 +8,7 @@ import { money, useStore } from "@/lib/store";
 export const Route = createFileRoute("/withdraw-history")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Withdraw History — HopeX" },
       {
         name: "description",

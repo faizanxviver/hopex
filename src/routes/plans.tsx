@@ -23,9 +23,11 @@ export const Route = createFileRoute("/plans")({
         content:
           "Compare Starter, Growth, Premium and VIP plans and invest directly from your HopeX wallet.",
       },
+      { property: "og:url", content: "https://hopex.site/plans" },
       { property: "og:title", content: "Investment Plans — HopeX" },
       { property: "og:description", content: "Daily income plans from 1.2% to 3.1%." },
     ],
+    links: [{ rel: "canonical", href: "https://hopex.site/plans" }],
   }),
   component: () => (
     <AuthGuard>

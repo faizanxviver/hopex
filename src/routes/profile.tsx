@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Profile & Settings — HopeX" },
       {
         name: "description",

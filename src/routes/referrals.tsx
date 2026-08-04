@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/referrals")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Team & Referrals — HopeX" },
       {
         name: "description",

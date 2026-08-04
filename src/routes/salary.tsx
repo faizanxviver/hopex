@@ -18,11 +18,13 @@ export const Route = createFileRoute("/salary")({
         name: "description",
         content: "Grow your team and investment to unlock a monthly HopeX rank salary.",
       },
+      { property: "og:url", content: "https://hopex.site/salary" },
       { property: "og:title", content: "Rank Salary — HopeX" },
       { property: "og:description", content: "Monthly salary for every HopeX rank." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://hopex.site/salary" }],
   }),
   component: () => (
     <AuthGuard>

@@ -29,6 +29,7 @@ import { depositBalance, hasActivePlan, money, useStore } from "@/lib/store";
 export const Route = createFileRoute("/more")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "More — HopeX" },
       {
         name: "description",

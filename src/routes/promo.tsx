@@ -14,9 +14,11 @@ export const Route = createFileRoute("/promo")({
         name: "description",
         content: "Redeem a HopeX promo code and get an instant bonus credited to your wallet.",
       },
+      { property: "og:url", content: "https://hopex.site/promo" },
       { property: "og:title", content: "Promo Codes — HopeX" },
       { property: "og:description", content: "Instant bonus rewards for HopeX investors." },
     ],
+    links: [{ rel: "canonical", href: "https://hopex.site/promo" }],
   }),
   component: () => (
     <AuthGuard>
