@@ -8,6 +8,7 @@ import { money, useStore } from "@/lib/store";
 export const Route = createFileRoute("/deposit-history")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Deposit History — HopeX" },
       { name: "description", content: "Review every deposit with status, method and timestamps." },
       { property: "og:title", content: "Deposit History — HopeX" },

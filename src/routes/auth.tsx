@@ -21,9 +21,11 @@ export const Route = createFileRoute("/auth")({
         name: "description",
         content: "Access your HopeX investment wallet, plans and referral dashboard.",
       },
+      { property: "og:url", content: "https://hopex.site/auth" },
       { property: "og:title", content: "Sign in — HopeX" },
       { property: "og:description", content: "Secure access to your HopeX investment account." },
     ],
+    links: [{ rel: "canonical", href: "https://hopex.site/auth" }],
   }),
   component: AuthPage,
 });

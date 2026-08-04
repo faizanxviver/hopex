@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/withdraw")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Withdraw Funds — HopeX" },
       {
         name: "description",

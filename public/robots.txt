@@ -18,5 +18,12 @@ Disallow: /profile
 Disallow: /withdraw
 Disallow: /deposit
 Disallow: /transactions
+Disallow: /investments
+Disallow: /referrals
+Disallow: /more
+Disallow: /reward
+Disallow: /deposit-history
+Disallow: /withdraw-history
+Disallow: /forgot-password
 
 Sitemap: https://hopex.site/sitemap.xml

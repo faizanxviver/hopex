@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/transactions")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "All Transactions — HopeX" },
       {
         name: "description",

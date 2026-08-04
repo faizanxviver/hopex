@@ -9,6 +9,7 @@ import { useT } from "@/lib/i18n";
 export const Route = createFileRoute("/investments")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "My Active Plans — HopeX" },
       {
         name: "description",

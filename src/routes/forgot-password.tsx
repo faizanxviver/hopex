@@ -9,6 +9,7 @@ import { useStore } from "@/lib/store";
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Reset your password — HopeX" },
       {
         name: "description",

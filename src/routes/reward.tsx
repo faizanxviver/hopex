@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/reward")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Free Reward Task — HopeX" },
       {
         name: "description",
