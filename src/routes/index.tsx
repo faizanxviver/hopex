@@ -46,6 +46,29 @@ export const Route = createFileRoute("/")({
           url: "https://hopex.site",
         }),
       },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: [
+            [
+              "When do I get my first income?",
+              "Immediately — day 1 income is credited the moment your plan activates, then every 24 hours automatically.",
+            ],
+            ["How fast are payouts?", "Most payouts settle within 2 hours. An active plan is required to withdraw."],
+            ["Is my principal returned?", "Yes — principal returns to your balance when the plan matures."],
+            [
+              "Which payment methods work?",
+              "Bank transfer, USDT (TRC20/ERC20), JazzCash and EasyPaisa.",
+            ],
+          ].map(([q, a]) => ({
+            "@type": "Question",
+            name: q,
+            acceptedAnswer: { "@type": "Answer", text: a },
+          })),
+        }),
+      },
     ],
   }),
   component: Landing,
