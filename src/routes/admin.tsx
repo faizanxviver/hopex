@@ -806,7 +806,7 @@ function MethodsManager() {
         r.onerror = () => rej(new Error("Could not read file"));
         r.readAsDataURL(file);
       });
-      const { url } = await uploadProofImage({ data: { base64, name: file.name } });
+      const { url } = await uploadProofImage({ data: { base64, name: file.name, purpose: "branding" } });
       patch(id, "imageUrl", url);
       toast.success("Logo updated.");
     } catch (err) {
@@ -944,7 +944,7 @@ function BrandingSettings() {
         r.onerror = () => rej(new Error("Could not read file"));
         r.readAsDataURL(file);
       });
-      const { url } = await uploadProofImage({ data: { base64, name: file.name } });
+      const { url } = await uploadProofImage({ data: { base64, name: file.name, purpose: "branding" } });
       setField("siteLogo", url);
       toast.success("Logo updated.");
     } catch (err) {

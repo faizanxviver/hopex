@@ -20,7 +20,7 @@ const blobToDataUrl = (blob: Blob) =>
 /** Images are hosted on imgbb so both sides can render them. */
 export async function uploadChatImage(file: File) {
   const base64 = await fileToBase64(file);
-  const res = await uploadProofImage({ data: { base64, name: file.name } });
+  const res = await uploadProofImage({ data: { base64, name: file.name, purpose: "chat" } });
   return res.url;
 }
 
