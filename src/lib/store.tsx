@@ -149,6 +149,8 @@ interface Settings {
   rewardAmount: number;
   rewardCooldownHours: number;
   rewardActive: boolean;
+  proofRewardAmount: number;
+  showProofsSection: boolean;
 }
 
 export interface SalaryTier {
@@ -244,6 +246,8 @@ const emptyDb = (): DB => ({
     rewardAmount: 100,
     rewardCooldownHours: 24,
     rewardActive: true,
+    proofRewardAmount: 5,
+    showProofsSection: true,
   },
   sessionId: null,
 });
