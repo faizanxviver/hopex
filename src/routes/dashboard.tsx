@@ -14,6 +14,7 @@ import {
   TicketPercent,
   Crown,
   Gift,
+  CheckCircle2,
 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard } from "@/components/glass";
