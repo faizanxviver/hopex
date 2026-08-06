@@ -13,6 +13,7 @@ import {
   Settings,
   Ticket,
   TrendingUp,
+  Camera,
   Users,
   ScrollText,
   Crown,
