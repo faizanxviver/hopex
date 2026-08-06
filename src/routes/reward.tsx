@@ -285,7 +285,8 @@ ${refLink}
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
           آپ نے HopeX سے جو withdraw لیا ہے اس کے اسکرین شاٹ کے ساتھ یہ پوسٹ اپنے{" "}
           <b>واٹس ایپ اسٹیٹس</b> اور <b>فیس بک</b> پر لگائیں، پھر دونوں کے الگ الگ اسکرین شاٹ یہاں
-          اپلوڈ کریں۔
+          اپلوڈ کریں۔ (نوٹ: اس ٹاسک کے لیے withdraw کا اسکرین شاٹ ہونا لازمی ہے)
+
         </p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
