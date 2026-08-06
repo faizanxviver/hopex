@@ -50,9 +50,29 @@ export function useVoiceRecorder(onDone: (url: string, seconds: number) => void)
 
   const start = useCallback(async () => {
     if (recRef.current) return;
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      throw new Error("Voice recording is not supported in this browser.");
+    }
+    if (typeof MediaRecorder === "undefined") {
+      throw new Error("Voice recording is not supported in this browser.");
+    }
+    let stream: MediaStream;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const rec = new MediaRecorder(stream);
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (e) {
+      setRecording(false);
+      const name = (e as { name?: string })?.name;
+      if (name === "NotAllowedError" || name === "SecurityError") {
+        throw new Error("Microphone blocked — allow mic access in your browser settings.");
+      }
+      if (name === "NotFoundError") throw new Error("No microphone was found on this device.");
+      throw new Error("Could not start recording. Try again.");
+    }
+    try {
+      const preferred = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find(
+        (t) => typeof MediaRecorder.isTypeSupported === "function" && MediaRecorder.isTypeSupported(t),
+      );
+      const rec = new MediaRecorder(stream, preferred ? { mimeType: preferred } : undefined);
       chunks.current = [];
       cancelled.current = false;
       rec.ondataavailable = (e) => e.data.size && chunks.current.push(e.data);
@@ -83,10 +103,12 @@ export function useVoiceRecorder(onDone: (url: string, seconds: number) => void)
         1000,
       );
     } catch {
+      stream.getTracks().forEach((t) => t.stop());
       setRecording(false);
-      throw new Error("Microphone permission denied");
+      throw new Error("Could not start recording. Try again.");
     }
   }, [onDone]);
+
 
   const stop = useCallback(() => recRef.current?.stop(), []);
   const cancel = useCallback(() => {

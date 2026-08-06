@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import type { ReactNode } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 /* ---------------- types ---------------- */
@@ -624,6 +625,9 @@ async function persistDiff(prev: DB, next: DB) {
           reward_amount: next.settings.rewardAmount,
           reward_cooldown_hours: next.settings.rewardCooldownHours,
           reward_active: next.settings.rewardActive,
+          proof_reward_amount: next.settings.proofRewardAmount,
+          show_proofs_section: next.settings.showProofsSection,
+
         })
         .eq("id", 1),
     );
@@ -631,7 +635,14 @@ async function persistDiff(prev: DB, next: DB) {
 
   const results = await Promise.all(jobs);
   const failed = results.find((r) => (r as { error?: unknown } | null)?.error);
-  if (failed) console.error("Sync error", (failed as { error: unknown }).error);
+  if (failed) {
+    const err = (failed as { error: { message?: string } }).error;
+    console.error("Sync error", err);
+    if (typeof window !== "undefined") {
+      toast.error(err?.message ? `Could not save: ${err.message}` : "Could not save your change.");
+    }
+  }
+
 }
 
 /* ---------------- provider ---------------- */

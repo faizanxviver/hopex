@@ -189,12 +189,13 @@ export function LiveChat() {
     try {
       const url = await uploadChatImage(file);
       send("", { name: file.name, kind: "image", url });
-    } catch {
-      toast.error("Upload failed. Try again.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload failed. Try again.");
     } finally {
       setUploading(false);
     }
   };
+
 
   let lastDay = "";
 
@@ -557,7 +558,9 @@ export function LiveChat() {
             onClick={() => {
               if (recording) return stop();
               if (text.trim()) return send();
-              void start().catch(() => toast.error("Microphone permission denied."));
+              void start().catch((e) =>
+                toast.error(e instanceof Error ? e.message : "Microphone permission denied."),
+              );
             }}
             disabled={uploading}
             aria-label={

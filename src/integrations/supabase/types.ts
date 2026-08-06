@@ -490,6 +490,7 @@ export type Database = {
           min_deposit: number
           min_withdraw: number
           og_image: string | null
+          proof_reward_amount: number
           quick_amounts: number[]
           reward_active: boolean
           reward_amount: number
@@ -497,6 +498,7 @@ export type Database = {
           salary_tiers: Json
           seo_description: string
           seo_keywords: string
+          show_proofs_section: boolean
           site_favicon: string | null
           site_logo: string | null
           site_name: string
@@ -516,6 +518,7 @@ export type Database = {
           min_deposit?: number
           min_withdraw?: number
           og_image?: string | null
+          proof_reward_amount?: number
           quick_amounts?: number[]
           reward_active?: boolean
           reward_amount?: number
@@ -523,6 +526,7 @@ export type Database = {
           salary_tiers?: Json
           seo_description?: string
           seo_keywords?: string
+          show_proofs_section?: boolean
           site_favicon?: string | null
           site_logo?: string | null
           site_name?: string
@@ -542,6 +546,7 @@ export type Database = {
           min_deposit?: number
           min_withdraw?: number
           og_image?: string | null
+          proof_reward_amount?: number
           quick_amounts?: number[]
           reward_active?: boolean
           reward_amount?: number
@@ -549,6 +554,7 @@ export type Database = {
           salary_tiers?: Json
           seo_description?: string
           seo_keywords?: string
+          show_proofs_section?: boolean
           site_favicon?: string | null
           site_logo?: string | null
           site_name?: string
@@ -620,6 +626,45 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawal_proofs: {
+        Row: {
+          admin_note: string
+          amount: number
+          created_at: string
+          id: string
+          image_url: string
+          reviewed_at: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string
+          amount?: number
+          created_at?: string
+          id?: string
+          image_url: string
+          reviewed_at?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string
+          amount?: number
+          created_at?: string
+          id?: string
+          image_url?: string
+          reviewed_at?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -674,6 +719,10 @@ export type Database = {
         }[]
       }
       review_reward_claim: {
+        Args: { _approve: boolean; _id: string; _note?: string }
+        Returns: number
+      }
+      review_withdrawal_proof: {
         Args: { _approve: boolean; _id: string; _note?: string }
         Returns: number
       }

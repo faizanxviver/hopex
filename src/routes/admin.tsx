@@ -1846,31 +1846,13 @@ function WithdrawProofsAdmin() {
   }, []);
 
   const handleStatus = async (id: string, status: "approved" | "rejected") => {
-    const proof = proofs.find((p) => p.id === id);
-    if (!proof) return;
+    const { error } = await supabase.rpc("review_withdrawal_proof" as never, {
+      _id: id,
+      _approve: status === "approved",
+      _note: "",
+    } as never);
 
-    const { error } = await supabase
-      .from("withdrawal_proofs" as any)
-      .update({ status })
-      .eq("id", id);
-
-    if (error) return toast.error(error.message);
-
-    if (status === "approved") {
-      // Reward user - Profiles table in Supabase
-      const { data: userProfile } = await supabase.from("profiles").select("balance").eq("id", proof.user_id).single();
-      if (userProfile) {
-        await supabase.from("profiles").update({ balance: userProfile.balance + proof.amount }).eq("id", proof.user_id);
-        // Add transaction for history
-        await supabase.from("transactions").insert({
-          user_id: proof.user_id,
-          type: "bonus",
-          amount: proof.amount,
-          status: "completed",
-          reference: "Withdrawal proof reward"
-        });
-      }
-    }
+    if (error) return toast.error(error.message.replace(/^.*?:\s*/, ""));
 
     toast.success(`Proof ${status}`);
     fetchProofs();
