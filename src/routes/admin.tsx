@@ -599,6 +599,8 @@ function Admin() {
 
           {tab === "Support Chat" ? <AdminChat /> : null}
 
+          {tab === "Withdraw Proofs" ? <WithdrawProofsAdmin /> : null}
+
           {tab === "Broadcast" ? (
             <GlassCard className="max-w-xl">
               <h2 className="text-lg font-bold">Broadcast a notification</h2>
