@@ -6,13 +6,16 @@ export function GlassCard({
   children,
   className,
   glow,
+  onClick,
 }: {
   children: ReactNode;
   className?: string;
   glow?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <div
+      onClick={onClick}
       className={cn(
         "glass rounded-3xl p-6 transition-all duration-300 hover:-translate-y-0.5",
         glow && "glow",

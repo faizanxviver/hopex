@@ -149,6 +149,8 @@ interface Settings {
   rewardAmount: number;
   rewardCooldownHours: number;
   rewardActive: boolean;
+  proofRewardAmount: number;
+  showProofsSection: boolean;
 }
 
 export interface SalaryTier {
@@ -244,6 +246,8 @@ const emptyDb = (): DB => ({
     rewardAmount: 100,
     rewardCooldownHours: 24,
     rewardActive: true,
+    proofRewardAmount: 5,
+    showProofsSection: true,
   },
   sessionId: null,
 });
@@ -688,6 +692,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         rewardAmount: num(s.reward_amount),
         rewardCooldownHours: Number(s.reward_cooldown_hours ?? 24),
         rewardActive: Boolean(s.reward_active ?? true),
+        proofRewardAmount: num(s.proof_reward_amount ?? 5),
+        showProofsSection: Boolean(s.show_proofs_section ?? true),
       };
     }
 

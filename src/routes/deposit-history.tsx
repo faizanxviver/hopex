@@ -35,42 +35,42 @@ function DepositHistory() {
   const processing = rows.filter((r) => r.status === "pending" || r.status === "processing");
 
   return (
-    <div>
+    <div className="space-y-6 pb-20">
       <SectionTitle
         title={t("Deposit history")}
-        subtitle="Every deposit request and its current status."
+        subtitle={t("Audit every top-up request and its current status.")}
       />
 
-      <div className="mb-4 grid grid-cols-2 gap-3">
-        <GlassCard className="p-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-            {t("Successful")}
-          </p>
-          <p className="mt-1 font-display text-xl font-extrabold text-success">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="relative overflow-hidden rounded-[2rem] glass p-5">
+          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-success/20 blur-2xl" />
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("Successful")}</p>
+          <p className="mt-1 font-display text-2xl font-black text-success">
             {money(successful.reduce((a, r) => a + r.amount, 0))}
           </p>
-        </GlassCard>
-        <GlassCard className="p-4">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-            {t("Processing")}
-          </p>
-          <p className="mt-1 font-display text-xl font-extrabold text-primary">
+        </div>
+        <div className="relative overflow-hidden rounded-[2rem] glass p-5">
+          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/20 blur-2xl" />
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("Processing")}</p>
+          <p className="mt-1 font-display text-2xl font-black text-primary">
             {money(processing.reduce((a, r) => a + r.amount, 0))}
           </p>
-        </GlassCard>
+        </div>
       </div>
 
-      <TxList
-        rows={rows}
-        empty={
-          <>
-            No deposits yet.{" "}
-            <Link to="/deposit" className="font-semibold text-primary">
-              Make your first deposit
-            </Link>
-          </>
-        }
-      />
+      <div className="rounded-[2.5rem] glass overflow-hidden">
+        <TxList
+          rows={rows}
+          empty={
+            <div className="p-10 text-center">
+              <p className="text-sm text-muted-foreground mb-4">{t("No deposits yet.")}</p>
+              <Link to="/deposit" className="inline-flex h-11 items-center rounded-2xl gradient-brand px-6 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20">
+                {t("Make your first deposit")}
+              </Link>
+            </div>
+          }
+        />
+      </div>
     </div>
   );
 }

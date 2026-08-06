@@ -285,7 +285,8 @@ ${refLink}
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
           آپ نے HopeX سے جو withdraw لیا ہے اس کے اسکرین شاٹ کے ساتھ یہ پوسٹ اپنے{" "}
           <b>واٹس ایپ اسٹیٹس</b> اور <b>فیس بک</b> پر لگائیں، پھر دونوں کے الگ الگ اسکرین شاٹ یہاں
-          اپلوڈ کریں۔
+          اپلوڈ کریں۔ (نوٹ: اس ٹاسک کے لیے withdraw کا اسکرین شاٹ ہونا لازمی ہے)
+
         </p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -328,15 +329,19 @@ ${refLink}
           </div>
         ) : (
           <button
+            disabled={pending || !wa || !fb}
             onClick={submit}
-            disabled={sending || !wa || !fb}
-            className="btn-glass btn-glass-gold mt-4 flex h-13 w-full items-center justify-center gap-2 py-3.5 text-sm font-bold disabled:opacity-50"
+            className="group relative mt-4 h-14 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-gold to-yellow-600 font-display text-lg font-black text-black transition hover:scale-[1.02] active:scale-95 disabled:grayscale disabled:opacity-50"
           >
-            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
-            جمع کروائیں
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent" />
+            <div className="flex items-center justify-center gap-2">
+              <Gift className="h-5 w-5" />
+              <span>پوسٹ جمع کرائیں</span>
+            </div>
           </button>
         )}
       </GlassCard>
+
 
       {/* History */}
       <GlassCard className="p-5">

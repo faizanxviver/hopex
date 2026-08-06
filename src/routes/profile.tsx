@@ -11,6 +11,8 @@ import {
   Wallet,
   Smartphone,
   BadgeCheck,
+  TrendingUp,
+  Clock,
 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
@@ -195,12 +197,32 @@ function Profile() {
 
             <Link
               to="/investments"
-              className="btn-glass flex h-12 items-center justify-center text-sm font-semibold text-foreground"
+              className="flex items-center justify-between rounded-xl glass-soft px-4 py-3 transition hover:bg-accent"
             >
-              {t("Active plans")}
+              <div className="flex items-center gap-3 text-sm font-semibold">
+                <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary/15 text-primary">
+                  <BadgeCheck className="h-4 w-4" />
+                </span>
+                {t("Active plans")}
+              </div>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </Link>
+
+            <Link
+              to="/withdraw-history"
+              className="flex items-center justify-between rounded-xl glass-soft px-4 py-3 transition hover:bg-accent"
+            >
+              <div className="flex items-center gap-3 text-sm font-semibold">
+                <span className="grid h-9 w-9 place-items-center rounded-lg bg-gold/15 text-gold">
+                  <Wallet className="h-4 w-4" />
+                </span>
+                {t("Withdraw history")}
+              </div>
+              <Clock className="h-4 w-4 text-muted-foreground" />
             </Link>
           </div>
         </GlassCard>
+
       </div>
     </div>
   );

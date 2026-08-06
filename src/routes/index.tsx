@@ -17,6 +17,8 @@ import {
 import { GlassCard } from "@/components/glass";
 import { Brand } from "@/components/dashboard-layout";
 import { useStore } from "@/lib/store";
+import { WithdrawalProofsCarousel } from "@/components/withdrawal-proofs";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -262,6 +264,9 @@ function Landing() {
           </div>
         </div>
       </section>
+
+      <WithdrawalProofsCarousel />
+
 
       <footer className="border-t border-border/50 px-4 py-8">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

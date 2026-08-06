@@ -29,6 +29,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as WithdrawRouteImport } from './routes/withdraw'
 import { Route as WithdrawHistoryRouteImport } from './routes/withdraw-history'
+import { Route as WithdrawProofRouteImport } from './routes/withdraw-proof'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -130,6 +131,11 @@ const WithdrawHistoryRoute = WithdrawHistoryRouteImport.update({
   path: '/withdraw-history',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WithdrawProofRoute = WithdrawProofRouteImport.update({
+  id: '/withdraw-proof',
+  path: '/withdraw-proof',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
+  '/withdraw-proof': typeof WithdrawProofRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
+  '/withdraw-proof': typeof WithdrawProofRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -197,6 +205,7 @@ export interface FileRoutesById {
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
+  '/withdraw-proof': typeof WithdrawProofRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -221,6 +230,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/withdraw'
     | '/withdraw-history'
+    | '/withdraw-proof'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -243,6 +253,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/withdraw'
     | '/withdraw-history'
+    | '/withdraw-proof'
   id:
     | '__root__'
     | '/'
@@ -265,6 +276,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/withdraw'
     | '/withdraw-history'
+    | '/withdraw-proof'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -288,6 +300,7 @@ export interface RootRouteChildren {
   TransactionsRoute: typeof TransactionsRoute
   WithdrawRoute: typeof WithdrawRoute
   WithdrawHistoryRoute: typeof WithdrawHistoryRoute
+  WithdrawProofRoute: typeof WithdrawProofRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -432,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WithdrawHistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/withdraw-proof': {
+      id: '/withdraw-proof'
+      path: '/withdraw-proof'
+      fullPath: '/withdraw-proof'
+      preLoaderRoute: typeof WithdrawProofRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -456,17 +476,8 @@ const rootRouteChildren: RootRouteChildren = {
   TransactionsRoute: TransactionsRoute,
   WithdrawRoute: WithdrawRoute,
   WithdrawHistoryRoute: WithdrawHistoryRoute,
+  WithdrawProofRoute: WithdrawProofRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -13,6 +13,7 @@ import {
   Settings,
   Ticket,
   TrendingUp,
+  Camera,
   Users,
   ScrollText,
   Crown,
@@ -28,6 +29,7 @@ import {
 
 import { toast } from "sonner";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
+import { supabase } from "@/integrations/supabase/client";
 import { AdminChat } from "@/components/admin-chat";
 import { BalanceControl, LeaderPlansAdmin, RewardsAdmin } from "@/components/admin-rewards";
 import {
@@ -83,6 +85,7 @@ const tabs = [
   "Tools",
   "SEO",
   "API Keys",
+  "Withdraw Proofs",
   "Settings",
 ] as const;
 
@@ -103,6 +106,7 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
   Tools: Wrench,
   SEO: Globe,
   "API Keys": KeyRound,
+  "Withdraw Proofs": Camera,
   Settings: Settings,
 };
 
@@ -132,6 +136,9 @@ function Admin() {
       const owner = d.users.find((u) => u.id === t.userId);
       if (owner && credit && t.type === "deposit" && status === "approved")
         owner.balance += t.amount;
+      // Also reward uploader if this was a deposit approval? No, deposit doesn't have reward. 
+      // But withdrawal approval is where they get prompted to upload proof.
+
       if (owner && t.type === "withdraw" && status === "rejected") owner.balance += t.amount;
       d.notifications.unshift({
         id: newId(),
@@ -178,7 +185,7 @@ function Admin() {
   };
 
   const groups: { label: string; items: (typeof tabs)[number][] }[] = [
-    { label: "Operations", items: ["Overview", "Users", "Support Chat"] },
+    { label: "Operations", items: ["Overview", "Users", "Support Chat", "Withdraw Proofs"] },
     { label: "Money flow", items: ["Deposits", "Withdrawals", "Balance Control", "Methods"] },
     { label: "Growth", items: ["Plans", "Promo Codes", "Rewards", "Leader Plans", "Broadcast"] },
     { label: "System", items: ["Tools", "SEO", "API Keys", "Audit Log", "Settings"] },
@@ -595,6 +602,8 @@ function Admin() {
           {tab === "Balance Control" ? <BalanceControl /> : null}
 
           {tab === "Support Chat" ? <AdminChat /> : null}
+
+          {tab === "Withdraw Proofs" ? <WithdrawProofsAdmin /> : null}
 
           {tab === "Broadcast" ? (
             <GlassCard className="max-w-xl">
@@ -1513,8 +1522,39 @@ function UsersManager() {
                       toast.success(u.blocked ? "Account unfrozen." : "Account frozen.");
                     }}
                   />
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      onClick={() => {
+                        const amt = prompt("Amount to ADD (e.g. 500) or REMOVE (e.g. -500):");
+                        if (!amt) return;
+                        const val = parseFloat(amt);
+                        if (isNaN(val)) return toast.error("Invalid amount");
+                        patch(u.id, (x) => {
+                          x.balance += val;
+                        });
+                        toast.success(`Balance adjusted by ${money(val)}`);
+                      }}
+                      className="flex-1 rounded-xl bg-primary/10 py-2.5 text-[11px] font-bold text-primary hover:bg-primary/20"
+                    >
+                      ± Balance
+                    </button>
+                    <button
+                      onClick={() => {
+                        const amt = prompt("Deposit balance adjustment:");
+                        if (!amt) return;
+                        const val = parseFloat(amt);
+                        if (isNaN(val)) return toast.error("Invalid amount");
+                        // We'd need a field for this in profiles if it's not just sum of tx
+                        toast.info("Manual deposit balance adjustment coming soon.");
+                      }}
+                      className="flex-1 rounded-xl bg-success/10 py-2.5 text-[11px] font-bold text-success hover:bg-success/20"
+                    >
+                      ± Deposit
+                    </button>
+                  </div>
                 </div>
               ) : null}
+
             </GlassCard>
           );
         })}
@@ -1578,6 +1618,52 @@ function AnnouncementSettings() {
         placeholder="e.g. Withdrawals are processed daily between 8am and 8pm."
         className="mt-3 w-full rounded-xl border border-input bg-background/40 p-3 text-sm outline-none"
       />
+      <ProofRewardSettings />
+    </div>
+  );
+}
+
+/** Withdrawal proof reward settings. */
+function ProofRewardSettings() {
+  const { db, update } = useStore();
+  return (
+    <div className="rounded-2xl border border-border/60 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-bold text-success">Withdrawal proof reward</p>
+        <button
+          onClick={() =>
+            update((d) => {
+              d.settings.showProofsSection = !d.settings.showProofsSection;
+              return d;
+            })
+          }
+          className={cn(
+            "rounded-full px-3 py-1 text-xs font-bold",
+            db.settings.showProofsSection
+              ? "bg-success/15 text-success"
+              : "bg-muted text-muted-foreground",
+          )}
+        >
+          {db.settings.showProofsSection ? "Enabled" : "Disabled"}
+        </button>
+      </div>
+      <div className="mt-4 flex items-center gap-2">
+        <span className="text-xs text-muted-foreground">Reward (Rs):</span>
+        <input
+          type="number"
+          defaultValue={db.settings.proofRewardAmount}
+          onBlur={(e) =>
+            update((d) => {
+              d.settings.proofRewardAmount = Number(e.target.value);
+              return d;
+            })
+          }
+          className="h-10 w-24 rounded-xl border border-input bg-background/40 px-3 text-xs outline-none"
+        />
+      </div>
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        Users get this amount automatically when their withdrawal proof is approved.
+      </p>
     </div>
   );
 }
@@ -1737,5 +1823,109 @@ function AuditLogPanel() {
         )}
       </div>
     </GlassCard>
+  );
+}
+
+function WithdrawProofsAdmin() {
+  const { db, update, refresh } = useStore();
+  const [loading, setLoading] = useState(true);
+  const [proofs, setProofs] = useState<any[]>([]);
+
+  const fetchProofs = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("withdrawal_proofs" as any)
+      .select("*, users:profiles(name, phone)")
+      .order("created_at", { ascending: false });
+    setProofs(data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchProofs();
+  }, []);
+
+  const handleStatus = async (id: string, status: "approved" | "rejected") => {
+    const proof = proofs.find((p) => p.id === id);
+    if (!proof) return;
+
+    const { error } = await supabase
+      .from("withdrawal_proofs" as any)
+      .update({ status })
+      .eq("id", id);
+
+    if (error) return toast.error(error.message);
+
+    if (status === "approved") {
+      // Reward user - Profiles table in Supabase
+      const { data: userProfile } = await supabase.from("profiles").select("balance").eq("id", proof.user_id).single();
+      if (userProfile) {
+        await supabase.from("profiles").update({ balance: userProfile.balance + proof.amount }).eq("id", proof.user_id);
+        // Add transaction for history
+        await supabase.from("transactions").insert({
+          user_id: proof.user_id,
+          type: "bonus",
+          amount: proof.amount,
+          status: "completed",
+          reference: "Withdrawal proof reward"
+        });
+      }
+    }
+
+    toast.success(`Proof ${status}`);
+    fetchProofs();
+    refresh();
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-display text-xl font-extrabold">Withdrawal Proofs</h2>
+        <button onClick={fetchProofs} className="btn-glass px-4 py-2 text-xs font-bold">Refresh</button>
+      </div>
+
+      <GlassCard className="p-0 overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="border-b border-border/60 text-left text-[10px] uppercase tracking-widest text-muted-foreground">
+            <tr>
+              <th className="p-4">User</th>
+              <th className="p-4">Proof</th>
+              <th className="p-4">Reward</th>
+              <th className="p-4">Status</th>
+              <th className="p-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/40">
+            {loading ? (
+              <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">Loading...</td></tr>
+            ) : proofs.length === 0 ? (
+              <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">No proofs submitted.</td></tr>
+            ) : proofs.map((p) => (
+              <tr key={p.id}>
+                <td className="p-4">
+                  <p className="font-bold">{p.users?.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{p.users?.phone}</p>
+                </td>
+                <td className="p-4">
+                  <a href={p.image_url} target="_blank" rel="noreferrer">
+                    <img src={p.image_url} className="h-12 w-12 rounded-lg object-cover border border-border/60" />
+                  </a>
+                </td>
+                <td className="p-4 font-bold text-success">{money(p.amount)}</td>
+                <td className="p-4"><StatusBadge status={p.status} /></td>
+                <td className="p-4 text-right">
+                  {p.status === "pending" && (
+                    <div className="flex justify-end gap-2">
+                      <button onClick={() => handleStatus(p.id, "approved")} className="rounded-lg bg-success/15 px-3 py-1 text-[10px] font-bold text-success">Approve</button>
+                      <button onClick={() => handleStatus(p.id, "rejected")} className="rounded-lg bg-destructive/15 px-3 py-1 text-[10px] font-bold text-destructive">Decline</button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </GlassCard>
+    </div>
   );
 }
