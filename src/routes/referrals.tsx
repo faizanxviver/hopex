@@ -15,6 +15,7 @@ import {
   Search,
   Wallet,
   Ticket,
+  ArrowRight,
 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
@@ -117,25 +118,27 @@ function Referrals() {
             </div>
           </div>
 
-          <button
-            onClick={() => copy(user.referralCode, t("Referral code"))}
-            className="mt-4 flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-dashed border-gold/40 bg-gold/5 px-4 py-4 text-left transition hover:bg-gold/10"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold/20 text-gold">
-                <Ticket className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <span className="block text-[10px] uppercase tracking-widest text-muted-foreground/70 font-bold">
-                  {t("Referral code")}
-                </span>
-                <span className="block truncate font-display text-2xl font-black text-gold">
-                  {user.referralCode}
-                </span>
-              </div>
+          <div className="mt-6 flex flex-col gap-4">
+            <div className="group relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-gold/10 to-transparent p-[1px]">
+              <div className="absolute inset-0 bg-gradient-to-br from-gold/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+              <button
+                onClick={() => copy(user.referralCode, t("Referral code"))}
+                className="relative flex w-full items-center justify-between gap-4 rounded-[2.5rem] bg-background/40 px-8 py-6 backdrop-blur-md"
+              >
+                <div className="flex flex-col items-start min-w-0">
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
+                    {t("Unique Referral Code")}
+                  </span>
+                  <span className="mt-1 font-display text-4xl font-black tracking-tighter text-gold">
+                    {user.referralCode}
+                  </span>
+                </div>
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gold/10 text-gold transition-transform group-hover:scale-110">
+                  <Ticket className="h-7 w-7" />
+                </div>
+              </button>
             </div>
-            <Copy className="h-5 w-5 shrink-0 text-gold/60" />
-          </button>
+          </div>
 
           <div className="mt-3 flex h-12 items-center gap-2 rounded-2xl border border-border/60 bg-background/40 px-4">
             <Link2 className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -322,52 +325,58 @@ function Referrals() {
         </div>
       </GlassCard>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <Link
           to="/leaderboard"
-          className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5"
+          className="group relative overflow-hidden rounded-[2rem] glass p-5 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-gold/10"
         >
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gold/20 text-gold">
-            <Trophy className="h-5 w-5" />
-          </span>
-          <span className="min-w-0">
-            <span className="block text-sm font-semibold">{t("Leaderboard")}</span>
-            <span className="block truncate text-xs text-muted-foreground">
-              {t("See the top referrers")}
-            </span>
-          </span>
+          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gold/10 blur-2xl group-hover:bg-gold/20" />
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gold/10 text-gold transition-transform group-hover:rotate-12">
+              <Trophy className="h-6 w-6" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold">{t("Leaderboard")}</p>
+              <p className="text-[11px] text-muted-foreground">{t("Compete for top referrer rank")}</p>
+            </div>
+          </div>
         </Link>
         <Link
           to="/withdraw"
-          className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5"
+          className="group relative overflow-hidden rounded-[2rem] glass p-5 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/10"
         >
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-            <Wallet className="h-5 w-5" />
-          </span>
-          <span className="min-w-0">
-            <span className="block text-sm font-semibold">{t("Withdraw earnings")}</span>
-            <span className="block truncate text-xs text-muted-foreground">
-              {money(user.balance)}
-            </span>
-          </span>
+          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/10 blur-2xl group-hover:bg-primary/20" />
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-transform group-hover:rotate-12">
+              <Wallet className="h-6 w-6" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold">{t("Payout Hub")}</p>
+              <p className="text-[11px] text-muted-foreground">{t("Available")}: {money(user.balance)}</p>
+            </div>
+          </div>
         </Link>
       </div>
 
-      {/* Live support */}
       <button
         onClick={() => setChatOpen(true)}
-        className="glass flex w-full items-center gap-3 rounded-2xl p-4 text-left transition hover:-translate-y-0.5"
+        className="group relative w-full overflow-hidden rounded-[2rem] border border-success/10 bg-success/5 p-5 text-left transition hover:bg-success/10"
       >
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-success/15 text-success">
-          <Headset className="h-5 w-5" />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold">{t("Live support chat")}</span>
-          <span className="block truncate text-xs text-muted-foreground">
-            {t("Questions about your team or commission? Chat with us.")}
-          </span>
-        </span>
-        <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-success" />
+        <div className="flex items-center gap-4">
+          <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-success/15 text-success">
+            <Headset className="h-6 w-6" />
+            <span className="absolute -right-0.5 -top-0.5 h-3 w-3 animate-pulse rounded-full border-2 border-background bg-success" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold text-success">{t("Concierge Support")}</p>
+            <p className="text-[11px] text-muted-foreground/80">
+              {t("24/7 dedicated assistance for your team growth.")}
+            </p>
+          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/10 text-success transition-transform group-hover:translate-x-1">
+            <ArrowRight className="h-5 w-5" />
+          </div>
+        </div>
       </button>
     </div>
   );

@@ -213,26 +213,33 @@ export function PaymentGateway({
         })()}
 
         {/* amount summary */}
-        <div className="gw-panel gw-shine relative mb-5 overflow-hidden p-6 text-center">
-          <span
-            className="pointer-events-none absolute -top-16 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full blur-3xl"
-            style={{ background: "var(--gw-accent)", opacity: 0.22 }}
+        <div className="relative mb-6 overflow-hidden rounded-[2.5rem] border border-white/5 bg-black/40 p-8 text-center shadow-2xl backdrop-blur-xl">
+          <div
+            className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full blur-[100px]"
+            style={{ background: "var(--gw-accent)", opacity: 0.15 }}
           />
+          <div
+            className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full blur-[100px]"
+            style={{ background: "var(--gw-accent-2)", opacity: 0.1 }}
+          />
+          
           <p
-            className="relative text-[11px] uppercase tracking-[0.25em]"
+            className="relative text-[10px] font-black uppercase tracking-[0.3em]"
             style={{ color: "var(--gw-dim)" }}
           >
-            Amount to pay
+            {t("Secure Payment Amount")}
           </p>
-          <p className="relative mt-1 text-[2.6rem] font-black leading-none tracking-tight">
-            <span className="text-xl align-super" style={{ color: "var(--gw-dim)" }}>
-              Rs
-            </span>{" "}
+          <p className="relative mt-2 font-display text-5xl font-black tracking-tight text-white">
+            <span className="text-2xl align-top mr-1 opacity-50">Rs</span>
             {amount.toLocaleString("en-PK")}
           </p>
-          <p className="relative mt-2 text-xs" style={{ color: "var(--gw-dim)" }}>
-            Merchant: HopeX · Order #{String(Math.abs(amount * 7919)).slice(0, 8)}
-          </p>
+          <div className="relative mt-4 flex items-center justify-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+            <p className="text-xs font-bold" style={{ color: "var(--gw-dim)" }}>
+              Order #{String(Math.abs(amount * 7919)).slice(0, 8)}
+            </p>
+          </div>
+        </div>
           <div className="relative mt-3 flex flex-wrap items-center justify-center gap-2">
             <span
               className="flex items-center gap-1 rounded-full px-3 py-1 text-[11px]"
