@@ -83,6 +83,7 @@ const tabs = [
   "Tools",
   "SEO",
   "API Keys",
+  "Withdraw Proofs",
   "Settings",
 ] as const;
 
