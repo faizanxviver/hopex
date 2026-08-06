@@ -11,6 +11,8 @@ import {
   Wallet,
   Smartphone,
   BadgeCheck,
+  TrendingUp,
+  Clock,
 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
