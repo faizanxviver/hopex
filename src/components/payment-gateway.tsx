@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { uploadProofImage } from "@/lib/uploads.functions";
 import { useStore, type PaymentMethod } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 
 export interface GatewayResult {
   method: string;
@@ -35,6 +36,7 @@ export function PaymentGateway({
 }) {
   const [step, setStep] = useState<Step>("connecting");
   const { db } = useStore();
+  const { t } = useT();
   const gwMethods = db.methods.filter((m) => m.active);
   const [method, setMethod] = useState<PaymentMethod | null>(null);
   const [proof, setProof] = useState("");
