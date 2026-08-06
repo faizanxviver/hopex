@@ -14,6 +14,7 @@ import {
   Sparkle,
   Search,
   Wallet,
+  Ticket,
 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
