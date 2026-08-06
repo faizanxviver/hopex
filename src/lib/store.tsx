@@ -634,7 +634,14 @@ async function persistDiff(prev: DB, next: DB) {
 
   const results = await Promise.all(jobs);
   const failed = results.find((r) => (r as { error?: unknown } | null)?.error);
-  if (failed) console.error("Sync error", (failed as { error: unknown }).error);
+  if (failed) {
+    const err = (failed as { error: { message?: string } }).error;
+    console.error("Sync error", err);
+    if (typeof window !== "undefined") {
+      toast.error(err?.message ? `Could not save: ${err.message}` : "Could not save your change.");
+    }
+  }
+
 }
 
 /* ---------------- provider ---------------- */
