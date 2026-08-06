@@ -72,8 +72,8 @@ function WithdrawProof() {
     
     setSubmitting(true);
     try {
-      // Add to withdrawal_proofs table
-      const { error } = await supabase.from("withdrawal_proofs").insert({
+      // Add to withdrawal_proofs table using any for type safety against out-of-date types
+      const { error } = await (supabase.from("withdrawal_proofs" as any) as any).insert({
         user_id: user.id,
         transaction_id: lastWithdrawal.id,
         image_url: url,
