@@ -240,6 +240,7 @@ export function PaymentGateway({
             </p>
           </div>
         </div>
+
           <div className="relative mt-3 flex flex-wrap items-center justify-center gap-2">
             <span
               className="flex items-center gap-1 rounded-full px-3 py-1 text-[11px]"
