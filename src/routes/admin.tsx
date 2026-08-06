@@ -1578,6 +1578,7 @@ function AnnouncementSettings() {
         placeholder="e.g. Withdrawals are processed daily between 8am and 8pm."
         className="mt-3 w-full rounded-xl border border-input bg-background/40 p-3 text-sm outline-none"
       />
+      <ProofRewardSettings />
     </div>
   );
 }
