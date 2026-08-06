@@ -343,49 +343,81 @@ function Dashboard() {
 }
 
 function WithdrawalApprovedPopup() {
-  const { db, user, update } = useStore();
+  const { db, user } = useStore();
   const { t } = useT();
   const navigate = useNavigate();
-  
-  // Find a completed withdrawal that hasn't been "seen" for the popup
+  const [dismissed, setDismissed] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      setDismissed(JSON.parse(localStorage.getItem("hopex.proof.dismissed") ?? "[]"));
+    } catch {
+      setDismissed([]);
+    }
+  }, []);
+
   const withdrawal = db.transactions.find(
-    (t) => t.userId === user?.id && t.type === "withdraw" && (t.status === "approved" || t.status === "completed") && !t.proofUrl
+    (x) =>
+      x.userId === user?.id &&
+      x.type === "withdraw" &&
+      (x.status === "approved" || x.status === "completed") &&
+      !x.proofUrl &&
+      !dismissed.includes(x.id),
   );
 
   if (!withdrawal) return null;
 
+  const close = () => {
+    const next = [...dismissed, withdrawal.id];
+    setDismissed(next);
+    try {
+      localStorage.setItem("hopex.proof.dismissed", JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
-      <GlassCard className="relative w-full max-w-sm animate-rise p-8 text-center" glow>
+      <div className="absolute inset-0 bg-background/30 backdrop-blur-[2px]" onClick={close} />
+      <div className="animate-rise relative w-full max-w-sm rounded-[2rem] border border-border/50 bg-background/40 p-7 text-center shadow-[var(--shadow-elegant)] backdrop-blur-2xl">
+        <button
+          onClick={close}
+          aria-label={t("Close")}
+          className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-background/50 text-muted-foreground backdrop-blur-md transition hover:text-foreground"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
         <div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl gradient-brand text-primary-foreground">
           <CheckCircle2 className="h-10 w-10" />
         </div>
         <h2 className="mt-6 font-display text-2xl font-black">{t("Payment Received!")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          {t("Your withdrawal of")} <span className="font-bold text-foreground">{money(withdrawal.amount)}</span> {t("has been approved and sent.")}
+          {t("Your withdrawal of")}{" "}
+          <span className="font-bold text-foreground">{money(withdrawal.amount)}</span>{" "}
+          {t("has been approved and sent.")}
         </p>
-        
+
         <div className="mt-8 space-y-3">
           <button
-            onClick={() => navigate({ to: "/withdraw-proof" })}
+            onClick={() => {
+              close();
+              navigate({ to: "/withdraw-proof" });
+            }}
             className="btn-glass btn-glass-gold flex h-13 w-full items-center justify-center gap-2 text-sm font-black"
           >
-            <Gift className="h-5 w-5" /> {t("Upload Proof & Get Rs 5")}
+            <Gift className="h-5 w-5" /> {t("Upload Proof & Get")} {money(db.settings.proofRewardAmount)}
           </button>
           <button
-            onClick={() => {
-               // Mark as seen by setting a dummy proofUrl or similar if we had a dedicated field
-               // For now we'll just ignore it in this session to keep it simple, 
-               // but ideally we'd update a 'dismissed_popups' table or similar.
-               toast.info(t("You can upload proof later in History to get your reward."));
-            }}
-            className="btn-glass flex h-13 w-full items-center justify-center text-sm font-bold text-muted-foreground"
+            onClick={close}
+            className="btn-glass flex h-13 w-full items-center justify-center gap-2 text-sm font-bold text-muted-foreground"
           >
-            {t("Maybe later")}
+            <X className="h-4 w-4" /> {t("Maybe later")}
           </button>
         </div>
-      </GlassCard>
+      </div>
     </div>
   );
 }
+
