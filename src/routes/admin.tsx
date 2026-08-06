@@ -136,6 +136,9 @@ function Admin() {
       const owner = d.users.find((u) => u.id === t.userId);
       if (owner && credit && t.type === "deposit" && status === "approved")
         owner.balance += t.amount;
+      // Also reward uploader if this was a deposit approval? No, deposit doesn't have reward. 
+      // But withdrawal approval is where they get prompted to upload proof.
+
       if (owner && t.type === "withdraw" && status === "rejected") owner.balance += t.amount;
       d.notifications.unshift({
         id: newId(),
