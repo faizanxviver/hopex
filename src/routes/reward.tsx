@@ -329,6 +329,17 @@ ${refLink}
           </div>
         ) : (
           <button
+            disabled={pending || !wa || !fb}
+            onClick={submit}
+            className="group relative mt-4 h-14 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-gold to-yellow-600 font-display text-lg font-black text-black transition hover:scale-[1.02] active:scale-95 disabled:grayscale disabled:opacity-50"
+          >
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent" />
+            <div className="flex items-center justify-center gap-2">
+              <Gift className="h-5 w-5" />
+              <span>پوسٹ جمع کرائیں</span>
+            </div>
+          </button>
+
             onClick={submit}
             disabled={sending || !wa || !fb}
             className="btn-glass btn-glass-gold mt-4 flex h-13 w-full items-center justify-center gap-2 py-3.5 text-sm font-bold disabled:opacity-50"
