@@ -6,10 +6,12 @@ export function GlassCard({
   children,
   className,
   glow,
+  onClick,
 }: {
   children: ReactNode;
   className?: string;
   glow?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <div
