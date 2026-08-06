@@ -1519,8 +1519,39 @@ function UsersManager() {
                       toast.success(u.blocked ? "Account unfrozen." : "Account frozen.");
                     }}
                   />
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      onClick={() => {
+                        const amt = prompt("Amount to ADD (e.g. 500) or REMOVE (e.g. -500):");
+                        if (!amt) return;
+                        const val = parseFloat(amt);
+                        if (isNaN(val)) return toast.error("Invalid amount");
+                        patch(u.id, (x) => {
+                          x.balance += val;
+                        });
+                        toast.success(`Balance adjusted by ${money(val)}`);
+                      }}
+                      className="flex-1 rounded-xl bg-primary/10 py-2.5 text-[11px] font-bold text-primary hover:bg-primary/20"
+                    >
+                      ± Balance
+                    </button>
+                    <button
+                      onClick={() => {
+                        const amt = prompt("Deposit balance adjustment:");
+                        if (!amt) return;
+                        const val = parseFloat(amt);
+                        if (isNaN(val)) return toast.error("Invalid amount");
+                        // We'd need a field for this in profiles if it's not just sum of tx
+                        toast.info("Manual deposit balance adjustment coming soon.");
+                      }}
+                      className="flex-1 rounded-xl bg-success/10 py-2.5 text-[11px] font-bold text-success hover:bg-success/20"
+                    >
+                      ± Deposit
+                    </button>
+                  </div>
                 </div>
               ) : null}
+
             </GlassCard>
           );
         })}
