@@ -181,7 +181,7 @@ function Admin() {
   };
 
   const groups: { label: string; items: (typeof tabs)[number][] }[] = [
-    { label: "Operations", items: ["Overview", "Users", "Support Chat"] },
+    { label: "Operations", items: ["Overview", "Users", "Support Chat", "Withdraw Proofs"] },
     { label: "Money flow", items: ["Deposits", "Withdrawals", "Balance Control", "Methods"] },
     { label: "Growth", items: ["Plans", "Promo Codes", "Rewards", "Leader Plans", "Broadcast"] },
     { label: "System", items: ["Tools", "SEO", "API Keys", "Audit Log", "Settings"] },
