@@ -624,6 +624,9 @@ async function persistDiff(prev: DB, next: DB) {
           reward_amount: next.settings.rewardAmount,
           reward_cooldown_hours: next.settings.rewardCooldownHours,
           reward_active: next.settings.rewardActive,
+          proof_reward_amount: next.settings.proofRewardAmount,
+          show_proofs_section: next.settings.showProofsSection,
+
         })
         .eq("id", 1),
     );
