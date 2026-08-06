@@ -1790,3 +1790,107 @@ function AuditLogPanel() {
     </GlassCard>
   );
 }
+
+function WithdrawProofsAdmin() {
+  const { db, update, refresh } = useStore();
+  const [loading, setLoading] = useState(true);
+  const [proofs, setProofs] = useState<any[]>([]);
+
+  const fetchProofs = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("withdrawal_proofs" as any)
+      .select("*, users:profiles(name, phone)")
+      .order("created_at", { ascending: false });
+    setProofs(data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchProofs();
+  }, []);
+
+  const handleStatus = async (id: string, status: "approved" | "rejected") => {
+    const proof = proofs.find((p) => p.id === id);
+    if (!proof) return;
+
+    const { error } = await supabase
+      .from("withdrawal_proofs" as any)
+      .update({ status })
+      .eq("id", id);
+
+    if (error) return toast.error(error.message);
+
+    if (status === "approved") {
+      // Reward user - Profiles table in Supabase
+      const { data: userProfile } = await supabase.from("profiles").select("balance").eq("id", proof.user_id).single();
+      if (userProfile) {
+        await supabase.from("profiles").update({ balance: userProfile.balance + proof.amount }).eq("id", proof.user_id);
+        // Add transaction for history
+        await supabase.from("transactions").insert({
+          user_id: proof.user_id,
+          type: "bonus",
+          amount: proof.amount,
+          status: "completed",
+          reference: "Withdrawal proof reward"
+        });
+      }
+    }
+
+    toast.success(`Proof ${status}`);
+    fetchProofs();
+    refresh();
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-display text-xl font-extrabold">Withdrawal Proofs</h2>
+        <button onClick={fetchProofs} className="btn-glass px-4 py-2 text-xs font-bold">Refresh</button>
+      </div>
+
+      <GlassCard className="p-0 overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="border-b border-border/60 text-left text-[10px] uppercase tracking-widest text-muted-foreground">
+            <tr>
+              <th className="p-4">User</th>
+              <th className="p-4">Proof</th>
+              <th className="p-4">Reward</th>
+              <th className="p-4">Status</th>
+              <th className="p-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/40">
+            {loading ? (
+              <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">Loading...</td></tr>
+            ) : proofs.length === 0 ? (
+              <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">No proofs submitted.</td></tr>
+            ) : proofs.map((p) => (
+              <tr key={p.id}>
+                <td className="p-4">
+                  <p className="font-bold">{p.users?.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{p.users?.phone}</p>
+                </td>
+                <td className="p-4">
+                  <a href={p.image_url} target="_blank" rel="noreferrer">
+                    <img src={p.image_url} className="h-12 w-12 rounded-lg object-cover border border-border/60" />
+                  </a>
+                </td>
+                <td className="p-4 font-bold text-success">{money(p.amount)}</td>
+                <td className="p-4"><StatusBadge status={p.status} /></td>
+                <td className="p-4 text-right">
+                  {p.status === "pending" && (
+                    <div className="flex justify-end gap-2">
+                      <button onClick={() => handleStatus(p.id, "approved")} className="rounded-lg bg-success/15 px-3 py-1 text-[10px] font-bold text-success">Approve</button>
+                      <button onClick={() => handleStatus(p.id, "rejected")} className="rounded-lg bg-destructive/15 px-3 py-1 text-[10px] font-bold text-destructive">Decline</button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </GlassCard>
+    </div>
+  );
+}
