@@ -15,6 +15,8 @@ import {
   Crown,
   Gift,
   CheckCircle2,
+  X,
+
 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard } from "@/components/glass";
