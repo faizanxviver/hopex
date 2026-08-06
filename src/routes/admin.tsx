@@ -104,6 +104,7 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
   Tools: Wrench,
   SEO: Globe,
   "API Keys": KeyRound,
+  "Withdraw Proofs": Camera,
   Settings: Settings,
 };
 
