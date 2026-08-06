@@ -1582,6 +1582,51 @@ function AnnouncementSettings() {
   );
 }
 
+/** Withdrawal proof reward settings. */
+function ProofRewardSettings() {
+  const { db, update } = useStore();
+  return (
+    <div className="rounded-2xl border border-border/60 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-bold text-success">Withdrawal proof reward</p>
+        <button
+          onClick={() =>
+            update((d) => {
+              d.settings.showProofsSection = !d.settings.showProofsSection;
+              return d;
+            })
+          }
+          className={cn(
+            "rounded-full px-3 py-1 text-xs font-bold",
+            db.settings.showProofsSection
+              ? "bg-success/15 text-success"
+              : "bg-muted text-muted-foreground",
+          )}
+        >
+          {db.settings.showProofsSection ? "Enabled" : "Disabled"}
+        </button>
+      </div>
+      <div className="mt-4 flex items-center gap-2">
+        <span className="text-xs text-muted-foreground">Reward (Rs):</span>
+        <input
+          type="number"
+          defaultValue={db.settings.proofRewardAmount}
+          onBlur={(e) =>
+            update((d) => {
+              d.settings.proofRewardAmount = Number(e.target.value);
+              return d;
+            })
+          }
+          className="h-10 w-24 rounded-xl border border-input bg-background/40 px-3 text-xs outline-none"
+        />
+      </div>
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        Users get this amount automatically when their withdrawal proof is approved.
+      </p>
+    </div>
+  );
+}
+
 /** Freezes the user-facing app while keeping admin access open. */
 function MaintenanceSettings() {
   const { db, update } = useStore();
