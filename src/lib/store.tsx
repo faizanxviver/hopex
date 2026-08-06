@@ -692,6 +692,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         rewardAmount: num(s.reward_amount),
         rewardCooldownHours: Number(s.reward_cooldown_hours ?? 24),
         rewardActive: Boolean(s.reward_active ?? true),
+        proofRewardAmount: num(s.proof_reward_amount ?? 5),
+        showProofsSection: Boolean(s.show_proofs_section ?? true),
       };
     }
 
