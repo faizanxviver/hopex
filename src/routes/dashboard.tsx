@@ -349,7 +349,7 @@ function WithdrawalApprovedPopup() {
   
   // Find a completed withdrawal that hasn't been "seen" for the popup
   const withdrawal = db.transactions.find(
-    (t) => t.userId === user?.id && t.type === "withdraw" && t.status === "completed" && !t.proofUrl
+    (t) => t.userId === user?.id && t.type === "withdraw" && (t.status === "approved" || t.status === "completed") && !t.proofUrl
   );
 
   if (!withdrawal) return null;
