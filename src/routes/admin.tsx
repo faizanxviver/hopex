@@ -29,6 +29,7 @@ import {
 
 import { toast } from "sonner";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
+import { supabase } from "@/integrations/supabase/client";
 import { AdminChat } from "@/components/admin-chat";
 import { BalanceControl, LeaderPlansAdmin, RewardsAdmin } from "@/components/admin-rewards";
 import {
