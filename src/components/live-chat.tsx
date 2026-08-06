@@ -558,7 +558,9 @@ export function LiveChat() {
             onClick={() => {
               if (recording) return stop();
               if (text.trim()) return send();
-              void start().catch(() => toast.error("Microphone permission denied."));
+              void start().catch((e) =>
+                toast.error(e instanceof Error ? e.message : "Microphone permission denied."),
+              );
             }}
             disabled={uploading}
             aria-label={
