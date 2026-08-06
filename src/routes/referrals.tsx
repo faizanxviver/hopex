@@ -118,17 +118,22 @@ function Referrals() {
 
           <button
             onClick={() => copy(user.referralCode, t("Referral code"))}
-            className="mt-4 flex w-full items-center justify-between gap-3 rounded-2xl border border-gold/40 bg-gold/10 px-4 py-3 text-left"
+            className="mt-4 flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-dashed border-gold/40 bg-gold/5 px-4 py-4 text-left transition hover:bg-gold/10"
           >
-            <span className="min-w-0">
-              <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">
-                {t("Referral code")}
-              </span>
-              <span className="block truncate font-mono text-xl font-black text-gold">
-                {user.referralCode}
-              </span>
-            </span>
-            <Copy className="h-4 w-4 shrink-0 text-gold" />
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold/20 text-gold">
+                <Ticket className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <span className="block text-[10px] uppercase tracking-widest text-muted-foreground/70 font-bold">
+                  {t("Referral code")}
+                </span>
+                <span className="block truncate font-display text-2xl font-black text-gold">
+                  {user.referralCode}
+                </span>
+              </div>
+            </div>
+            <Copy className="h-5 w-5 shrink-0 text-gold/60" />
           </button>
 
           <div className="mt-3 flex h-12 items-center gap-2 rounded-2xl border border-border/60 bg-background/40 px-4">
