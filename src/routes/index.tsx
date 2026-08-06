@@ -265,30 +265,8 @@ function Landing() {
         </div>
       </section>
 
-      {/* Proofs Carousel */}
-      {db.settings.showProofsSection && (
-        <section className="mx-auto max-w-6xl px-4 py-12 overflow-hidden">
-          <h2 className="text-center font-display text-2xl font-black mb-8">Verified Payouts</h2>
-          <div className="flex gap-4 animate-scroll hover:pause-scroll">
-            {/* Mock or actual proofs */}
-            {[...Array(10)].map((_, i) => (
-              <GlassCard 
-                key={i} 
-                className="w-48 h-64 shrink-0 p-0 overflow-hidden cursor-pointer hover:scale-105 transition-transform"
-                onClick={() => {}}
-              >
-                <div className="h-full w-full bg-muted flex items-center justify-center relative group">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3 text-[10px] text-white font-bold truncate">
-                    Verified Payout Rs {(Math.random() * 50000 + 500).toFixed(0)}
-                  </div>
-                  <ShieldCheck className="h-12 w-12 text-success/20 group-hover:text-success/40 transition-colors" />
-                </div>
-              </GlassCard>
-            ))}
-          </div>
-        </section>
-      )}
+      <WithdrawalProofsCarousel />
+
 
       <footer className="border-t border-border/50 px-4 py-8">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
