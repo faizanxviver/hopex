@@ -68,30 +68,31 @@ function WithdrawProof() {
 
   const submit = async () => {
     if (!url) return;
-    if (!lastWithdrawal) return toast.error("No completed withdrawal found");
-    
+
     setSubmitting(true);
     try {
-      // Add to withdrawal_proofs table using any for type safety against out-of-date types
-      const { error } = await (supabase.from("withdrawal_proofs" as any) as any).insert({
+      const { error } = await (supabase.from("withdrawal_proofs" as never) as never as {
+        insert: (row: Record<string, unknown>) => PromiseLike<{ error: { message: string } | null }>;
+      }).insert({
         user_id: user.id,
-        transaction_id: lastWithdrawal.id,
+        transaction_id: lastWithdrawal?.id ?? null,
         image_url: url,
         amount: db.settings.proofRewardAmount,
-        status: "pending"
+        status: "pending",
       });
 
-      if (error) throw error;
+      if (error) throw new Error(error.message);
 
       toast.success("Proof submitted! Reward will be added after review.");
       void refresh();
       navigate({ to: "/dashboard" });
     } catch (err) {
-      toast.error("Submission failed");
+      toast.error(err instanceof Error ? err.message : "Submission failed");
     } finally {
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="mx-auto max-w-xl space-y-5 py-4">
