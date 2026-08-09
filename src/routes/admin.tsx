@@ -496,7 +496,13 @@ function Admin() {
                             <span className="text-xs text-muted-foreground">—</span>
                           )}
                         </td>
-                        <td className="p-4 font-semibold">{money(t.amount)}</td>
+                        <td className="p-4">
+                          <StatusBadge 
+                            status={db.users.find(u => u.id === t.userId)?.blocked ? "rejected" : "approved"} 
+                            className="scale-90" 
+                          />
+                        </td>
+                        <td className="p-4 font-black">{money(t.amount)}</td>
                         <td className="p-4">
                           <StatusBadge status={t.status} />
                         </td>
@@ -1411,14 +1417,27 @@ function UsersManager() {
                     }}
                   />
                   <Ctl
-                    label="Set balance"
+                    label="Reset Password"
                     onClick={() => {
-                      const v = prompt(`Set balance for ${u.name}`, String(u.balance));
-                      if (v == null || isNaN(Number(v))) return;
+                      const v = prompt(`New password for ${u.name}`, "123456");
+                      if (!v) return;
+                      toast.promise(
+                        supabase.auth.admin.updateUserById(u.id, { password: v }),
+                        {
+                          loading: 'Updating password...',
+                          success: 'Password reset successfully',
+                          error: 'Failed to reset password (need service_role)'
+                        }
+                      );
+                    }}
+                  />
+                  <Ctl
+                    label={u.blocked ? "Unfreeze Account" : "Freeze Account"}
+                    onClick={() => {
                       patch(u.id, (x) => {
-                        x.balance = Number(v);
+                        x.blocked = !x.blocked;
                       });
-                      toast.success("Balance updated.");
+                      toast.success(u.blocked ? "Account unfrozen" : "Account frozen");
                     }}
                   />
                   <Ctl
