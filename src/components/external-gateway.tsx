@@ -180,14 +180,21 @@ export function ExternalPaymentGateway({
             <h3 className="text-sm font-bold text-white/60 px-1">Select Payment Method</h3>
             {gwMethods.map(m => (
               <button key={m.id} onClick={() => { setMethod(m); setStep("pay"); }} className="gw-panel w-full p-4 flex items-center gap-4 hover:bg-white/10 transition-colors group">
-                <div className="h-12 w-12 rounded-xl bg-white/5 overflow-hidden flex items-center justify-center border border-white/10">
-                  {m.imageUrl ? <img src={m.imageUrl} className="w-full h-full object-cover" /> : <span className="text-xl font-bold">{m.name[0]}</span>}
+                <div className="h-12 w-12 rounded-xl bg-white/5 overflow-hidden flex items-center justify-center border border-white/10 relative">
+                  {m.imageUrl ? (
+                    <img src={m.imageUrl} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="grid place-items-center h-full w-full bg-emerald-500/10 text-emerald-500 font-display font-black">
+                      {m.name[0]}
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <div className="flex-1 text-left">
-                  <p className="font-bold text-sm">{m.name}</p>
-                  <p className="text-xs text-white/40">{m.instructions}</p>
+                  <p className="font-bold text-sm tracking-tight">{m.name}</p>
+                  <p className="text-[10px] font-medium text-white/40 leading-tight line-clamp-2">{m.instructions}</p>
                 </div>
-                <ChevronLeft className="h-5 w-5 rotate-180 text-white/20 group-hover:text-emerald-500" />
+                <ChevronLeft className="h-4 w-4 rotate-180 text-white/20 group-hover:text-emerald-500 transition-transform group-hover:translate-x-1" />
               </button>
             ))}
           </div>
