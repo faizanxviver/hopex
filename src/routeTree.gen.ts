@@ -23,13 +23,11 @@ import { Route as PlansRouteImport } from './routes/plans'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PromoRouteImport } from './routes/promo'
 import { Route as ReferralsRouteImport } from './routes/referrals'
-import { Route as RewardRouteImport } from './routes/reward'
 import { Route as SalaryRouteImport } from './routes/salary'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as WithdrawRouteImport } from './routes/withdraw'
 import { Route as WithdrawHistoryRouteImport } from './routes/withdraw-history'
-import { Route as WithdrawProofRouteImport } from './routes/withdraw-proof'
 import { Route as ApiPublicCheckoutSessionRouteImport } from './routes/api/public/checkout/session'
 import { Route as ApiPublicCheckoutSubmitRouteImport } from './routes/api/public/checkout/submit'
 
@@ -103,11 +101,6 @@ const ReferralsRoute = ReferralsRouteImport.update({
   path: '/referrals',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RewardRoute = RewardRouteImport.update({
-  id: '/reward',
-  path: '/reward',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SalaryRoute = SalaryRouteImport.update({
   id: '/salary',
   path: '/salary',
@@ -131,11 +124,6 @@ const WithdrawRoute = WithdrawRouteImport.update({
 const WithdrawHistoryRoute = WithdrawHistoryRouteImport.update({
   id: '/withdraw-history',
   path: '/withdraw-history',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const WithdrawProofRoute = WithdrawProofRouteImport.update({
-  id: '/withdraw-proof',
-  path: '/withdraw-proof',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicCheckoutSessionRoute =
@@ -165,13 +153,11 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/promo': typeof PromoRoute
   '/referrals': typeof ReferralsRoute
-  '/reward': typeof RewardRoute
   '/salary': typeof SalaryRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
-  '/withdraw-proof': typeof WithdrawProofRoute
   '/api/public/checkout/session': typeof ApiPublicCheckoutSessionRoute
   '/api/public/checkout/submit': typeof ApiPublicCheckoutSubmitRoute
 }
@@ -190,13 +176,11 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/promo': typeof PromoRoute
   '/referrals': typeof ReferralsRoute
-  '/reward': typeof RewardRoute
   '/salary': typeof SalaryRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
-  '/withdraw-proof': typeof WithdrawProofRoute
   '/api/public/checkout/session': typeof ApiPublicCheckoutSessionRoute
   '/api/public/checkout/submit': typeof ApiPublicCheckoutSubmitRoute
 }
@@ -216,13 +200,11 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/promo': typeof PromoRoute
   '/referrals': typeof ReferralsRoute
-  '/reward': typeof RewardRoute
   '/salary': typeof SalaryRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/transactions': typeof TransactionsRoute
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
-  '/withdraw-proof': typeof WithdrawProofRoute
   '/api/public/checkout/session': typeof ApiPublicCheckoutSessionRoute
   '/api/public/checkout/submit': typeof ApiPublicCheckoutSubmitRoute
 }
@@ -243,13 +225,11 @@ export interface FileRouteTypes {
     | '/profile'
     | '/promo'
     | '/referrals'
-    | '/reward'
     | '/salary'
     | '/sitemap.xml'
     | '/transactions'
     | '/withdraw'
     | '/withdraw-history'
-    | '/withdraw-proof'
     | '/api/public/checkout/session'
     | '/api/public/checkout/submit'
   fileRoutesByTo: FileRoutesByTo
@@ -268,13 +248,11 @@ export interface FileRouteTypes {
     | '/profile'
     | '/promo'
     | '/referrals'
-    | '/reward'
     | '/salary'
     | '/sitemap.xml'
     | '/transactions'
     | '/withdraw'
     | '/withdraw-history'
-    | '/withdraw-proof'
     | '/api/public/checkout/session'
     | '/api/public/checkout/submit'
   id:
@@ -293,13 +271,11 @@ export interface FileRouteTypes {
     | '/profile'
     | '/promo'
     | '/referrals'
-    | '/reward'
     | '/salary'
     | '/sitemap.xml'
     | '/transactions'
     | '/withdraw'
     | '/withdraw-history'
-    | '/withdraw-proof'
     | '/api/public/checkout/session'
     | '/api/public/checkout/submit'
   fileRoutesById: FileRoutesById
@@ -319,13 +295,11 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   PromoRoute: typeof PromoRoute
   ReferralsRoute: typeof ReferralsRoute
-  RewardRoute: typeof RewardRoute
   SalaryRoute: typeof SalaryRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TransactionsRoute: typeof TransactionsRoute
   WithdrawRoute: typeof WithdrawRoute
   WithdrawHistoryRoute: typeof WithdrawHistoryRoute
-  WithdrawProofRoute: typeof WithdrawProofRoute
   ApiPublicCheckoutSessionRoute: typeof ApiPublicCheckoutSessionRoute
   ApiPublicCheckoutSubmitRoute: typeof ApiPublicCheckoutSubmitRoute
 }
@@ -430,13 +404,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReferralsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/reward': {
-      id: '/reward'
-      path: '/reward'
-      fullPath: '/reward'
-      preLoaderRoute: typeof RewardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/salary': {
       id: '/salary'
       path: '/salary'
@@ -472,13 +439,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WithdrawHistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/withdraw-proof': {
-      id: '/withdraw-proof'
-      path: '/withdraw-proof'
-      fullPath: '/withdraw-proof'
-      preLoaderRoute: typeof WithdrawProofRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/checkout/session': {
       id: '/api/public/checkout/session'
       path: '/api/public/checkout/session'
@@ -511,13 +471,11 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   PromoRoute: PromoRoute,
   ReferralsRoute: ReferralsRoute,
-  RewardRoute: RewardRoute,
   SalaryRoute: SalaryRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TransactionsRoute: TransactionsRoute,
   WithdrawRoute: WithdrawRoute,
   WithdrawHistoryRoute: WithdrawHistoryRoute,
-  WithdrawProofRoute: WithdrawProofRoute,
   ApiPublicCheckoutSessionRoute: ApiPublicCheckoutSessionRoute,
   ApiPublicCheckoutSubmitRoute: ApiPublicCheckoutSubmitRoute,
 }
