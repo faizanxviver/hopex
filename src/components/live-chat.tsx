@@ -18,6 +18,7 @@ import {
   Video,
   X,
   MoreVertical,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useStore, newId, timestamp } from "@/lib/store";
