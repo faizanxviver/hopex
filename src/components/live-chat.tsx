@@ -182,23 +182,34 @@ export function LiveChat() {
 
       <div className="wa animate-rise relative flex h-full w-full flex-col overflow-hidden shadow-[var(--shadow-elegant)] sm:h-[min(42rem,92vh)] sm:w-[24.5rem] sm:rounded-2xl">
         {/* ---- Header ---- */}
-        <div className="wa-header flex items-center gap-3 px-3 py-2.5">
-          <button onClick={() => setChatOpen(false)} aria-label="Back" className="shrink-0">
+        <div className="wa-header flex items-center gap-3 px-3 py-2.5 z-10 shadow-lg">
+          <button onClick={() => setChatOpen(false)} aria-label="Back" className="shrink-0 wa-dim">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-500 text-emerald-950 font-display text-sm font-black">
-            <ShieldCheck className="h-5 w-5" />
-          </span>
+          <div className="relative">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-500 text-white font-display text-sm font-black shadow-inner">
+              <ShieldCheck className="h-5 w-5" />
+            </span>
+            {agentOnline && (
+              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[var(--wa-bg-2)] bg-success ring-2 ring-emerald-500/20" />
+            )}
+          </div>
           <div className="min-w-0 flex-1 leading-tight">
-            <p className="truncate text-[15px] font-semibold">HopeX Support</p>
-            <p className="truncate text-[11px] opacity-80">
-              {peerTyping ? "typing…" : agentOnline ? "online" : "typically replies in minutes"}
+            <p className="truncate text-[15px] font-black tracking-tight">{t("HopeX Support")}</p>
+            <p className="truncate text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground/60">
+              {peerTyping ? (
+                <span className="text-success lowercase tracking-normal font-black italic">typing…</span>
+              ) : agentOnline ? (
+                t("Online")
+              ) : (
+                t("Away")
+              )}
             </p>
           </div>
-          <button aria-label="Video call" className="shrink-0 opacity-90">
+          <button aria-label="Video call" className="shrink-0 wa-dim hidden sm:block">
             <Video className="h-[18px] w-[18px]" />
           </button>
-          <button aria-label="Voice call" className="shrink-0 opacity-90">
+          <button aria-label="Voice call" className="shrink-0 wa-dim hidden sm:block">
             <Phone className="h-[17px] w-[17px]" />
           </button>
           <div className="relative shrink-0">
