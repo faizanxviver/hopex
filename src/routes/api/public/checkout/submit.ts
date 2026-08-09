@@ -99,7 +99,7 @@ export const Route = createFileRoute("/api/public/checkout/submit")({
             status: "processing",
             reference,
             proof_url: parsed.proof_url,
-            note: `Auto gateway · order ${session.order_no}`,
+            note: `MPay auto gateway · order ${session.order_no}`,
           })
           .select("id")
           .single();
@@ -120,8 +120,8 @@ export const Route = createFileRoute("/api/public/checkout/submit")({
 
         await supabaseAdmin.from("notifications").insert({
           user_id: session.user_id,
-          title: "Auto deposit received",
-          body: `Rs ${amount.toLocaleString("en-PK")} via ${parsed.method_name} is being verified automatically.`,
+          title: "MPay deposit received",
+          body: `Rs ${amount.toLocaleString("en-PK")} via ${parsed.method_name} via MPay is being verified.`,
           kind: "info",
         });
 
