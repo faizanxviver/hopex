@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { ShieldCheck, Clock, Zap } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
-import { ExternalPaymentGateway, type GatewayResult } from "@/components/external-gateway";
+import { PaymentGateway, type GatewayResult } from "@/components/payment-gateway";
 import { depositBalance, money, newId, pendingDeposits, timestamp, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -90,9 +90,8 @@ function Deposit() {
   return (
     <div>
       {gateway !== null ? (
-        <ExternalPaymentGateway
+        <PaymentGateway
           amount={gateway}
-          methods={db.methods}
           onExit={() => {
             setGateway(null);
             toast.error("Payment cancelled — nothing was submitted.");

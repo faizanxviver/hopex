@@ -109,23 +109,21 @@ function Profile() {
           <h2 className="flex items-center gap-2 text-lg font-bold">
             <ShieldCheck className="h-4 w-4 text-primary" /> {t("Security")}
           </h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-            <div className="space-y-3">
-              <input
-                type="password"
-                placeholder={t("Current password")}
-                value={pwd.current}
-                onChange={(e) => setPwd((p) => ({ ...p, current: e.target.value }))}
-                className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none focus:ring-2 focus:ring-ring transition-all"
-              />
-              <input
-                type="password"
-                placeholder={t("New password")}
-                value={pwd.next}
-                onChange={(e) => setPwd((p) => ({ ...p, next: e.target.value }))}
-                className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none focus:ring-2 focus:ring-ring transition-all"
-              />
-            </div>
+          <div className="mt-4 space-y-3">
+            <input
+              type="password"
+              placeholder={t("Current password")}
+              value={pwd.current}
+              onChange={(e) => setPwd((p) => ({ ...p, current: e.target.value }))}
+              className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+            <input
+              type="password"
+              placeholder={t("New password")}
+              value={pwd.next}
+              onChange={(e) => setPwd((p) => ({ ...p, next: e.target.value }))}
+              className="h-12 w-full rounded-xl border border-input bg-background/40 px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
             <button
               onClick={async () => {
                 if (pwd.next.length < 6)
@@ -140,7 +138,7 @@ function Profile() {
                 setPwd({ current: "", next: "" });
                 toast.success("Password changed.");
               }}
-              className="btn-glass btn-glass-primary flex h-12 w-full items-center justify-center font-black sm:h-full lg:h-12"
+              className="btn-glass btn-glass-primary flex h-12 w-full items-center justify-center font-semibold"
             >
               {t("Change password")}
             </button>

@@ -100,14 +100,12 @@ function Podium({ row, place, metric }: { row?: LeaderRow; place: 0 | 1 | 2; met
         </span>
       </div>
 
-      <div className="mt-2 w-full px-1 text-center">
-        <p className="truncate text-[12px] font-black leading-none text-foreground drop-shadow-sm">
-          {row.name}
-        </p>
-        <p className="mt-0.5 font-display text-[12px] font-black text-emerald-400 drop-shadow-sm">
-          {money(row[metric])}
-        </p>
-      </div>
+      <p className="max-w-full px-1 text-center text-[13px] font-extrabold leading-tight break-words">
+        {row.name}
+      </p>
+      <p className="mb-2 text-center font-display text-[13px] font-black text-success">
+        {money(row[metric])}
+      </p>
 
       {/* 3D pedestal */}
       <div className="w-full [transform-style:preserve-3d] [transform:rotateX(12deg)]">
@@ -190,7 +188,7 @@ function Leaderboard() {
 
           <GlassCard className="divide-y divide-border/40 p-2">
             {sorted.map((row, i) => (
-              <div key={`${row.name}-${i}`} className="flex items-center gap-3 p-3 transition-colors hover:bg-white/5 rounded-xl">
+              <div key={`${row.name}-${i}`} className="flex items-center gap-3 p-3">
                 <span
                   className={cn(
                     "grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-xs font-black shadow-[0_10px_18px_-12px_rgba(0,0,0,.8)]",
@@ -200,7 +198,7 @@ function Leaderboard() {
                   {initials(row.name)}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-black">{row.name}</span>
+                  <span className="block truncate text-sm font-bold">{row.name}</span>
                   <span className="block truncate text-[11px] text-muted-foreground">
                     {t("Invested")} {money(row.invested)}
                   </span>

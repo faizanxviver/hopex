@@ -123,28 +123,28 @@ function More() {
           </button>
         </div>
 
-        <div className="relative mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <div className="rounded-2xl glass-soft px-3 py-2.5 min-w-0">
-            <p className="truncate text-[9px] font-black uppercase tracking-[0.1em] text-muted-foreground/60 leading-tight">
-              {t("Withdrawable")}
+        <div className="relative mt-4 grid gap-2 sm:grid-cols-3">
+          <div className="rounded-2xl glass-soft px-3 py-2.5">
+            <p className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">
+              {t("Withdrawable balance")}
             </p>
-            <p className="mt-0.5 truncate font-display text-[15px] sm:text-lg font-black tracking-tight">
+            <p className="mt-0.5 truncate font-display text-lg font-extrabold">
               {money(user.balance)}
             </p>
           </div>
-          <div className="rounded-2xl glass-soft px-3 py-2.5 min-w-0">
-            <p className="truncate text-[9px] font-black uppercase tracking-[0.1em] text-muted-foreground/60 leading-tight">
-              {t("Deposit")}
+          <div className="rounded-2xl glass-soft px-3 py-2.5">
+            <p className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">
+              {t("Deposit balance")}
             </p>
-            <p className="mt-0.5 truncate font-display text-[15px] sm:text-lg font-black tracking-tight">
+            <p className="mt-0.5 truncate font-display text-lg font-extrabold">
               {money(depositBalance(db, user.id))}
             </p>
           </div>
-          <div className="rounded-2xl glass-soft px-3 py-2.5 min-w-0 col-span-2 sm:col-span-1">
-            <p className="truncate text-[9px] font-black uppercase tracking-[0.1em] text-muted-foreground/60 leading-tight">
-              {t("Referral Income")}
+          <div className="rounded-2xl glass-soft px-3 py-2.5">
+            <p className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">
+              {t("Referral income")}
             </p>
-            <p className="mt-0.5 truncate font-display text-[15px] sm:text-lg font-black tracking-tight text-gold">
+            <p className="mt-0.5 truncate font-display text-lg font-extrabold text-gold">
               {money(user.referralEarnings)}
             </p>
           </div>

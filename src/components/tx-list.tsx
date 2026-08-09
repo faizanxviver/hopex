@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -36,44 +35,40 @@ const isDebit = (t: Transaction) => t.type === "withdraw" || t.type === "investm
 export function TxRow({ tx }: { tx: Transaction }) {
   const Icon = ICONS[tx.type] ?? HandCoins;
   return (
-    <div className="glass flex items-center gap-3 rounded-2xl p-4 transition-all hover:scale-[1.01] hover:bg-white/5 border border-white/5">
-      <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-xl shadow-lg", TINT[tx.type])}>
+    <div className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5">
+      <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-xl", TINT[tx.type])}>
         <Icon className="h-5 w-5" />
       </span>
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <p className="truncate text-sm font-bold capitalize tracking-tight">{tx.method || tx.type}</p>
-          <StatusBadge status={tx.status} className="scale-75 origin-left" />
-        </div>
-        <p className="truncate text-[10px] font-bold text-muted-foreground uppercase tracking-wider opacity-60">
-          {new Date(tx.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+        <p className="truncate text-sm font-bold capitalize">{tx.method || tx.type}</p>
+        <p className="truncate text-xs text-muted-foreground">
+          {new Date(tx.createdAt).toLocaleString()}
         </p>
-        <div className="mt-1 flex flex-wrap items-center gap-2">
+        <div className="mt-1.5 flex flex-wrap items-center gap-2">
+          <StatusBadge status={tx.status} />
           {tx.proofUrl ? (
             <a
               href={tx.proofUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-2 py-0.5 text-[9px] font-bold text-primary uppercase tracking-tighter"
+              className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground"
             >
-              <ImageIcon className="h-2.5 w-2.5" /> Proof
+              <ImageIcon className="h-3 w-3" /> proof
             </a>
           ) : null}
         </div>
       </div>
 
-      <div className="text-right shrink-0">
-        <p
-          className={cn(
-            "font-display text-base font-black tabular-nums tracking-tighter",
-            isDebit(tx) ? "text-red-400" : "text-emerald-400",
-          )}
-        >
-          {isDebit(tx) ? "−" : "+"}
-          {money(tx.amount)}
-        </p>
-      </div>
+      <p
+        className={cn(
+          "shrink-0 font-display text-base font-extrabold tabular-nums",
+          isDebit(tx) ? "text-destructive" : "text-success",
+        )}
+      >
+        {isDebit(tx) ? "−" : "+"}
+        {money(tx.amount)}
+      </p>
     </div>
   );
 }
@@ -81,17 +76,15 @@ export function TxRow({ tx }: { tx: Transaction }) {
 export function TxList({ rows, empty }: { rows: Transaction[]; empty: React.ReactNode }) {
   if (!rows.length) {
     return (
-      <div className="glass rounded-3xl p-10 text-center text-sm text-muted-foreground border border-dashed border-white/10">
+      <div className="glass rounded-3xl p-10 text-center text-sm text-muted-foreground">
         {empty}
       </div>
     );
   }
   return (
-    <div className="grid gap-2.5">
-      {rows.map((t, i) => (
-        <div key={t.id} className="animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: `${Math.min(i * 40, 400)}ms` }}>
-          <TxRow tx={t} />
-        </div>
+    <div className="grid gap-3">
+      {rows.map((t) => (
+        <TxRow key={t.id} tx={t} />
       ))}
     </div>
   );

@@ -18,7 +18,6 @@ import {
   Video,
   X,
   MoreVertical,
-  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useStore, newId, timestamp } from "@/lib/store";
@@ -29,10 +28,38 @@ import { useTyping } from "@/lib/typing";
 import { cn } from "@/lib/utils";
 
 const EMOJIS = [
-  "😀", "😁", "😂", "🤣", "😊", "😍", "🥰", "😎", "🤝", "👍", 
-  "👏", "🙏", "🔥", "💰", "💵", "📈", "📉", "✅", "❌", "❓", 
-  "😢", "😡", "🎉", "💎", "⏳", "📷", "🧾", "🏦", "🤔", "🙌", 
-  "💯", "⭐", "❤️", "🙌", "✨", "🚀", "📱", "🎁", "🔥"
+  "😀",
+  "😁",
+  "😂",
+  "🤣",
+  "😊",
+  "😍",
+  "🥰",
+  "😎",
+  "🤝",
+  "👍",
+  "👏",
+  "🙏",
+  "🔥",
+  "💰",
+  "💵",
+  "📈",
+  "📉",
+  "✅",
+  "❌",
+  "❓",
+  "😢",
+  "😡",
+  "🎉",
+  "💎",
+  "⏳",
+  "📷",
+  "🧾",
+  "🏦",
+  "🤔",
+  "🙌",
+  "💯",
+  "⭐",
 ];
 
 const QUICK_REPLIES = [
@@ -119,7 +146,6 @@ export function LiveChat() {
       });
       return d;
     });
-    toast.success("Voice message sent!");
   });
 
   if (!user || user.role === "admin" || !chatOpen) return null;
@@ -182,34 +208,23 @@ export function LiveChat() {
 
       <div className="wa animate-rise relative flex h-full w-full flex-col overflow-hidden shadow-[var(--shadow-elegant)] sm:h-[min(42rem,92vh)] sm:w-[24.5rem] sm:rounded-2xl">
         {/* ---- Header ---- */}
-        <div className="wa-header flex items-center gap-3 px-3 py-2.5 z-10 shadow-lg">
-          <button onClick={() => setChatOpen(false)} aria-label="Back" className="shrink-0 wa-dim">
+        <div className="wa-header flex items-center gap-3 px-3 py-2.5">
+          <button onClick={() => setChatOpen(false)} aria-label="Back" className="shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="relative">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-500 text-white font-display text-sm font-black shadow-inner">
-              <ShieldCheck className="h-5 w-5" />
-            </span>
-            {agentOnline && (
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[var(--wa-bg-2)] bg-success ring-2 ring-emerald-500/20" />
-            )}
-          </div>
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/20 font-display text-sm font-black">
+            H
+          </span>
           <div className="min-w-0 flex-1 leading-tight">
-            <p className="truncate text-[15px] font-black tracking-tight">HopeX Support</p>
-            <p className="truncate text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground/60">
-              {peerTyping ? (
-                <span className="text-success lowercase tracking-normal font-black italic">typing…</span>
-              ) : agentOnline ? (
-                "Online"
-              ) : (
-                "Away"
-              )}
+            <p className="truncate text-[15px] font-semibold">HopeX Support</p>
+            <p className="truncate text-[11px] opacity-80">
+              {peerTyping ? "typing…" : agentOnline ? "online" : "typically replies in minutes"}
             </p>
           </div>
-          <button aria-label="Video call" className="shrink-0 wa-dim hidden sm:block">
+          <button aria-label="Video call" className="shrink-0 opacity-90">
             <Video className="h-[18px] w-[18px]" />
           </button>
-          <button aria-label="Voice call" className="shrink-0 wa-dim hidden sm:block">
+          <button aria-label="Voice call" className="shrink-0 opacity-90">
             <Phone className="h-[17px] w-[17px]" />
           </button>
           <div className="relative shrink-0">
@@ -286,13 +301,13 @@ export function LiveChat() {
             🔒 Messages are end-to-end encrypted
           </p>
 
-          {messages.map((m, idx) => {
+          {messages.map((m) => {
             const label = dayLabel(m.createdAt);
             const showDay = label !== lastDay;
             lastDay = label;
             const mine = m.from === "user";
             return (
-              <div key={m.id} className="animate-in fade-in slide-in-from-bottom-1 duration-300" style={{ animationDelay: `${Math.min(idx * 50, 500)}ms` }}>
+              <div key={m.id}>
                 {showDay ? (
                   <p className="wa-divider mx-auto my-3 w-fit rounded-md px-3 py-1 text-[11px] font-semibold">
                     {label}
@@ -335,7 +350,7 @@ export function LiveChat() {
                       />
                     ) : null}
                     {m.text ? (
-                      <span className="whitespace-pre-wrap font-bold leading-relaxed">{m.text}</span>
+                      <span className="whitespace-pre-wrap font-semibold">{m.text}</span>
                     ) : null}
                     <span className="wa-meta">
                       {timeOf(m.createdAt)}
@@ -467,7 +482,7 @@ export function LiveChat() {
         ) : null}
 
         {/* Composer */}
-        <div className="wa-panel flex items-end gap-2 p-2 border-t border-white/5">
+        <div className="wa-panel flex items-end gap-2 p-2">
           {recording ? (
             <div className="flex min-w-0 flex-1 items-center gap-3 rounded-3xl bg-[var(--wa-in)] px-4 py-3">
               <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-destructive" />

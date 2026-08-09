@@ -33,7 +33,6 @@ import {
 } from "@/lib/store";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -151,21 +150,19 @@ function Dashboard() {
             </Link>
           </div>
 
-          <div className="mt-4 grid grid-cols-3 gap-3">
+          <div className="mt-3 grid grid-cols-3 gap-3">
             {[
-              { to: "/plans", icon: Gem, label: "Invest", tint: "bg-emerald-500/10 text-emerald-500" },
-              { to: "/referrals", icon: UsersRound, label: "Team", tint: "bg-blue-500/10 text-blue-500" },
-              { to: "/promo", icon: TicketPercent, label: "Promo", tint: "bg-purple-500/10 text-purple-500" },
+              { to: "/plans", icon: Gem, label: "Invest" },
+              { to: "/referrals", icon: Share2, label: "Refer" },
+              { to: "/promo", icon: TicketPercent, label: "Promo code" },
             ].map((a) => (
               <Link
                 key={a.to}
                 to={a.to}
-                className="relative flex h-24 flex-col items-center justify-center gap-2 rounded-2xl border border-white/5 bg-white/5 transition-all hover:scale-105 active:scale-95 group"
+                className="btn-glass flex h-[4.5rem] flex-col items-center justify-center gap-1.5 text-[11px] font-bold text-foreground"
               >
-                <span className={cn("grid h-10 w-10 place-items-center rounded-xl transition-transform group-hover:scale-110", a.tint)}>
-                  <a.icon className="h-5 w-5" />
-                </span>
-                <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground">{t(a.label)}</span>
+                <a.icon className="h-5 w-5 text-primary" />
+                {t(a.label)}
               </Link>
             ))}
           </div>

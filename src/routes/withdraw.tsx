@@ -192,38 +192,31 @@ function Withdraw() {
       <SectionTitle title={t("Withdraw funds")} subtitle={t("Fast payouts to your bound account.")} />
 
       {/* Balance hero */}
-      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 p-6 sm:p-8 border border-emerald-500/20 shadow-xl shadow-emerald-500/5">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-500/25 blur-3xl" />
+      <GlassCard glow className="relative overflow-hidden p-5 sm:p-6">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gold/25 blur-3xl" />
         <div className="relative">
-          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-500/60">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             {t("Withdrawable balance")}
           </p>
-          <div className="mt-2 flex items-baseline gap-1">
-            <span className="text-xl font-bold text-emerald-500">Rs</span>
-            <span className="font-display text-4xl sm:text-5xl font-black tracking-tight text-white">{user.balance.toLocaleString()}</span>
-          </div>
-          <div className="mt-5 flex flex-wrap items-center gap-2">
+          <p className="mt-1 font-display text-4xl font-black tracking-tight">{money(user.balance)}</p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest",
-                windowOpen ? "bg-emerald-500 text-emerald-950 shadow-lg shadow-emerald-500/20" : "bg-red-500/20 text-red-500 border border-red-500/30",
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold",
+                windowOpen ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive",
               )}
             >
               <Clock4 className="h-3 w-3" />
-              {windowOpen ? t("Payout window open") : t("Payout window closed")}
+              {windowOpen ? t("Payout window open") : t("Payout window closed")} · {pakistanClock(new Date(tick))}
             </span>
             {!planActive ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-amber-500">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/20 px-3 py-1 text-[11px] font-bold text-warning">
                 <Lock className="h-3 w-3" /> {t("Plan required")}
               </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-blue-400">
-                <ShieldCheck className="h-3 w-3" /> {t("Verified")}
-              </span>
-            )}
+            ) : null}
           </div>
         </div>
-      </div>
+      </GlassCard>
 
       <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
         <GlassCard>
