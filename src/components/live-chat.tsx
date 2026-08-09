@@ -35,7 +35,7 @@ const EMOJIS = [
   "😊",
   "😍",
   "🥰",
-  "😎",
+  "😎", "🤝", "👍", "👏", "🙏", "🔥", "💰", "💵", "📈", "📉", "✅", "❌", "❓", "😢", "😡", "🎉", "💎", "⏳", "📷", "🧾", "🏦", "🤔", "🙌", "💯", "⭐", "❤️", "🙌", "✨", "🚀", "📱", "🎁", "🔥"
   "🤝",
   "👍",
   "👏",
@@ -146,6 +146,7 @@ export function LiveChat() {
       });
       return d;
     });
+    toast.success("Voice message sent!");
   });
 
   if (!user || user.role === "admin" || !chatOpen) return null;
@@ -212,8 +213,8 @@ export function LiveChat() {
           <button onClick={() => setChatOpen(false)} aria-label="Back" className="shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/20 font-display text-sm font-black">
-            H
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-500 text-emerald-950 font-display text-sm font-black">
+            <ShieldCheck className="h-5 w-5" />
           </span>
           <div className="min-w-0 flex-1 leading-tight">
             <p className="truncate text-[15px] font-semibold">HopeX Support</p>
@@ -301,13 +302,13 @@ export function LiveChat() {
             🔒 Messages are end-to-end encrypted
           </p>
 
-          {messages.map((m) => {
+          {messages.map((m, idx) => {
             const label = dayLabel(m.createdAt);
             const showDay = label !== lastDay;
             lastDay = label;
             const mine = m.from === "user";
             return (
-              <div key={m.id}>
+              <div key={m.id} className="animate-in fade-in slide-in-from-bottom-1 duration-300" style={{ animationDelay: `${Math.min(idx * 50, 500)}ms` }}>
                 {showDay ? (
                   <p className="wa-divider mx-auto my-3 w-fit rounded-md px-3 py-1 text-[11px] font-semibold">
                     {label}
@@ -350,7 +351,7 @@ export function LiveChat() {
                       />
                     ) : null}
                     {m.text ? (
-                      <span className="whitespace-pre-wrap font-semibold">{m.text}</span>
+                      <span className="whitespace-pre-wrap font-bold leading-relaxed">{m.text}</span>
                     ) : null}
                     <span className="wa-meta">
                       {timeOf(m.createdAt)}
@@ -482,7 +483,7 @@ export function LiveChat() {
         ) : null}
 
         {/* Composer */}
-        <div className="wa-panel flex items-end gap-2 p-2">
+        <div className="wa-panel flex items-end gap-2 p-2 border-t border-white/5">
           {recording ? (
             <div className="flex min-w-0 flex-1 items-center gap-3 rounded-3xl bg-[var(--wa-in)] px-4 py-3">
               <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-destructive" />

@@ -447,6 +447,7 @@ function Admin() {
                       <th className="p-4">Method</th>
                       <th className="p-4">Reference</th>
                       <th className="p-4">Proof</th>
+                      <th className="p-4">User Status</th>
                       <th className="p-4">Amount</th>
                       <th className="p-4">Status</th>
                       <th className="p-4">Actions</th>
