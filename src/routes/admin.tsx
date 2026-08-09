@@ -830,29 +830,32 @@ function MethodsManager() {
 
   return (
     <div className="space-y-4">
-      <button
-        onClick={() => {
-          const name = prompt("Method name (e.g. Easypaisa)");
-          if (!name) return;
-          update((d) => {
-            d.methods.push({
-              id: newId(),
-              name,
-              kind: "wallet",
-              accountName: "HopeX Payments",
-              accountNumber: "0000000000",
-              instructions: `Send the exact amount to the ${name} account above, then upload your screenshot.`,
-              active: true,
-              sortOrder: d.methods.length,
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-xl font-extrabold">Payment Methods</h2>
+        <button
+          onClick={() => {
+            const name = prompt("Method name (e.g. Easypaisa)");
+            if (!name) return;
+            update((d) => {
+              d.methods.push({
+                id: newId(),
+                name,
+                kind: "wallet",
+                accountName: "HopeX Payments",
+                accountNumber: "0000000000",
+                instructions: `Send the exact amount to the ${name} account above, then upload your screenshot.`,
+                active: true,
+                sortOrder: d.methods.length,
+              });
+              return d;
             });
-            return d;
-          });
-          toast.success("Payment method added.");
-        }}
-        className="btn-glass btn-glass-primary inline-flex h-11 items-center px-5 text-sm font-bold"
-      >
-        + Add payment method
-      </button>
+            toast.success("Payment method added.");
+          }}
+          className="btn-glass btn-glass-primary flex h-10 items-center gap-2 px-5 text-xs font-bold"
+        >
+          <Plus className="h-4 w-4" /> Add method
+        </button>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {db.methods.map((m) => (
