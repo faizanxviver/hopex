@@ -13,11 +13,9 @@ import {
   Settings,
   Ticket,
   TrendingUp,
-  Camera,
   Users,
   ScrollText,
   Crown,
-  Gift,
   Wallet,
   Wrench,
   Globe,
@@ -36,7 +34,6 @@ import { MoneyDesk } from "@/components/admin-money";
 import {
   AdminCommandPalette,
   AdminTools,
-  BulkActionBar,
   SeoSettings,
 } from "@/components/admin-tools";
 import { ApiKeysAdmin } from "@/components/admin-api";
@@ -112,8 +109,6 @@ function Admin() {
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
   const [menuOpen, setMenuOpen] = useState(false);
   const [proof, setProof] = useState<string | null>(null);
-  const [bucket, setBucket] = useState<"Pending" | "Approved" | "Rejected">("Pending");
-  const [selected, setSelected] = useState<string[]>([]);
 
   const users = db.users.filter((u) => u.role === "user");
   const deposits = db.transactions.filter((t) => t.type === "deposit");
@@ -164,16 +159,8 @@ function Admin() {
   };
 
   const isPending = (s: TxStatus) => s === "pending" || s === "processing";
-  const isDone = (s: TxStatus) => s === "approved" || s === "completed";
   const pendingDeps = deposits.filter((t) => isPending(t.status)).length;
   const pendingWds = withdrawals.filter((t) => isPending(t.status)).length;
-  const rows = (tab === "Auto Deposit" ? deposits : withdrawals).filter((t) =>
-    bucket === "Pending"
-      ? isPending(t.status)
-      : bucket === "Approved"
-        ? isDone(t.status)
-        : t.status === "rejected",
-  );
   const counts: Partial<Record<(typeof tabs)[number], number>> = {
     Users: users.length,
     "Auto Deposit": pendingDeps,
