@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-const ALLOWED_ORIGINS = ["https://mintage.site", "https://www.mintage.site"];
+const ALLOWED_ORIGINS = [
+  "https://mintage.site",
+  "https://www.mintage.site",
+  "https://freebuff.com",
+  "https://www.freebuff.com",
+];
 
 function corsHeaders(origin: string | null) {
   const allow = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]!;
