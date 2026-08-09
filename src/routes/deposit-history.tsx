@@ -34,6 +34,7 @@ export const Route = createFileRoute("/deposit-history")({
 function DepositHistory() {
   const { db, user } = useStore();
   const { t } = useT();
+  const { ref } = Route.useSearch();
   const rows = db.transactions.filter((tx) => tx.userId === user?.id && tx.type === "deposit");
   const successful = rows.filter((r) => r.status === "approved" || r.status === "completed");
   const processing = rows.filter((r) => r.status === "pending" || r.status === "processing");
@@ -44,6 +45,22 @@ function DepositHistory() {
         title={t("Deposit history")}
         subtitle={t("Audit every top-up request and its current status.")}
       />
+
+      {ref ? (
+        <div className="relative overflow-hidden rounded-[2rem] glass p-5">
+          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-success/25 blur-2xl" />
+          <p className="text-sm font-bold text-success">
+            {t("Payment received — automatic verification in progress")}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t(
+              "Your gateway payment was captured successfully. The amount is credited as soon as verification completes.",
+            )}
+          </p>
+        </div>
+      ) : null}
+
+
 
       <div className="grid grid-cols-2 gap-4">
         <div className="relative overflow-hidden rounded-[2rem] glass p-5">
