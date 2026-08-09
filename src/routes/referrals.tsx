@@ -119,26 +119,26 @@ function Referrals() {
           </div>
 
           <div className="mt-6 flex flex-col gap-4">
-            <div className="group relative overflow-hidden rounded-[2rem] border border-white/5 bg-white/5 p-4 sm:p-6 backdrop-blur-xl">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-5 sm:p-6 backdrop-blur-3xl shadow-2xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
                 <div className="min-w-0">
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-                    {t("Unique Referral Code")}
+                  <span className="text-[9px] font-black uppercase tracking-[0.25em] text-white/40 mb-2 block">
+                    {t("Personal Invite Code")}
                   </span>
-                  <div className="mt-1 flex items-center gap-3">
-                    <span className="font-display text-3xl sm:text-4xl font-black tracking-tight text-gold">
+                  <div className="flex items-center gap-4">
+                    <span className="font-display text-4xl sm:text-5xl font-black tracking-tighter text-white drop-shadow-lg">
                       {user.referralCode}
                     </span>
                     <button
                       onClick={() => copy(user.referralCode, t("Referral code"))}
-                      className="rounded-xl bg-gold/10 p-2 text-gold transition-transform hover:scale-110 active:scale-95"
+                      className="rounded-2xl bg-white/10 p-2.5 text-white ring-1 ring-white/10 transition-all hover:bg-white/20 active:scale-95 shadow-xl"
                     >
-                      <Copy className="h-4 w-4" />
+                      <Copy className="h-5 w-5" />
                     </button>
                   </div>
                 </div>
-                <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-gold/10 text-gold shadow-inner">
-                  <Ticket className="h-6 w-6" />
+                <div className="hidden sm:flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-gradient-to-br from-gold/30 to-gold/10 text-gold shadow-lg ring-1 ring-gold/20">
+                  <Ticket className="h-8 w-8" />
                 </div>
               </div>
             </div>
@@ -153,18 +153,18 @@ function Referrals() {
             />
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="mt-5 grid grid-cols-2 gap-3">
             <button
               onClick={() => copy(link, t("Referral link"))}
-              className="btn-glass btn-glass-primary flex h-12 items-center justify-center gap-2 text-sm font-bold"
+              className="btn-glass btn-glass-primary flex h-14 items-center justify-center gap-2.5 text-sm font-black tracking-tight shadow-lg shadow-primary/20"
             >
-              <Copy className="h-4 w-4" /> {t("Copy")}
+              <Copy className="h-4.5 w-4.5" /> {t("Copy Link")}
             </button>
             <button
               onClick={share}
-              className="btn-glass flex h-12 items-center justify-center gap-2 text-sm font-bold text-foreground"
+              className="btn-glass flex h-14 items-center justify-center gap-2.5 text-sm font-black tracking-tight text-foreground bg-white/5 hover:bg-white/10"
             >
-              <Share2 className="h-4 w-4" /> {t("Share")}
+              <Share2 className="h-4.5 w-4.5" /> {t("Share")}
             </button>
           </div>
         </div>
