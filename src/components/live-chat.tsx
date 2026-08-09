@@ -200,9 +200,9 @@ export function LiveChat() {
               {peerTyping ? (
                 <span className="text-success lowercase tracking-normal font-black italic">typing…</span>
               ) : agentOnline ? (
-                t("Online")
+                "Online"
               ) : (
-                t("Away")
+                "Away"
               )}
             </p>
           </div>
