@@ -179,7 +179,7 @@ function Admin() {
   );
   const counts: Partial<Record<(typeof tabs)[number], number>> = {
     Users: users.length,
-    Deposits: pendingDeps,
+    "Auto Deposit": pendingDeps,
     Withdrawals: pendingWds,
     "Support Chat": db.chats.filter((c) => c.from === "user").length,
   };
