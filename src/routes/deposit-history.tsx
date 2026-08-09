@@ -6,6 +6,9 @@ import { useT } from "@/lib/i18n";
 import { money, useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/deposit-history")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    ref: typeof search.ref === "string" ? search.ref.slice(0, 100) : undefined,
+  }),
   head: () => ({
     meta: [
       { name: "robots", content: "noindex, nofollow" },
@@ -26,6 +29,7 @@ export const Route = createFileRoute("/deposit-history")({
     </AuthGuard>
   ),
 });
+
 
 function DepositHistory() {
   const { db, user } = useStore();
