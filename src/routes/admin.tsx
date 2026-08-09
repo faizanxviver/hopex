@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminChat } from "@/components/admin-chat";
