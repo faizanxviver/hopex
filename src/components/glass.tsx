@@ -66,7 +66,7 @@ export function StatCard({
   );
 }
 
-export function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({ status, className }: { status: string; className?: string }) {
   const map: Record<string, string> = {
     pending: "bg-primary/12 text-primary border-primary/30",
     processing: "bg-primary/12 text-primary border-primary/30",
@@ -79,6 +79,7 @@ export function StatusBadge({ status }: { status: string }) {
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold",
         map[status] ?? "bg-muted text-muted-foreground border-border",
+        className
       )}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
