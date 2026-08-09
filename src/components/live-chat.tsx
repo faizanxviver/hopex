@@ -195,7 +195,7 @@ export function LiveChat() {
             )}
           </div>
           <div className="min-w-0 flex-1 leading-tight">
-            <p className="truncate text-[15px] font-black tracking-tight">{t("HopeX Support")}</p>
+            <p className="truncate text-[15px] font-black tracking-tight">HopeX Support</p>
             <p className="truncate text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground/60">
               {peerTyping ? (
                 <span className="text-success lowercase tracking-normal font-black italic">typing…</span>
