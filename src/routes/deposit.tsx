@@ -113,13 +113,17 @@ function Deposit() {
               />
             </div>
 
-            <button className="btn-glass btn-glass-primary flex h-14 w-full items-center justify-center text-base font-bold">
-              Submit &amp; continue to payment
+            <button
+              disabled={busy}
+              className="btn-glass btn-glass-primary flex h-14 w-full items-center justify-center text-base font-bold disabled:opacity-60"
+            >
+              {busy ? "Opening secure gateway…" : "Submit & continue to payment"}
             </button>
-            <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-              <ShieldCheck className="h-3.5 w-3.5 text-success" /> You will be taken to the
-              SecurePay gateway to select a method, pay and upload your screenshot.
+            <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-success" /> You will be taken to our
+              automatic payment gateway to select a method, pay and upload your screenshot.
             </p>
+
           </form>
         </GlassCard>
 
