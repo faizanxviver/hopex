@@ -13,11 +13,9 @@ import {
   Settings,
   Ticket,
   TrendingUp,
-  Camera,
   Users,
   ScrollText,
   Crown,
-  Gift,
   Wallet,
   Wrench,
   Globe,
@@ -31,11 +29,11 @@ import { toast } from "sonner";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminChat } from "@/components/admin-chat";
-import { BalanceControl, LeaderPlansAdmin, RewardsAdmin } from "@/components/admin-rewards";
+import { BalanceControl, LeaderPlansAdmin } from "@/components/admin-rewards";
+import { MoneyDesk } from "@/components/admin-money";
 import {
   AdminCommandPalette,
   AdminTools,
-  BulkActionBar,
   SeoSettings,
 } from "@/components/admin-tools";
 import { ApiKeysAdmin } from "@/components/admin-api";
@@ -76,7 +74,6 @@ const tabs = [
   "Methods",
   "Plans",
   "Promo Codes",
-  "Rewards",
   "Leader Plans",
   "Balance Control",
   "Support Chat",
@@ -85,7 +82,6 @@ const tabs = [
   "Tools",
   "SEO",
   "API Keys",
-  "Withdraw Proofs",
   "Settings",
 ] as const;
 
@@ -97,7 +93,6 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
   Methods: CreditCard,
   Plans: TrendingUp,
   "Promo Codes": Ticket,
-  Rewards: Gift,
   "Leader Plans": Crown,
   "Balance Control": Wallet,
   "Support Chat": MessageSquare,
@@ -106,7 +101,6 @@ const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
   Tools: Wrench,
   SEO: Globe,
   "API Keys": KeyRound,
-  "Withdraw Proofs": Camera,
   Settings: Settings,
 };
 
@@ -115,8 +109,6 @@ function Admin() {
   const [tab, setTab] = useState<(typeof tabs)[number]>("Overview");
   const [menuOpen, setMenuOpen] = useState(false);
   const [proof, setProof] = useState<string | null>(null);
-  const [bucket, setBucket] = useState<"Pending" | "Approved" | "Rejected">("Pending");
-  const [selected, setSelected] = useState<string[]>([]);
 
   const users = db.users.filter((u) => u.role === "user");
   const deposits = db.transactions.filter((t) => t.type === "deposit");
@@ -167,16 +159,8 @@ function Admin() {
   };
 
   const isPending = (s: TxStatus) => s === "pending" || s === "processing";
-  const isDone = (s: TxStatus) => s === "approved" || s === "completed";
   const pendingDeps = deposits.filter((t) => isPending(t.status)).length;
   const pendingWds = withdrawals.filter((t) => isPending(t.status)).length;
-  const rows = (tab === "Auto Deposit" ? deposits : withdrawals).filter((t) =>
-    bucket === "Pending"
-      ? isPending(t.status)
-      : bucket === "Approved"
-        ? isDone(t.status)
-        : t.status === "rejected",
-  );
   const counts: Partial<Record<(typeof tabs)[number], number>> = {
     Users: users.length,
     "Auto Deposit": pendingDeps,
@@ -185,9 +169,9 @@ function Admin() {
   };
 
   const groups: { label: string; items: (typeof tabs)[number][] }[] = [
-    { label: "Operations", items: ["Overview", "Users", "Support Chat", "Withdraw Proofs"] },
+    { label: "Operations", items: ["Overview", "Users", "Support Chat"] },
     { label: "Money flow", items: ["Auto Deposit", "Withdrawals", "Balance Control", "Methods"] },
-    { label: "Growth", items: ["Plans", "Promo Codes", "Rewards", "Leader Plans", "Broadcast"] },
+    { label: "Growth", items: ["Plans", "Promo Codes", "Leader Plans", "Broadcast"] },
     { label: "System", items: ["Tools", "SEO", "API Keys", "Audit Log", "Settings"] },
   ];
   const recent = db.transactions.slice(0, 6);
@@ -400,138 +384,11 @@ function Admin() {
           {tab === "Users" ? <UsersManager /> : null}
 
           {tab === "Auto Deposit" || tab === "Withdrawals" ? (
-            <>
-              <div className="mb-4 inline-flex gap-1 rounded-2xl glass-soft p-1">
-                {(["Pending", "Approved", "Rejected"] as const).map((b) => {
-                  const count = (tab === "Auto Deposit" ? deposits : withdrawals).filter((t) =>
-                    b === "Pending"
-                      ? isPending(t.status)
-                      : b === "Approved"
-                        ? isDone(t.status)
-                        : t.status === "rejected",
-                  ).length;
-                  return (
-                    <button
-                      key={b}
-                      onClick={() => setBucket(b)}
-                      className={cn(
-                        "rounded-xl px-4 py-2 text-sm font-semibold transition",
-                        bucket === b
-                          ? b === "Pending"
-                            ? "bg-destructive text-destructive-foreground"
-                            : "gradient-cool text-primary-foreground"
-                          : "text-muted-foreground",
-                      )}
-                    >
-                      {b === "Pending" ? "Pending" : b === "Approved" ? "Successful" : "Declined"} (
-                      {count})
-                    </button>
-                  );
-                })}
-              </div>
-              {bucket === "Pending" ? (
-                <BulkActionBar
-                  rows={rows}
-                  selected={selected}
-                  setSelected={setSelected}
-                  onApply={setStatus}
-                  kind={tab === "Auto Deposit" ? "deposit" : "withdraw"}
-                />
-              ) : null}
-              <GlassCard className="overflow-x-auto p-0">
-                <table className="w-full min-w-[46rem] text-sm">
-                  <thead className="border-b border-border/60 text-left text-xs uppercase tracking-widest text-muted-foreground">
-                    <tr>
-                      <th className="w-10 p-4"></th>
-                      <th className="p-4">User</th>
-                      <th className="p-4">Method</th>
-                      <th className="p-4">Reference</th>
-                      <th className="p-4">Proof</th>
-                      <th className="p-4">Amount</th>
-                      <th className="p-4">Status</th>
-                      <th className="p-4">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/40">
-                    {rows.map((t) => (
-                      <tr key={t.id}>
-                        <td className="p-4">
-                          <input
-                            type="checkbox"
-                            aria-label="Select row"
-                            className="h-4 w-4 accent-[var(--primary)]"
-                            checked={selected.includes(t.id)}
-                            onChange={(e) =>
-                              setSelected(
-                                e.target.checked
-                                  ? [...selected, t.id]
-                                  : selected.filter((x) => x !== t.id),
-                              )
-                            }
-                          />
-                        </td>
-                        <td className="p-4">
-                          {db.users.find((u) => u.id === t.userId)?.name ?? "—"}
-                        </td>
-                        <td className="p-4">{t.method}</td>
-                        <td className="p-4 text-muted-foreground">{t.reference ?? "—"}</td>
-                        <td className="p-4">
-                          {t.proofUrl ? (
-                            <button
-                              onClick={() => setProof(t.proofUrl!)}
-                              className="group inline-flex items-center gap-2"
-                            >
-                              <img
-                                src={t.proofUrl}
-                                alt="Payment proof"
-                                loading="lazy"
-                                className="h-10 w-10 rounded-lg border border-border/60 object-cover transition group-hover:scale-105"
-                              />
-                              <span className="text-xs font-semibold text-primary">View</span>
-                            </button>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          )}
-                        </td>
-                        <td className="p-4 font-semibold">{money(t.amount)}</td>
-                        <td className="p-4">
-                          <StatusBadge status={t.status} />
-                        </td>
-                        <td className="p-4">
-                          {isPending(t.status) ? (
-                            <div className="flex flex-wrap gap-2">
-                              <button
-                                onClick={() =>
-                                  setStatus(
-                                    t.id,
-                                    tab === "Auto Deposit" ? "approved" : "completed",
-                                    true,
-                                  )
-                                }
-                                className="rounded-lg bg-success/15 px-3 py-1 text-xs font-semibold text-success"
-                              >
-                                Approve
-                              </button>
-                              <button
-                                onClick={() => setStatus(t.id, "rejected", false)}
-                                className="rounded-lg bg-destructive/15 px-3 py-1 text-xs font-semibold text-destructive"
-                              >
-                                Decline
-                              </button>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">Reviewed</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {rows.length === 0 ? (
-                  <p className="p-6 text-sm text-muted-foreground">Nothing in this section.</p>
-                ) : null}
-              </GlassCard>
-            </>
+            <MoneyDesk
+              kind={tab === "Auto Deposit" ? "deposit" : "withdraw"}
+              onSetStatus={setStatus}
+              onViewProof={setProof}
+            />
           ) : null}
 
           {tab === "Methods" ? <MethodsManager /> : null}
@@ -595,15 +452,11 @@ function Admin() {
             </div>
           ) : null}
 
-          {tab === "Rewards" ? <RewardsAdmin /> : null}
-
           {tab === "Leader Plans" ? <LeaderPlansAdmin /> : null}
 
           {tab === "Balance Control" ? <BalanceControl /> : null}
 
           {tab === "Support Chat" ? <AdminChat /> : null}
-
-          {tab === "Withdraw Proofs" ? <WithdrawProofsAdmin /> : null}
 
           {tab === "Broadcast" ? (
             <GlassCard className="max-w-xl">
@@ -1618,52 +1471,6 @@ function AnnouncementSettings() {
         placeholder="e.g. Withdrawals are processed daily between 8am and 8pm."
         className="mt-3 w-full rounded-xl border border-input bg-background/40 p-3 text-sm outline-none"
       />
-      <ProofRewardSettings />
-    </div>
-  );
-}
-
-/** Withdrawal proof reward settings. */
-function ProofRewardSettings() {
-  const { db, update } = useStore();
-  return (
-    <div className="rounded-2xl border border-border/60 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-bold text-success">Withdrawal proof reward</p>
-        <button
-          onClick={() =>
-            update((d) => {
-              d.settings.showProofsSection = !d.settings.showProofsSection;
-              return d;
-            })
-          }
-          className={cn(
-            "rounded-full px-3 py-1 text-xs font-bold",
-            db.settings.showProofsSection
-              ? "bg-success/15 text-success"
-              : "bg-muted text-muted-foreground",
-          )}
-        >
-          {db.settings.showProofsSection ? "Enabled" : "Disabled"}
-        </button>
-      </div>
-      <div className="mt-4 flex items-center gap-2">
-        <span className="text-xs text-muted-foreground">Reward (Rs):</span>
-        <input
-          type="number"
-          defaultValue={db.settings.proofRewardAmount}
-          onBlur={(e) =>
-            update((d) => {
-              d.settings.proofRewardAmount = Number(e.target.value);
-              return d;
-            })
-          }
-          className="h-10 w-24 rounded-xl border border-input bg-background/40 px-3 text-xs outline-none"
-        />
-      </div>
-      <p className="mt-2 text-[11px] text-muted-foreground">
-        Users get this amount automatically when their withdrawal proof is approved.
-      </p>
     </div>
   );
 }
@@ -1826,88 +1633,3 @@ function AuditLogPanel() {
   );
 }
 
-function WithdrawProofsAdmin() {
-  const { db, update, refresh } = useStore();
-  const [loading, setLoading] = useState(true);
-  const [proofs, setProofs] = useState<any[]>([]);
-
-  const fetchProofs = async () => {
-    setLoading(true);
-    const { data } = await supabase
-      .from("withdrawal_proofs" as any)
-      .select("*, users:profiles(name, phone)")
-      .order("created_at", { ascending: false });
-    setProofs(data || []);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchProofs();
-  }, []);
-
-  const handleStatus = async (id: string, status: "approved" | "rejected") => {
-    const { error } = await supabase.rpc("review_withdrawal_proof" as never, {
-      _id: id,
-      _approve: status === "approved",
-      _note: "",
-    } as never);
-
-    if (error) return toast.error(error.message.replace(/^.*?:\s*/, ""));
-
-    toast.success(`Proof ${status}`);
-    fetchProofs();
-    refresh();
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-xl font-extrabold">Withdrawal Proofs</h2>
-        <button onClick={fetchProofs} className="btn-glass px-4 py-2 text-xs font-bold">Refresh</button>
-      </div>
-
-      <GlassCard className="p-0 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="border-b border-border/60 text-left text-[10px] uppercase tracking-widest text-muted-foreground">
-            <tr>
-              <th className="p-4">User</th>
-              <th className="p-4">Proof</th>
-              <th className="p-4">Reward</th>
-              <th className="p-4">Status</th>
-              <th className="p-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/40">
-            {loading ? (
-              <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">Loading...</td></tr>
-            ) : proofs.length === 0 ? (
-              <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">No proofs submitted.</td></tr>
-            ) : proofs.map((p) => (
-              <tr key={p.id}>
-                <td className="p-4">
-                  <p className="font-bold">{p.users?.name}</p>
-                  <p className="text-[10px] text-muted-foreground">{p.users?.phone}</p>
-                </td>
-                <td className="p-4">
-                  <a href={p.image_url} target="_blank" rel="noreferrer">
-                    <img src={p.image_url} className="h-12 w-12 rounded-lg object-cover border border-border/60" />
-                  </a>
-                </td>
-                <td className="p-4 font-bold text-success">{money(p.amount)}</td>
-                <td className="p-4"><StatusBadge status={p.status} /></td>
-                <td className="p-4 text-right">
-                  {p.status === "pending" && (
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => handleStatus(p.id, "approved")} className="rounded-lg bg-success/15 px-3 py-1 text-[10px] font-bold text-success">Approve</button>
-                      <button onClick={() => handleStatus(p.id, "rejected")} className="rounded-lg bg-destructive/15 px-3 py-1 text-[10px] font-bold text-destructive">Decline</button>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </GlassCard>
-    </div>
-  );
-}

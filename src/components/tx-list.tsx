@@ -6,6 +6,7 @@ import {
   HandCoins,
   UsersRound,
   Image as ImageIcon,
+  Loader2,
 } from "lucide-react";
 import type { Transaction } from "@/lib/store";
 import { money } from "@/lib/store";
@@ -30,6 +31,10 @@ const TINT = {
   payout: "bg-success/15 text-success",
 } as const;
 
+const isMpay = (t: Transaction) =>
+  t.type === "deposit" && /mpay|auto gateway/i.test(`${t.note ?? ""} ${t.method ?? ""}`);
+const isWaiting = (t: Transaction) => t.status === "pending" || t.status === "processing";
+
 const isDebit = (t: Transaction) => t.type === "withdraw" || t.type === "investment";
 
 export function TxRow({ tx }: { tx: Transaction }) {
@@ -47,6 +52,16 @@ export function TxRow({ tx }: { tx: Transaction }) {
         </p>
         <div className="mt-1.5 flex flex-wrap items-center gap-2">
           <StatusBadge status={tx.status} />
+          {isMpay(tx) ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-success">
+              MPay
+            </span>
+          ) : null}
+          {isWaiting(tx) ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+              <Loader2 className="h-3 w-3 animate-spin" /> Awaiting approval
+            </span>
+          ) : null}
           {tx.proofUrl ? (
             <a
               href={tx.proofUrl}
