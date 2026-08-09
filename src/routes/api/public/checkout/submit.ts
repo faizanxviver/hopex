@@ -1,7 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-const ALLOWED_ORIGINS = ["https://mintage.site", "https://www.mintage.site"];
+const ALLOWED_ORIGINS = [
+  "https://mintage.site",
+  "https://www.mintage.site",
+  "https://freebuff.com",
+  "https://www.freebuff.com",
+];
 
 function corsHeaders(origin: string | null) {
   const allow = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]!;
@@ -44,12 +49,14 @@ export const Route = createFileRoute("/api/public/checkout/submit")({
         const json = (body: unknown, status = 200) =>
           new Response(JSON.stringify(body), { status, headers });
 
-        const sharedKey = process.env["GATEWAY_SHARED_SECRET"];
-        if (sharedKey) {
-          const provided = request.headers.get("x-gateway-key") ?? "";
-          if (!safeEqual(provided, sharedKey)) {
-            return json({ status: "unauthorized" }, 401);
-          }
+        const sharedKey = process.env["GATEWAY_SHARED_SECRET"] ?? "";
+        if (!sharedKey) {
+          return json({ status: "misconfigured", message: "Gateway secret not configured" }, 503);
+        }
+        const provided =
+          request.headers.get("x-gateway-key") ?? request.headers.get("x-gateway-secret") ?? "";
+        if (!safeEqual(provided, sharedKey)) {
+          return json({ status: "unauthorized", message: "Invalid gateway key" }, 401);
         }
 
         let parsed;
