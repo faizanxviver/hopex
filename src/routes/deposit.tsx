@@ -40,6 +40,7 @@ function Deposit() {
   const { db, user } = useStore();
   const [amount, setAmount] = useState<string>("");
   const [busy, setBusy] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const startCheckout = useServerFn(createCheckoutSession);
 
   if (!user) return null;
@@ -57,15 +58,23 @@ function Deposit() {
       return toast.error(`Minimum deposit is ${money(db.settings.minDeposit)}.`);
     }
     setBusy(true);
+    setConnecting(true);
     try {
       const session = await startCheckout({ data: { amount: value } });
-      toast.info("Redirecting to the secure payment gateway…");
-      window.location.href = session.url;
+      // Keep the connecting screen visible for a moment, then open MPay in a new tab.
+      await new Promise((r) => setTimeout(r, 1800));
+      window.open(session.url, "_blank", "noopener,noreferrer");
+      setConnecting(false);
+      setBusy(false);
+      toast.success("MPay opened in a new tab. Complete your payment there.");
+      window.location.href = "/deposit-history";
     } catch (err) {
+      setConnecting(false);
       setBusy(false);
       toast.error(err instanceof Error ? err.message : "Could not open the payment gateway.");
     }
   };
+
 
   return (
     <div>
