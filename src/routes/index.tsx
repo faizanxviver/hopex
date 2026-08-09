@@ -17,7 +17,6 @@ import {
 import { GlassCard } from "@/components/glass";
 import { Brand } from "@/components/dashboard-layout";
 import { useStore } from "@/lib/store";
-import { WithdrawalProofsCarousel } from "@/components/withdrawal-proofs";
 
 
 export const Route = createFileRoute("/")({
@@ -264,8 +263,6 @@ function Landing() {
           </div>
         </div>
       </section>
-
-      <WithdrawalProofsCarousel />
 
 
       <footer className="border-t border-border/50 px-4 py-8">

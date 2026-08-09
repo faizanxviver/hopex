@@ -121,7 +121,7 @@ export const Route = createFileRoute("/api/public/checkout/submit")({
         await supabaseAdmin.from("notifications").insert({
           user_id: session.user_id,
           title: "MPay deposit received",
-          body: `Rs ${amount.toLocaleString("en-PK")} via ${parsed.method_name} via MPay is being verified.`,
+          body: `Rs ${amount.toLocaleString("en-PK")} via ${parsed.method_name} (MPay) is being verified.`,
           kind: "info",
         });
 

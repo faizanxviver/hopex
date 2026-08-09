@@ -82,7 +82,6 @@ const account = [
 ] as const;
 
 const rewards = [
-  { to: "/reward", label: "Free reward task", desc: "Share once, earn a free reward", icon: Gift },
   { to: "/salary", label: "Rank salary", desc: "Monthly income for your rank", icon: Crown },
   { to: "/leaderboard", label: "Leaderboard", desc: "Top earners and referrers", icon: Trophy },
   { to: "/promo", label: "Promo codes", desc: "Redeem a bonus code", icon: Ticket },

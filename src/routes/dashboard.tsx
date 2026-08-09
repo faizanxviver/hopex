@@ -106,7 +106,6 @@ function Dashboard() {
 
   return (
     <div className="space-y-5">
-      <WithdrawalApprovedPopup />
 
       <div className="flex items-center gap-3">
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl gradient-brand font-display text-base font-black text-primary-foreground">
@@ -168,32 +167,6 @@ function Dashboard() {
           </div>
         </div>
       </GlassCard>
-
-      {/* Free reward task */}
-      {db.settings.rewardActive && db.settings.rewardAmount > 0 ? (
-        <Link to="/reward" className="reward-3d relative block overflow-hidden rounded-[2rem] p-5">
-          <div className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-gold/35 blur-3xl" />
-          <div className="relative flex items-center gap-4">
-            <span className="reward-coin grid h-14 w-14 shrink-0 place-items-center rounded-2xl">
-              <Gift className="h-6 w-6 text-primary-foreground" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">
-                {t("Free reward")}
-              </p>
-              <p className="truncate font-display text-2xl font-black text-gradient">
-                {money(db.settings.rewardAmount)}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
-                {t("Complete one simple task and get it free")}
-              </p>
-            </div>
-            <span className="btn-glass btn-glass-gold grid h-11 shrink-0 place-items-center px-4 text-xs font-black">
-              {t("Get free")}
-            </span>
-          </div>
-        </Link>
-      ) : null}
 
       {/* Live earnings */}
       {running.length > 0 ? (
@@ -340,85 +313,6 @@ function Dashboard() {
       >
         <Ticket className="h-4 w-4" /> {t("All transactions")}
       </Link>
-    </div>
-  );
-}
-
-function WithdrawalApprovedPopup() {
-  const { db, user } = useStore();
-  const { t } = useT();
-  const navigate = useNavigate();
-  const [dismissed, setDismissed] = useState<string[]>([]);
-
-  useEffect(() => {
-    try {
-      setDismissed(JSON.parse(localStorage.getItem("hopex.proof.dismissed") ?? "[]"));
-    } catch {
-      setDismissed([]);
-    }
-  }, []);
-
-  const withdrawal = db.transactions.find(
-    (x) =>
-      x.userId === user?.id &&
-      x.type === "withdraw" &&
-      (x.status === "approved" || x.status === "completed") &&
-      !x.proofUrl &&
-      !dismissed.includes(x.id),
-  );
-
-  if (!withdrawal) return null;
-
-  const close = () => {
-    const next = [...dismissed, withdrawal.id];
-    setDismissed(next);
-    try {
-      localStorage.setItem("hopex.proof.dismissed", JSON.stringify(next));
-    } catch {
-      /* ignore */
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-      <div className="absolute inset-0 bg-background/30 backdrop-blur-[2px]" onClick={close} />
-      <div className="animate-rise relative w-full max-w-sm rounded-[2rem] border border-border/50 bg-background/40 p-7 text-center shadow-[var(--shadow-elegant)] backdrop-blur-2xl">
-        <button
-          onClick={close}
-          aria-label={t("Close")}
-          className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-background/50 text-muted-foreground backdrop-blur-md transition hover:text-foreground"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
-        <div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl gradient-brand text-primary-foreground">
-          <CheckCircle2 className="h-10 w-10" />
-        </div>
-        <h2 className="mt-6 font-display text-2xl font-black">{t("Payment Received!")}</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t("Your withdrawal of")}{" "}
-          <span className="font-bold text-foreground">{money(withdrawal.amount)}</span>{" "}
-          {t("has been approved and sent.")}
-        </p>
-
-        <div className="mt-8 space-y-3">
-          <button
-            onClick={() => {
-              close();
-              navigate({ to: "/withdraw-proof" });
-            }}
-            className="btn-glass btn-glass-gold flex h-13 w-full items-center justify-center gap-2 text-sm font-black"
-          >
-            <Gift className="h-5 w-5" /> {t("Upload Proof & Get")} {money(db.settings.proofRewardAmount)}
-          </button>
-          <button
-            onClick={close}
-            className="btn-glass flex h-13 w-full items-center justify-center gap-2 text-sm font-bold text-muted-foreground"
-          >
-            <X className="h-4 w-4" /> {t("Maybe later")}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
