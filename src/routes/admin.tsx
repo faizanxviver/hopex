@@ -118,6 +118,7 @@ function Admin() {
   const [proof, setProof] = useState<string | null>(null);
   const [bucket, setBucket] = useState<"Pending" | "Approved" | "Rejected">("Pending");
   const [selected, setSelected] = useState<string[]>([]);
+  const [isAddingMethod, setIsAddingMethod] = useState(false);
 
   const users = db.users.filter((u) => u.role === "user");
   const deposits = db.transactions.filter((t) => t.type === "deposit");
