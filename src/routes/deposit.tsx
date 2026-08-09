@@ -37,9 +37,10 @@ export const Route = createFileRoute("/deposit")({
 });
 
 function Deposit() {
-  const { db, user, update, addNotification } = useStore();
+  const { db, user } = useStore();
   const [amount, setAmount] = useState<string>("");
-  const [gateway, setGateway] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false);
+  const startCheckout = useServerFn(createCheckoutSession);
 
   if (!user) return null;
 
@@ -49,58 +50,26 @@ function Deposit() {
   const deposited = depositBalance(db, user.id);
   const pending = pendingDeposits(db, user.id);
 
-  const openGateway = (e: React.FormEvent) => {
+  const openGateway = async (e: React.FormEvent) => {
     e.preventDefault();
     const value = Number(amount);
     if (!value || value < db.settings.minDeposit) {
       return toast.error(`Minimum deposit is ${money(db.settings.minDeposit)}.`);
     }
-    toast.info("Redirecting to the secure payment gateway…");
-    setGateway(value);
-  };
-
-  const complete = async (r: GatewayResult) => {
-    const value = gateway!;
-    setGateway(null);
-
-    update((d) => {
-      d.transactions.unshift({
-        id: newId(),
-        userId: user.id,
-        type: "deposit",
-        amount: value,
-        method: r.method,
-        reference: r.proof || undefined,
-        proofUrl: r.proofUrl,
-        note: r.proof ? `Proof: ${r.proof}` : undefined,
-        status: "processing",
-
-        createdAt: timestamp(),
-      });
-      return d;
-    });
-
-    addNotification(user.id, {
-      title: "Deposit submitted",
-      body: `${money(value)} via ${r.method} is pending admin approval.`,
-      kind: "info",
-    });
-    toast.success("Deposit submitted for review.");
-    setAmount("");
+    setBusy(true);
+    try {
+      const session = await startCheckout({ data: { amount: value } });
+      toast.info("Redirecting to the secure payment gateway…");
+      window.location.href = session.url;
+    } catch (err) {
+      setBusy(false);
+      toast.error(err instanceof Error ? err.message : "Could not open the payment gateway.");
+    }
   };
 
   return (
     <div>
-      {gateway !== null ? (
-        <PaymentGateway
-          amount={gateway}
-          onExit={() => {
-            setGateway(null);
-            toast.error("Payment cancelled — nothing was submitted.");
-          }}
-          onComplete={complete}
-        />
-      ) : null}
+
 
       <SectionTitle
         title="Deposit funds"
