@@ -80,16 +80,16 @@ function Transactions() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="relative overflow-hidden rounded-[2rem] glass p-5">
-          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-success/20 blur-2xl" />
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("Total Inflow")}</p>
-          <p className="mt-1 font-display text-2xl font-black text-success">+{money(inflow)}</p>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="relative overflow-hidden rounded-[2rem] border border-emerald-500/10 bg-emerald-500/5 p-5">
+          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-emerald-500/10 blur-2xl" />
+          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-500/60">{t("Total Inflow")}</p>
+          <p className="mt-1 font-display text-2xl font-black text-emerald-400">+{money(inflow)}</p>
         </div>
-        <div className="relative overflow-hidden rounded-[2rem] glass p-5">
-          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-destructive/20 blur-2xl" />
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("Total Outflow")}</p>
-          <p className="mt-1 font-display text-2xl font-black text-destructive">−{money(outflow)}</p>
+        <div className="relative overflow-hidden rounded-[2rem] border border-red-500/10 bg-red-500/5 p-5">
+          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-red-500/10 blur-2xl" />
+          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-red-500/60">{t("Total Outflow")}</p>
+          <p className="mt-1 font-display text-2xl font-black text-red-400">−{money(outflow)}</p>
         </div>
       </div>
 
@@ -111,32 +111,32 @@ function Transactions() {
           ))}
         </div>
         
-        <div className="mt-4 grid gap-3 sm:grid-cols-[1.6fr_1fr_1fr]">
+        <div className="mt-4 grid gap-2 sm:grid-cols-[1.6fr_1fr_1fr]">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40" />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder={t("Filter by method or ID...")}
-              className="h-12 w-full rounded-2xl border-none bg-background/40 pl-11 pr-4 text-sm font-medium outline-none ring-1 ring-border/50 focus:ring-2 focus:ring-primary/50"
+              placeholder={t("Search ledger...")}
+              className="h-11 w-full rounded-2xl border-none bg-white/5 pl-11 pr-4 text-[13px] font-bold outline-none ring-1 ring-white/10 transition-all focus:ring-primary/40 focus:bg-white/10"
             />
           </div>
-          <div className="flex items-center gap-2 rounded-2xl bg-background/40 px-3 ring-1 ring-border/50">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase">{t("From")}</span>
+          <div className="flex items-center gap-2 rounded-2xl bg-white/5 px-3 ring-1 ring-white/10">
+            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-tighter shrink-0">{t("From")}</span>
             <input
               type="date"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
-              className="h-12 flex-1 bg-transparent text-xs font-bold outline-none"
+              className="h-11 flex-1 bg-transparent text-[11px] font-black outline-none"
             />
           </div>
-          <div className="flex items-center gap-2 rounded-2xl bg-background/40 px-3 ring-1 ring-border/50">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase">{t("To")}</span>
+          <div className="flex items-center gap-2 rounded-2xl bg-white/5 px-3 ring-1 ring-white/10">
+            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-tighter shrink-0">{t("To")}</span>
             <input
               type="date"
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              className="h-12 flex-1 bg-transparent text-xs font-bold outline-none"
+              className="h-11 flex-1 bg-transparent text-[11px] font-black outline-none"
             />
           </div>
         </div>

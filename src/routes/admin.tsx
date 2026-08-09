@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminChat } from "@/components/admin-chat";
@@ -117,6 +118,7 @@ function Admin() {
   const [proof, setProof] = useState<string | null>(null);
   const [bucket, setBucket] = useState<"Pending" | "Approved" | "Rejected">("Pending");
   const [selected, setSelected] = useState<string[]>([]);
+  const [isAddingMethod, setIsAddingMethod] = useState(false);
 
   const users = db.users.filter((u) => u.role === "user");
   const deposits = db.transactions.filter((t) => t.type === "deposit");
@@ -447,6 +449,7 @@ function Admin() {
                       <th className="p-4">Method</th>
                       <th className="p-4">Reference</th>
                       <th className="p-4">Proof</th>
+                      <th className="p-4">User Status</th>
                       <th className="p-4">Amount</th>
                       <th className="p-4">Status</th>
                       <th className="p-4">Actions</th>
@@ -493,7 +496,13 @@ function Admin() {
                             <span className="text-xs text-muted-foreground">—</span>
                           )}
                         </td>
-                        <td className="p-4 font-semibold">{money(t.amount)}</td>
+                        <td className="p-4">
+                          <StatusBadge 
+                            status={db.users.find(u => u.id === t.userId)?.blocked ? "rejected" : "approved"} 
+                            className="scale-90" 
+                          />
+                        </td>
+                        <td className="p-4 font-black">{money(t.amount)}</td>
                         <td className="p-4">
                           <StatusBadge status={t.status} />
                         </td>
@@ -827,29 +836,32 @@ function MethodsManager() {
 
   return (
     <div className="space-y-4">
-      <button
-        onClick={() => {
-          const name = prompt("Method name (e.g. Easypaisa)");
-          if (!name) return;
-          update((d) => {
-            d.methods.push({
-              id: newId(),
-              name,
-              kind: "wallet",
-              accountName: "HopeX Payments",
-              accountNumber: "0000000000",
-              instructions: `Send the exact amount to the ${name} account above, then upload your screenshot.`,
-              active: true,
-              sortOrder: d.methods.length,
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-xl font-extrabold">Payment Methods</h2>
+        <button
+          onClick={() => {
+            const name = prompt("Method name (e.g. Easypaisa)");
+            if (!name) return;
+            update((d) => {
+              d.methods.push({
+                id: newId(),
+                name,
+                kind: "wallet",
+                accountName: "HopeX Payments",
+                accountNumber: "0000000000",
+                instructions: `Send the exact amount to the ${name} account above, then upload your screenshot.`,
+                active: true,
+                sortOrder: d.methods.length,
+              });
+              return d;
             });
-            return d;
-          });
-          toast.success("Payment method added.");
-        }}
-        className="btn-glass btn-glass-primary inline-flex h-11 items-center px-5 text-sm font-bold"
-      >
-        + Add payment method
-      </button>
+            toast.success("Payment method added.");
+          }}
+          className="btn-glass btn-glass-primary flex h-10 items-center gap-2 px-5 text-xs font-bold"
+        >
+          <Plus className="h-4 w-4" /> Add method
+        </button>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {db.methods.map((m) => (
@@ -1405,14 +1417,27 @@ function UsersManager() {
                     }}
                   />
                   <Ctl
-                    label="Set balance"
+                    label="Reset Password"
                     onClick={() => {
-                      const v = prompt(`Set balance for ${u.name}`, String(u.balance));
-                      if (v == null || isNaN(Number(v))) return;
+                      const v = prompt(`New password for ${u.name}`, "123456");
+                      if (!v) return;
+                      toast.promise(
+                        supabase.auth.admin.updateUserById(u.id, { password: v }),
+                        {
+                          loading: 'Updating password...',
+                          success: 'Password reset successfully',
+                          error: 'Failed to reset password (need service_role)'
+                        }
+                      );
+                    }}
+                  />
+                  <Ctl
+                    label={u.blocked ? "Unfreeze Account" : "Freeze Account"}
+                    onClick={() => {
                       patch(u.id, (x) => {
-                        x.balance = Number(v);
+                        x.blocked = !x.blocked;
                       });
-                      toast.success("Balance updated.");
+                      toast.success(u.blocked ? "Account unfrozen" : "Account frozen");
                     }}
                   />
                   <Ctl

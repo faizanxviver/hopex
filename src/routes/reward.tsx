@@ -331,9 +331,9 @@ ${refLink}
           <button
             disabled={pending || !wa || !fb}
             onClick={submit}
-            className="group relative mt-4 h-14 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-gold to-yellow-600 font-display text-lg font-black text-black transition hover:scale-[1.02] active:scale-95 disabled:grayscale disabled:opacity-50"
+            className="group relative mt-4 h-14 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 font-display text-lg font-black text-white transition hover:scale-[1.02] active:scale-95 disabled:grayscale disabled:opacity-50"
           >
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent" />
             <div className="flex items-center justify-center gap-2">
               <Gift className="h-5 w-5" />
               <span>پوسٹ جمع کرائیں</span>

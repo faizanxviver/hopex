@@ -90,7 +90,7 @@ function Investments() {
                 <div className="relative">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate font-display text-lg font-extrabold">{inv.planName}</p>
+                      <p className="truncate font-display text-lg font-black tracking-tight">{inv.planName}</p>
                       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <CalendarClock className="h-3.5 w-3.5" />
                         {new Date(inv.startedAt).toLocaleDateString()}
@@ -108,7 +108,7 @@ function Investments() {
                   <div className="mt-4 grid grid-cols-3 gap-2">
                     <Cell label={t("Price")} value={money(inv.amount)} />
                     <Cell label={t("Daily")} value={money(daily)} tone="text-success" />
-                    <Cell label={t("Earned")} value={money(inv.earned)} tone="text-gold" />
+                    <Cell label={t("Earned")} value={money(inv.earned)} tone="text-emerald-400" />
                   </div>
 
                   <Progress value={pct} className="mt-4 h-2" />
