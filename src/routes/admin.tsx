@@ -71,7 +71,7 @@ export const Route = createFileRoute("/admin")({
 const tabs = [
   "Overview",
   "Users",
-  "Deposits",
+  "Auto Deposit",
   "Withdrawals",
   "Methods",
   "Plans",
@@ -92,7 +92,7 @@ const tabs = [
 const tabIcons: Record<(typeof tabs)[number], LucideIcon> = {
   Overview: LayoutDashboard,
   Users: Users,
-  Deposits: ArrowDownToLine,
+  "Auto Deposit": ArrowDownToLine,
   Withdrawals: ArrowUpFromLine,
   Methods: CreditCard,
   Plans: TrendingUp,
@@ -170,7 +170,7 @@ function Admin() {
   const isDone = (s: TxStatus) => s === "approved" || s === "completed";
   const pendingDeps = deposits.filter((t) => isPending(t.status)).length;
   const pendingWds = withdrawals.filter((t) => isPending(t.status)).length;
-  const rows = (tab === "Deposits" ? deposits : withdrawals).filter((t) =>
+  const rows = (tab === "Auto Deposit" ? deposits : withdrawals).filter((t) =>
     bucket === "Pending"
       ? isPending(t.status)
       : bucket === "Approved"
@@ -179,14 +179,14 @@ function Admin() {
   );
   const counts: Partial<Record<(typeof tabs)[number], number>> = {
     Users: users.length,
-    Deposits: pendingDeps,
+    "Auto Deposit": pendingDeps,
     Withdrawals: pendingWds,
     "Support Chat": db.chats.filter((c) => c.from === "user").length,
   };
 
   const groups: { label: string; items: (typeof tabs)[number][] }[] = [
     { label: "Operations", items: ["Overview", "Users", "Support Chat", "Withdraw Proofs"] },
-    { label: "Money flow", items: ["Deposits", "Withdrawals", "Balance Control", "Methods"] },
+    { label: "Money flow", items: ["Auto Deposit", "Withdrawals", "Balance Control", "Methods"] },
     { label: "Growth", items: ["Plans", "Promo Codes", "Rewards", "Leader Plans", "Broadcast"] },
     { label: "System", items: ["Tools", "SEO", "API Keys", "Audit Log", "Settings"] },
   ];
@@ -257,7 +257,7 @@ function Admin() {
           <div className="col-span-2 flex flex-wrap items-center gap-2 sm:col-auto">
             <AdminCommandPalette onJump={(t) => setTab(t as (typeof tabs)[number])} />
             <button
-              onClick={() => setTab("Deposits")}
+              onClick={() => setTab("Auto Deposit")}
               className={cn(
                 "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold",
                 pendingDeps ? "bg-destructive/15 text-destructive" : "glass-soft",
@@ -399,11 +399,11 @@ function Admin() {
 
           {tab === "Users" ? <UsersManager /> : null}
 
-          {tab === "Deposits" || tab === "Withdrawals" ? (
+          {tab === "Auto Deposit" || tab === "Withdrawals" ? (
             <>
               <div className="mb-4 inline-flex gap-1 rounded-2xl glass-soft p-1">
                 {(["Pending", "Approved", "Rejected"] as const).map((b) => {
-                  const count = (tab === "Deposits" ? deposits : withdrawals).filter((t) =>
+                  const count = (tab === "Auto Deposit" ? deposits : withdrawals).filter((t) =>
                     b === "Pending"
                       ? isPending(t.status)
                       : b === "Approved"
@@ -435,7 +435,7 @@ function Admin() {
                   selected={selected}
                   setSelected={setSelected}
                   onApply={setStatus}
-                  kind={tab === "Deposits" ? "deposit" : "withdraw"}
+                  kind={tab === "Auto Deposit" ? "deposit" : "withdraw"}
                 />
               ) : null}
               <GlassCard className="overflow-x-auto p-0">
@@ -504,7 +504,7 @@ function Admin() {
                                 onClick={() =>
                                   setStatus(
                                     t.id,
-                                    tab === "Deposits" ? "approved" : "completed",
+                                    tab === "Auto Deposit" ? "approved" : "completed",
                                     true,
                                   )
                                 }

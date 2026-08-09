@@ -30,6 +30,8 @@ import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as WithdrawRouteImport } from './routes/withdraw'
 import { Route as WithdrawHistoryRouteImport } from './routes/withdraw-history'
 import { Route as WithdrawProofRouteImport } from './routes/withdraw-proof'
+import { Route as ApiPublicCheckoutSessionRouteImport } from './routes/api/public/checkout/session'
+import { Route as ApiPublicCheckoutSubmitRouteImport } from './routes/api/public/checkout/submit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -136,6 +138,17 @@ const WithdrawProofRoute = WithdrawProofRouteImport.update({
   path: '/withdraw-proof',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCheckoutSessionRoute =
+  ApiPublicCheckoutSessionRouteImport.update({
+    id: '/api/public/checkout/session',
+    path: '/api/public/checkout/session',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCheckoutSubmitRoute = ApiPublicCheckoutSubmitRouteImport.update({
+  id: '/api/public/checkout/submit',
+  path: '/api/public/checkout/submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -159,6 +172,8 @@ export interface FileRoutesByFullPath {
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
   '/withdraw-proof': typeof WithdrawProofRoute
+  '/api/public/checkout/session': typeof ApiPublicCheckoutSessionRoute
+  '/api/public/checkout/submit': typeof ApiPublicCheckoutSubmitRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -182,6 +197,8 @@ export interface FileRoutesByTo {
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
   '/withdraw-proof': typeof WithdrawProofRoute
+  '/api/public/checkout/session': typeof ApiPublicCheckoutSessionRoute
+  '/api/public/checkout/submit': typeof ApiPublicCheckoutSubmitRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -206,6 +223,8 @@ export interface FileRoutesById {
   '/withdraw': typeof WithdrawRoute
   '/withdraw-history': typeof WithdrawHistoryRoute
   '/withdraw-proof': typeof WithdrawProofRoute
+  '/api/public/checkout/session': typeof ApiPublicCheckoutSessionRoute
+  '/api/public/checkout/submit': typeof ApiPublicCheckoutSubmitRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -231,6 +250,8 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/withdraw-history'
     | '/withdraw-proof'
+    | '/api/public/checkout/session'
+    | '/api/public/checkout/submit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -254,6 +275,8 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/withdraw-history'
     | '/withdraw-proof'
+    | '/api/public/checkout/session'
+    | '/api/public/checkout/submit'
   id:
     | '__root__'
     | '/'
@@ -277,6 +300,8 @@ export interface FileRouteTypes {
     | '/withdraw'
     | '/withdraw-history'
     | '/withdraw-proof'
+    | '/api/public/checkout/session'
+    | '/api/public/checkout/submit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -301,6 +326,8 @@ export interface RootRouteChildren {
   WithdrawRoute: typeof WithdrawRoute
   WithdrawHistoryRoute: typeof WithdrawHistoryRoute
   WithdrawProofRoute: typeof WithdrawProofRoute
+  ApiPublicCheckoutSessionRoute: typeof ApiPublicCheckoutSessionRoute
+  ApiPublicCheckoutSubmitRoute: typeof ApiPublicCheckoutSubmitRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -452,6 +479,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WithdrawProofRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/checkout/session': {
+      id: '/api/public/checkout/session'
+      path: '/api/public/checkout/session'
+      fullPath: '/api/public/checkout/session'
+      preLoaderRoute: typeof ApiPublicCheckoutSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/checkout/submit': {
+      id: '/api/public/checkout/submit'
+      path: '/api/public/checkout/submit'
+      fullPath: '/api/public/checkout/submit'
+      preLoaderRoute: typeof ApiPublicCheckoutSubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -477,17 +518,9 @@ const rootRouteChildren: RootRouteChildren = {
   WithdrawRoute: WithdrawRoute,
   WithdrawHistoryRoute: WithdrawHistoryRoute,
   WithdrawProofRoute: WithdrawProofRoute,
+  ApiPublicCheckoutSessionRoute: ApiPublicCheckoutSessionRoute,
+  ApiPublicCheckoutSubmitRoute: ApiPublicCheckoutSubmitRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

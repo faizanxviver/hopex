@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { ShieldCheck, Clock, Zap } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
-import { PaymentGateway, type GatewayResult } from "@/components/payment-gateway";
-import { depositBalance, money, newId, pendingDeposits, timestamp, useStore } from "@/lib/store";
+import { createCheckoutSession } from "@/lib/checkout.functions";
+import { depositBalance, money, pendingDeposits, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/deposit")({
   head: () => ({
@@ -35,9 +37,10 @@ export const Route = createFileRoute("/deposit")({
 });
 
 function Deposit() {
-  const { db, user, update, addNotification } = useStore();
+  const { db, user } = useStore();
   const [amount, setAmount] = useState<string>("");
-  const [gateway, setGateway] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false);
+  const startCheckout = useServerFn(createCheckoutSession);
 
   if (!user) return null;
 
@@ -47,58 +50,26 @@ function Deposit() {
   const deposited = depositBalance(db, user.id);
   const pending = pendingDeposits(db, user.id);
 
-  const openGateway = (e: React.FormEvent) => {
+  const openGateway = async (e: React.FormEvent) => {
     e.preventDefault();
     const value = Number(amount);
     if (!value || value < db.settings.minDeposit) {
       return toast.error(`Minimum deposit is ${money(db.settings.minDeposit)}.`);
     }
-    toast.info("Redirecting to the secure payment gateway…");
-    setGateway(value);
-  };
-
-  const complete = async (r: GatewayResult) => {
-    const value = gateway!;
-    setGateway(null);
-
-    update((d) => {
-      d.transactions.unshift({
-        id: newId(),
-        userId: user.id,
-        type: "deposit",
-        amount: value,
-        method: r.method,
-        reference: r.proof || undefined,
-        proofUrl: r.proofUrl,
-        note: r.proof ? `Proof: ${r.proof}` : undefined,
-        status: "processing",
-
-        createdAt: timestamp(),
-      });
-      return d;
-    });
-
-    addNotification(user.id, {
-      title: "Deposit submitted",
-      body: `${money(value)} via ${r.method} is pending admin approval.`,
-      kind: "info",
-    });
-    toast.success("Deposit submitted for review.");
-    setAmount("");
+    setBusy(true);
+    try {
+      const session = await startCheckout({ data: { amount: value } });
+      toast.info("Redirecting to the secure payment gateway…");
+      window.location.href = session.url;
+    } catch (err) {
+      setBusy(false);
+      toast.error(err instanceof Error ? err.message : "Could not open the payment gateway.");
+    }
   };
 
   return (
     <div>
-      {gateway !== null ? (
-        <PaymentGateway
-          amount={gateway}
-          onExit={() => {
-            setGateway(null);
-            toast.error("Payment cancelled — nothing was submitted.");
-          }}
-          onComplete={complete}
-        />
-      ) : null}
+
 
       <SectionTitle
         title="Deposit funds"
@@ -142,13 +113,17 @@ function Deposit() {
               />
             </div>
 
-            <button className="btn-glass btn-glass-primary flex h-14 w-full items-center justify-center text-base font-bold">
-              Submit &amp; continue to payment
+            <button
+              disabled={busy}
+              className="btn-glass btn-glass-primary flex h-14 w-full items-center justify-center text-base font-bold disabled:opacity-60"
+            >
+              {busy ? "Opening secure gateway…" : "Submit & continue to payment"}
             </button>
-            <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-              <ShieldCheck className="h-3.5 w-3.5 text-success" /> You will be taken to the
-              SecurePay gateway to select a method, pay and upload your screenshot.
+            <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-success" /> You will be taken to our
+              automatic payment gateway to select a method, pay and upload your screenshot.
             </p>
+
           </form>
         </GlassCard>
 

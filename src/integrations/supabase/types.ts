@@ -128,6 +128,57 @@ export type Database = {
         }
         Relationships: []
       }
+      checkout_sessions: {
+        Row: {
+          amount: number
+          created_at: string
+          expires_at: string
+          gateway_reference: string | null
+          id: string
+          method_id: string | null
+          method_name: string | null
+          order_no: string
+          proof_url: string | null
+          status: string
+          token: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          expires_at?: string
+          gateway_reference?: string | null
+          id?: string
+          method_id?: string | null
+          method_name?: string | null
+          order_no: string
+          proof_url?: string | null
+          status?: string
+          token: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          expires_at?: string
+          gateway_reference?: string | null
+          id?: string
+          method_id?: string | null
+          method_name?: string | null
+          order_no?: string
+          proof_url?: string | null
+          status?: string
+          token?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       investments: {
         Row: {
           amount: number
