@@ -119,24 +119,28 @@ function Referrals() {
           </div>
 
           <div className="mt-6 flex flex-col gap-4">
-            <div className="group relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-gold/10 to-transparent p-[1px]">
-              <div className="absolute inset-0 bg-gradient-to-br from-gold/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-              <button
-                onClick={() => copy(user.referralCode, t("Referral code"))}
-                className="relative flex w-full items-center justify-between gap-4 rounded-[2.5rem] bg-background/40 px-8 py-6 backdrop-blur-md"
-              >
-                <div className="flex flex-col items-start min-w-0">
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/60">
+            <div className="group relative overflow-hidden rounded-[2rem] border border-white/5 bg-white/5 p-4 sm:p-6 backdrop-blur-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
                     {t("Unique Referral Code")}
                   </span>
-                  <span className="mt-1 font-display text-4xl font-black tracking-tighter text-gold">
-                    {user.referralCode}
-                  </span>
+                  <div className="mt-1 flex items-center gap-3">
+                    <span className="font-display text-3xl sm:text-4xl font-black tracking-tight text-gold">
+                      {user.referralCode}
+                    </span>
+                    <button
+                      onClick={() => copy(user.referralCode, t("Referral code"))}
+                      className="rounded-xl bg-gold/10 p-2 text-gold transition-transform hover:scale-110 active:scale-95"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gold/10 text-gold transition-transform group-hover:scale-110">
-                  <Ticket className="h-7 w-7" />
+                <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-gold/10 text-gold shadow-inner">
+                  <Ticket className="h-6 w-6" />
                 </div>
-              </button>
+              </div>
             </div>
           </div>
 
