@@ -111,12 +111,16 @@ export function ExternalPaymentGateway({
   const mmss = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 
   return (
-    <div className="fixed inset-0 z-[200] flex flex-col bg-[#05110f] text-white overflow-y-auto font-sans">
+    <div className="fixed inset-0 z-[200] flex flex-col bg-[#05110f] text-white overflow-y-auto font-sans animate-in fade-in duration-300">
       <style dangerouslySetInnerHTML={{ __html: `
-        .gw-panel { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 1.5rem; backdrop-filter: blur(20px); }
-        .gw-accent-btn { background: linear-gradient(135deg, #10b981, #059669); color: #052e24; font-weight: 800; transition: all 0.2s; }
-        .gw-accent-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .gw-panel { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 1.5rem; backdrop-filter: blur(24px); box-shadow: 0 8px 32px -8px rgba(0,0,0,0.5); }
+        .gw-accent-btn { background: linear-gradient(135deg, #10b981, #059669); color: #052e24; font-weight: 900; letter-spacing: -0.01em; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+        .gw-accent-btn:hover { transform: translateY(-3px) scale(1.02); filter: brightness(1.1); box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4); }
+        .gw-accent-btn:active { transform: translateY(0) scale(0.98); }
+        .gw-accent-btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transform: translateX(-100%); transition: transform 0.6s ease-in-out; }
+        .gw-accent-btn:hover::after { transform: translateX(100%); }
         @keyframes gw-slide { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+        @keyframes gw-pulse-glow { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
       `}} />
 
       {/* Header */}
@@ -160,7 +164,7 @@ export function ExternalPaymentGateway({
         <div className="gw-panel p-8 text-center mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-[50px] rounded-full" />
           <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">{t("Total Amount")}</p>
-          <p className="text-4xl font-black mt-2">Rs {amount.toLocaleString("en-PK")}</p>
+          <p className="text-4xl font-black mt-2 tracking-tighter">Rs {amount.toLocaleString("en-PK")}</p>
           <div className="flex items-center justify-center gap-2 mt-4">
             <BadgeCheck className="h-3 w-3 text-emerald-500" />
             <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Secured Transaction</span>
