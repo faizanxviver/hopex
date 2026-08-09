@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { ShieldCheck, Clock, Zap } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
-import { PaymentGateway, type GatewayResult } from "@/components/payment-gateway";
-import { depositBalance, money, newId, pendingDeposits, timestamp, useStore } from "@/lib/store";
+import { createCheckoutSession } from "@/lib/checkout.functions";
+import { depositBalance, money, pendingDeposits, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/deposit")({
   head: () => ({
