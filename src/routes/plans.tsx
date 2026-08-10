@@ -159,7 +159,7 @@ function Plans() {
                     </div>
                     <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-2.5 text-sm">
                       <span className="text-muted-foreground">Total return</span>
-                      <span className="font-bold text-gold">{money(d * p.durationDays)}</span>
+                      <span className="font-bold text-gold">{money(round2(d * p.durationDays))}</span>
                     </div>
                   </div>
 
