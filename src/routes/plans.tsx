@@ -45,8 +45,15 @@ const FALLBACK: Record<string, string> = {
   vip: vipImg,
 };
 
+const GALLERY = [starterImg, growthImg, premiumImg, vipImg];
+
+/** Stable per-plan artwork: admin image → known id → deterministic gallery pick. */
 function planImage(p: Plan) {
-  return p.imageUrl || FALLBACK[p.id] || starterImg;
+  if (p.imageUrl) return p.imageUrl;
+  if (FALLBACK[p.id]) return FALLBACK[p.id];
+  let h = 0;
+  for (let i = 0; i < p.id.length; i += 1) h = (h * 31 + p.id.charCodeAt(i)) >>> 0;
+  return GALLERY[h % GALLERY.length]!;
 }
 
 function Plans() {
@@ -58,8 +65,8 @@ function Plans() {
   const deposited = depositBalance(db, user.id);
 
   const price = active ? active.min : 0;
-  const daily = active ? price * (active.dailyRoi / 100) : 0;
-  const total = active ? daily * active.durationDays : 0;
+  const daily = active ? planDaily(active) : 0;
+  const total = active ? round2(daily * active.durationDays) : 0;
 
   const invest = async () => {
     if (!active) return;
