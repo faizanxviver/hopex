@@ -63,9 +63,14 @@ function Deposit() {
       const session = await startCheckout({ data: { amount: value } });
       // Keep the connecting screen visible for a moment, then open MPay in a new tab.
       await new Promise((r) => setTimeout(r, 1200));
-      window.open(session.url, "_blank", "noopener,noreferrer");
+      const tab = window.open(session.url, "_blank", "noopener,noreferrer");
       setConnecting(false);
       setBusy(false);
+      if (!tab) {
+        // Popup blocked — send the user straight to the gateway instead of hanging.
+        window.location.href = session.url;
+        return;
+      }
       toast.success("MPay opened in a new tab. Complete your payment there.");
       window.location.href = "/deposit-history";
     } catch (err) {
