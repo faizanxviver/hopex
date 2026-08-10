@@ -19,6 +19,7 @@ import {
   WITHDRAW_CLOSE_HOUR,
   WITHDRAW_OPEN_HOUR,
   hasActivePlan,
+  hour12,
   isWithdrawWindowOpen,
   money,
   newId,
