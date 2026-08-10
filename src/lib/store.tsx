@@ -1011,7 +1011,7 @@ const DAY_MS = 86400000;
 export function activeInvestments(db: DB, userId: string) {
   return db.investments.filter((i) => {
     if (i.userId !== userId) return false;
-    const daily = (i.amount * i.dailyRoi) / 100;
+    const daily = investmentDaily(i);
     if (daily <= 0) return false;
     return Math.round(i.earned / daily) < i.durationDays;
   });
@@ -1062,7 +1062,7 @@ export function pakistanClock(at = new Date()) {
  */
 export function liveEarnings(db: DB, userId: string, atMs = Date.now()) {
   return activeInvestments(db, userId).reduce((sum, i) => {
-    const daily = (i.amount * i.dailyRoi) / 100;
+    const daily = investmentDaily(i);
     const elapsed = Math.max(0, atMs - new Date(i.lastPayoutAt).getTime());
     return sum + daily * Math.min(1, elapsed / DAY_MS);
   }, 0);
@@ -1079,7 +1079,7 @@ export function nextPayoutIn(db: DB, userId: string, atMs = Date.now()) {
 
 /** Total daily income across every running plan. */
 export function dailyIncome(db: DB, userId: string) {
-  return activeInvestments(db, userId).reduce((s, i) => s + (i.amount * i.dailyRoi) / 100, 0);
+  return round2(activeInvestments(db, userId).reduce((s, i) => s + investmentDaily(i), 0));
 }
 
 export const STATUS_LABEL: Record<string, string> = {
