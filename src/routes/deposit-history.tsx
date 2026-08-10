@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowDownLeft, CheckCircle2, Loader2, Plus } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
-import { GlassCard, SectionTitle } from "@/components/glass";
+import { LedgerHeader, MoneyStat } from "@/components/money-stats";
 import { TxList } from "@/components/tx-list";
 import { useT } from "@/lib/i18n";
 import { money, useStore } from "@/lib/store";
@@ -30,7 +31,6 @@ export const Route = createFileRoute("/deposit-history")({
   ),
 });
 
-
 function DepositHistory() {
   const { db, user } = useStore();
   const { t } = useT();
@@ -40,19 +40,30 @@ function DepositHistory() {
   const processing = rows.filter((r) => r.status === "pending" || r.status === "processing");
 
   return (
-    <div className="space-y-6 pb-20">
-      <SectionTitle
+    <div className="space-y-4 pb-24">
+      <LedgerHeader
         title={t("Deposit history")}
         subtitle={t("Audit every top-up request and its current status.")}
+        icon={<ArrowDownLeft className="h-5 w-5" />}
+        action={
+          <Link
+            to="/deposit"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl gradient-cool text-primary-foreground shadow-lg shadow-primary/20"
+            aria-label={t("New deposit")}
+          >
+            <Plus className="h-5 w-5" />
+          </Link>
+        }
       />
 
       {ref ? (
-        <div className="relative overflow-hidden rounded-[2rem] glass p-5">
-          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-success/25 blur-2xl" />
-          <p className="text-sm font-bold text-success">
+        <div className="relative overflow-hidden rounded-[1.75rem] glass p-5">
+          <span className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-success/25 blur-2xl" />
+          <p className="relative flex items-center gap-2 text-sm font-black text-success">
+            <Loader2 className="h-4 w-4 animate-spin" />
             {t("Payment received — automatic verification in progress")}
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="relative mt-1 text-xs text-muted-foreground">
             {t(
               "Your gateway payment was captured successfully. The amount is credited as soon as verification completes.",
             )}
@@ -60,38 +71,37 @@ function DepositHistory() {
         </div>
       ) : null}
 
-
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="relative overflow-hidden rounded-[2rem] glass p-5">
-          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-success/20 blur-2xl" />
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("Successful")}</p>
-          <p className="mt-1 font-display text-2xl font-black text-success">
-            {money(successful.reduce((a, r) => a + r.amount, 0))}
-          </p>
-        </div>
-        <div className="relative overflow-hidden rounded-[2rem] glass p-5">
-          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/20 blur-2xl" />
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("Processing")}</p>
-          <p className="mt-1 font-display text-2xl font-black text-primary">
-            {money(processing.reduce((a, r) => a + r.amount, 0))}
-          </p>
-        </div>
-      </div>
-
-      <div className="rounded-[2.5rem] glass overflow-hidden">
-        <TxList
-          rows={rows}
-          empty={
-            <div className="p-10 text-center">
-              <p className="text-sm text-muted-foreground mb-4">{t("No deposits yet.")}</p>
-              <Link to="/deposit" className="inline-flex h-11 items-center rounded-2xl gradient-brand px-6 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20">
-                {t("Make your first deposit")}
-              </Link>
-            </div>
-          }
+      <div className="grid grid-cols-2 gap-3">
+        <MoneyStat
+          label={t("Successful")}
+          value={money(successful.reduce((a, r) => a + r.amount, 0))}
+          tone="success"
+          count={successful.length}
+          icon={<CheckCircle2 className="h-4 w-4" />}
+        />
+        <MoneyStat
+          label={t("Processing")}
+          value={money(processing.reduce((a, r) => a + r.amount, 0))}
+          tone="primary"
+          count={processing.length}
+          icon={<Loader2 className="h-4 w-4" />}
         />
       </div>
+
+      <TxList
+        rows={rows}
+        empty={
+          <div className="text-center">
+            <p className="mb-4 text-sm text-muted-foreground">{t("No deposits yet.")}</p>
+            <Link
+              to="/deposit"
+              className="inline-flex h-11 items-center rounded-2xl gradient-brand px-6 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20"
+            >
+              {t("Make your first deposit")}
+            </Link>
+          </div>
+        }
+      />
     </div>
   );
 }

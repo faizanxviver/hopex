@@ -37,53 +37,70 @@ const isWaiting = (t: Transaction) => t.status === "pending" || t.status === "pr
 
 const isDebit = (t: Transaction) => t.type === "withdraw" || t.type === "investment";
 
+const when = (iso: string) => {
+  const d = new Date(iso);
+  return `${d.toLocaleDateString(undefined, { day: "2-digit", month: "short" })} · ${d.toLocaleTimeString(
+    undefined,
+    { hour: "2-digit", minute: "2-digit" },
+  )}`;
+};
+
 export function TxRow({ tx }: { tx: Transaction }) {
   const Icon = ICONS[tx.type] ?? HandCoins;
+  const waiting = isWaiting(tx);
   return (
-    <div className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5">
-      <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-xl", TINT[tx.type])}>
-        <Icon className="h-5 w-5" />
-      </span>
+    <div className="group relative overflow-hidden rounded-2xl glass p-3.5 transition-all duration-300 hover:-translate-y-0.5">
+      <span
+        className={cn(
+          "pointer-events-none absolute inset-y-0 left-0 w-1",
+          isDebit(tx) ? "bg-destructive/50" : "bg-success/50",
+        )}
+      />
+      <div className="flex items-center gap-3 pl-1.5">
+        <span className={cn("relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl", TINT[tx.type])}>
+          <Icon className="h-5 w-5" />
+          {waiting ? (
+            <span className="absolute -right-0.5 -top-0.5 grid h-4 w-4 place-items-center rounded-full bg-background">
+              <Loader2 className="h-3 w-3 animate-spin text-primary" />
+            </span>
+          ) : null}
+        </span>
 
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-bold capitalize">{tx.method || tx.type}</p>
-        <p className="truncate text-xs text-muted-foreground">
-          {new Date(tx.createdAt).toLocaleString()}
-        </p>
-        <div className="mt-1.5 flex flex-wrap items-center gap-2">
-          <StatusBadge status={tx.status} />
-          {isMpay(tx) ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-success">
-              MPay
-            </span>
-          ) : null}
-          {isWaiting(tx) ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
-              <Loader2 className="h-3 w-3 animate-spin" /> Awaiting approval
-            </span>
-          ) : null}
-          {tx.proofUrl ? (
-            <a
-              href={tx.proofUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground"
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-sm font-black capitalize">{tx.method || tx.type}</p>
+            <p
+              className={cn(
+                "shrink-0 font-display text-base font-black tabular-nums",
+                isDebit(tx) ? "text-destructive" : "text-success",
+              )}
             >
-              <ImageIcon className="h-3 w-3" /> proof
-            </a>
-          ) : null}
+              {isDebit(tx) ? "−" : "+"}
+              {money(tx.amount)}
+            </p>
+          </div>
+          <p className="truncate text-[11px] text-muted-foreground">{when(tx.createdAt)}</p>
+
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            <StatusBadge status={tx.status} />
+            {isMpay(tx) ? (
+              <span className="inline-flex items-center rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-success">
+                MPay
+              </span>
+            ) : null}
+            {tx.proofUrl ? (
+              <a
+                href={tx.proofUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] font-bold text-muted-foreground"
+              >
+                <ImageIcon className="h-3 w-3" /> proof
+              </a>
+            ) : null}
+          </div>
         </div>
       </div>
-
-      <p
-        className={cn(
-          "shrink-0 font-display text-base font-extrabold tabular-nums",
-          isDebit(tx) ? "text-destructive" : "text-success",
-        )}
-      >
-        {isDebit(tx) ? "−" : "+"}
-        {money(tx.amount)}
-      </p>
     </div>
   );
 }
@@ -91,13 +108,13 @@ export function TxRow({ tx }: { tx: Transaction }) {
 export function TxList({ rows, empty }: { rows: Transaction[]; empty: React.ReactNode }) {
   if (!rows.length) {
     return (
-      <div className="glass rounded-3xl p-10 text-center text-sm text-muted-foreground">
+      <div className="glass rounded-[1.75rem] p-10 text-center text-sm text-muted-foreground">
         {empty}
       </div>
     );
   }
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-2.5">
       {rows.map((t) => (
         <TxRow key={t.id} tx={t} />
       ))}
