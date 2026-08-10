@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Search, TrendingUp } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Receipt, Search, SlidersHorizontal } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
-import { GlassCard, SectionTitle } from "@/components/glass";
+import { LedgerHeader, MoneyStat } from "@/components/money-stats";
 import { TxList } from "@/components/tx-list";
 import { useT } from "@/lib/i18n";
 import { money, useStore } from "@/lib/store";
@@ -47,6 +47,7 @@ function Transactions() {
   const [q, setQ] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
   const rows = useMemo(() => {
     return db.transactions.filter((tx) => {
@@ -61,58 +62,58 @@ function Transactions() {
     });
   }, [db.transactions, user?.id, type, q, from, to]);
 
-  const inflow = rows
-    .filter((r) => r.type !== "withdraw" && r.type !== "investment")
-    .reduce((a, r) => a + r.amount, 0);
-  const outflow = rows
-    .filter((r) => r.type === "withdraw" || r.type === "investment")
-    .reduce((a, r) => a + r.amount, 0);
+  const credits = rows.filter((r) => r.type !== "withdraw" && r.type !== "investment");
+  const debits = rows.filter((r) => r.type === "withdraw" || r.type === "investment");
+  const inflow = credits.reduce((a, r) => a + r.amount, 0);
+  const outflow = debits.reduce((a, r) => a + r.amount, 0);
 
   return (
-    <div className="space-y-6 pb-20">
-      <div className="flex items-center justify-between">
-        <SectionTitle
-          title={t("Ledger")}
-          subtitle={t("Comprehensive history of all movements.")}
+    <div className="space-y-4 pb-24">
+      <LedgerHeader
+        title={t("Ledger")}
+        subtitle={t("Comprehensive history of all movements.")}
+        icon={<Receipt className="h-5 w-5" />}
+      />
+
+      <div className="grid grid-cols-2 gap-3">
+        <MoneyStat
+          label={t("Total Inflow")}
+          value={`+${money(inflow)}`}
+          tone="success"
+          count={credits.length}
+          icon={<ArrowDownLeft className="h-4 w-4" />}
+          hint={t("Credited")}
         />
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl gradient-cool text-primary-foreground">
-          <TrendingUp className="h-5 w-5" />
-        </div>
+        <MoneyStat
+          label={t("Total Outflow")}
+          value={`−${money(outflow)}`}
+          tone="destructive"
+          count={debits.length}
+          icon={<ArrowUpRight className="h-4 w-4" />}
+          hint={t("Debited")}
+        />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="relative overflow-hidden rounded-[2rem] glass p-5">
-          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-success/20 blur-2xl" />
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("Total Inflow")}</p>
-          <p className="mt-1 font-display text-2xl font-black text-success">+{money(inflow)}</p>
-        </div>
-        <div className="relative overflow-hidden rounded-[2rem] glass p-5">
-          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-destructive/20 blur-2xl" />
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">{t("Total Outflow")}</p>
-          <p className="mt-1 font-display text-2xl font-black text-destructive">−{money(outflow)}</p>
-        </div>
-      </div>
-
-      <GlassCard className="border-none bg-background/20 p-4">
-        <div className="flex flex-wrap gap-2 scrollbar-hide overflow-x-auto pb-2">
+      <div className="rounded-[1.75rem] glass p-3">
+        <div className="scrollbar-hide -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
           {types.map((ty) => (
             <button
               key={ty}
               onClick={() => setType(ty)}
               className={cn(
-                "h-9 shrink-0 rounded-xl px-4 text-xs font-bold capitalize transition-all",
-                type === ty 
-                  ? "gradient-brand text-primary-foreground shadow-lg shadow-primary/20" 
-                  : "glass-soft text-muted-foreground hover:text-foreground"
+                "h-9 shrink-0 rounded-xl px-4 text-xs font-black capitalize transition-all",
+                type === ty
+                  ? "gradient-brand text-primary-foreground shadow-lg shadow-primary/25"
+                  : "glass-soft text-muted-foreground hover:text-foreground",
               )}
             >
               {ty === "all" ? t("All") : t(ty)}
             </button>
           ))}
         </div>
-        
-        <div className="mt-4 grid gap-3 sm:grid-cols-[1.6fr_1fr_1fr]">
-          <div className="relative">
+
+        <div className="mt-3 flex gap-2">
+          <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
             <input
               value={q}
@@ -121,30 +122,50 @@ function Transactions() {
               className="h-12 w-full rounded-2xl border-none bg-background/40 pl-11 pr-4 text-sm font-medium outline-none ring-1 ring-border/50 focus:ring-2 focus:ring-primary/50"
             />
           </div>
-          <div className="flex items-center gap-2 rounded-2xl bg-background/40 px-3 ring-1 ring-border/50">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase">{t("From")}</span>
-            <input
-              type="date"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-              className="h-12 flex-1 bg-transparent text-xs font-bold outline-none"
-            />
-          </div>
-          <div className="flex items-center gap-2 rounded-2xl bg-background/40 px-3 ring-1 ring-border/50">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase">{t("To")}</span>
-            <input
-              type="date"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-              className="h-12 flex-1 bg-transparent text-xs font-bold outline-none"
-            />
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowFilters((v) => !v)}
+            className={cn(
+              "grid h-12 w-12 shrink-0 place-items-center rounded-2xl transition",
+              showFilters || from || to
+                ? "gradient-brand text-primary-foreground"
+                : "glass-soft text-muted-foreground",
+            )}
+            aria-label={t("Date filters")}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+          </button>
         </div>
-      </GlassCard>
 
-      <div className="rounded-[2.5rem] glass overflow-hidden">
-        <TxList rows={rows} empty={t("No records found in this category.")} />
+        {showFilters ? (
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <div className="flex items-center gap-2 rounded-2xl bg-background/40 px-3 ring-1 ring-border/50">
+              <span className="text-[10px] font-black uppercase text-muted-foreground">
+                {t("From")}
+              </span>
+              <input
+                type="date"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+                className="h-12 flex-1 bg-transparent text-xs font-bold outline-none"
+              />
+            </div>
+            <div className="flex items-center gap-2 rounded-2xl bg-background/40 px-3 ring-1 ring-border/50">
+              <span className="text-[10px] font-black uppercase text-muted-foreground">
+                {t("To")}
+              </span>
+              <input
+                type="date"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                className="h-12 flex-1 bg-transparent text-xs font-bold outline-none"
+              />
+            </div>
+          </div>
+        ) : null}
       </div>
+
+      <TxList rows={rows} empty={t("No records found in this category.")} />
     </div>
   );
 }
