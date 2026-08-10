@@ -186,7 +186,11 @@ function Withdraw() {
     setAmount("");
   };
 
-  const quick = [25, 50, 75, 100];
+  const quick = (
+    db.settings.quickAmounts.length
+      ? db.settings.quickAmounts
+      : [1000, 3000, 5000, 10000, 25000, 50000]
+  ).slice(0, 6);
 
   return (
     <div className="space-y-5">
