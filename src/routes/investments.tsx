@@ -3,7 +3,7 @@ import { CalendarClock, Coins, Gem, TrendingUp } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { Progress } from "@/components/ui/progress";
-import { investmentProgress, money, myInvestments, useStore } from "@/lib/store";
+import { investmentDaily, investmentProgress, money, myInvestments, round2, useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/investments")({

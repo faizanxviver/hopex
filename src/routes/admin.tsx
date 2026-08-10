@@ -38,7 +38,7 @@ import {
 } from "@/components/admin-tools";
 import { ApiKeysAdmin } from "@/components/admin-api";
 import { GlassCard, StatCard, StatusBadge } from "@/components/glass";
-import { money, newId, timestamp, useStore, fetchAuditLog, logAudit } from "@/lib/store";
+import { money, newId, planDaily, round2, timestamp, useStore, fetchAuditLog, logAudit } from "@/lib/store";
 import type { AuditEntry, SalaryTier } from "@/lib/store";
 import { uploadProofImage } from "@/lib/uploads.functions";
 import type { TxStatus } from "@/lib/store";
