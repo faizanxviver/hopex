@@ -62,10 +62,15 @@ function Deposit() {
     try {
       const session = await startCheckout({ data: { amount: value } });
       // Keep the connecting screen visible for a moment, then open MPay in a new tab.
-      await new Promise((r) => setTimeout(r, 1800));
-      window.open(session.url, "_blank", "noopener,noreferrer");
+      await new Promise((r) => setTimeout(r, 1200));
+      const tab = window.open(session.url, "_blank", "noopener,noreferrer");
       setConnecting(false);
       setBusy(false);
+      if (!tab) {
+        // Popup blocked — send the user straight to the gateway instead of hanging.
+        window.location.href = session.url;
+        return;
+      }
       toast.success("MPay opened in a new tab. Complete your payment there.");
       window.location.href = "/deposit-history";
     } catch (err) {
@@ -179,7 +184,7 @@ function ConnectingOverlay({ amount }: { amount: number }) {
         <div className="relative mx-auto grid h-24 w-24 place-items-center">
           <span className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
           <span className="relative grid h-20 w-20 place-items-center rounded-3xl gradient-brand text-primary-foreground">
-            <Loader2 className="h-9 w-9 animate-spin" />
+            <Loader2 className="h-9 w-9 animate-spin [animation-duration:0.5s]" />
           </span>
         </div>
         <h2 className="mt-6 font-display text-2xl font-black">Connecting to MPay</h2>
@@ -188,7 +193,7 @@ function ConnectingOverlay({ amount }: { amount: number }) {
           gateway…
         </p>
         <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-          <div className="h-full w-1/3 animate-[scroll_1.2s_linear_infinite] rounded-full gradient-cool" />
+          <div className="h-full w-1/3 animate-[scroll_0.7s_linear_infinite] rounded-full gradient-cool" />
         </div>
         <p className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground">
           <ShieldCheck className="h-3.5 w-3.5 text-success" /> Encrypted MPay session

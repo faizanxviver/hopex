@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/accordion";
 import { GlassCard } from "@/components/glass";
 import { Brand } from "@/components/dashboard-layout";
-import { useStore } from "@/lib/store";
+import { money, planDaily, useStore } from "@/lib/store";
 
 
 export const Route = createFileRoute("/")({
@@ -179,8 +179,8 @@ function Landing() {
           {plans.map((p, i) => (
             <GlassCard key={p.id} glow={i === 2} className={i === 2 ? "border-gold/40 p-5" : "p-5"}>
               <h3 className="font-display text-base font-extrabold">{p.name}</h3>
-              <p className="mt-2 font-display text-3xl font-black text-gradient">{p.dailyRoi}%</p>
-              <p className="text-xs text-muted-foreground">daily · {p.durationDays} days</p>
+              <p className="mt-2 font-display text-3xl font-black text-gradient">{money(planDaily(p))}</p>
+              <p className="text-xs text-muted-foreground">daily income · {p.durationDays} days</p>
               <p className="mt-2 text-xs text-muted-foreground">
                 Rs {p.min.toLocaleString("en-PK")} – Rs {p.max.toLocaleString("en-PK")}
               </p>

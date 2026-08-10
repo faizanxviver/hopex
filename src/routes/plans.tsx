@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { ShieldCheck, Wallet2 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
-import { depositBalance, money, useStore } from "@/lib/store";
+import { depositBalance, money, planDaily, round2, useStore } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
 import starterImg from "@/assets/plan-starter.jpg";
 import growthImg from "@/assets/plan-growth.jpg";
@@ -45,8 +45,15 @@ const FALLBACK: Record<string, string> = {
   vip: vipImg,
 };
 
+const GALLERY = [starterImg, growthImg, premiumImg, vipImg];
+
+/** Stable per-plan artwork: admin image → known id → deterministic gallery pick. */
 function planImage(p: Plan) {
-  return p.imageUrl || FALLBACK[p.id] || starterImg;
+  if (p.imageUrl) return p.imageUrl;
+  if (FALLBACK[p.id]) return FALLBACK[p.id];
+  let h = 0;
+  for (let i = 0; i < p.id.length; i += 1) h = (h * 31 + p.id.charCodeAt(i)) >>> 0;
+  return GALLERY[h % GALLERY.length]!;
 }
 
 function Plans() {
@@ -58,8 +65,8 @@ function Plans() {
   const deposited = depositBalance(db, user.id);
 
   const price = active ? active.min : 0;
-  const daily = active ? price * (active.dailyRoi / 100) : 0;
-  const total = active ? daily * active.durationDays : 0;
+  const daily = active ? planDaily(active) : 0;
+  const total = active ? round2(daily * active.durationDays) : 0;
 
   const invest = async () => {
     if (!active) return;
@@ -109,7 +116,7 @@ function Plans() {
         {db.plans
           .filter((p) => p.active)
           .map((p) => {
-            const d = p.min * (p.dailyRoi / 100);
+            const d = planDaily(p);
             const affordable = user.balance >= p.min;
             return (
               <GlassCard key={p.id} className="group flex flex-col overflow-hidden p-0">
@@ -152,7 +159,7 @@ function Plans() {
                     </div>
                     <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-2.5 text-sm">
                       <span className="text-muted-foreground">Total return</span>
-                      <span className="font-bold text-gold">{money(d * p.durationDays)}</span>
+                      <span className="font-bold text-gold">{money(round2(d * p.durationDays))}</span>
                     </div>
                   </div>
 

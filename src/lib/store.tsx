@@ -943,6 +943,16 @@ export const money = (n: number) =>
   "Rs " +
   Number(n || 0).toLocaleString("en-PK", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+/** Round to 2 decimals so stored percentages never drift the displayed amount. */
+export const round2 = (n: number) => Math.round((Number(n) || 0) * 100) / 100;
+
+/** Exact daily income of a plan (price × daily %), rounded to paisa. */
+export const planDaily = (p: { min: number; dailyRoi: number }) => round2((p.min * p.dailyRoi) / 100);
+
+/** Exact daily income of an active investment, rounded to paisa. */
+export const investmentDaily = (i: { amount: number; dailyRoi: number }) =>
+  round2((i.amount * i.dailyRoi) / 100);
+
 export const newId = uid;
 export const timestamp = now;
 
@@ -1001,7 +1011,7 @@ const DAY_MS = 86400000;
 export function activeInvestments(db: DB, userId: string) {
   return db.investments.filter((i) => {
     if (i.userId !== userId) return false;
-    const daily = (i.amount * i.dailyRoi) / 100;
+    const daily = investmentDaily(i);
     if (daily <= 0) return false;
     return Math.round(i.earned / daily) < i.durationDays;
   });
@@ -1052,7 +1062,7 @@ export function pakistanClock(at = new Date()) {
  */
 export function liveEarnings(db: DB, userId: string, atMs = Date.now()) {
   return activeInvestments(db, userId).reduce((sum, i) => {
-    const daily = (i.amount * i.dailyRoi) / 100;
+    const daily = investmentDaily(i);
     const elapsed = Math.max(0, atMs - new Date(i.lastPayoutAt).getTime());
     return sum + daily * Math.min(1, elapsed / DAY_MS);
   }, 0);
@@ -1069,7 +1079,7 @@ export function nextPayoutIn(db: DB, userId: string, atMs = Date.now()) {
 
 /** Total daily income across every running plan. */
 export function dailyIncome(db: DB, userId: string) {
-  return activeInvestments(db, userId).reduce((s, i) => s + (i.amount * i.dailyRoi) / 100, 0);
+  return round2(activeInvestments(db, userId).reduce((s, i) => s + investmentDaily(i), 0));
 }
 
 export const STATUS_LABEL: Record<string, string> = {
