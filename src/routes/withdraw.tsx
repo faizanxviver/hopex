@@ -236,19 +236,33 @@ function Withdraw() {
                 placeholder="2500"
                 className="h-14 w-full rounded-2xl border border-input bg-background/40 px-4 font-display text-xl font-extrabold outline-none focus:ring-2 focus:ring-ring"
               />
-              <div className="mt-2 grid grid-cols-4 gap-2">
-                {quick.map((p) => (
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {quick.map((q) => (
                   <button
                     type="button"
-                    key={p}
-                    onClick={() => setAmount(String(Math.floor((user.balance * p) / 100)))}
-                    className="btn-glass h-10 text-xs font-bold text-foreground"
+                    key={q}
+                    onClick={() => setAmount(String(q))}
+                    className={cn(
+                      "btn-glass h-11 text-xs font-bold text-foreground",
+                      Number(amount) === q && "btn-glass-primary",
+                    )}
                   >
-                    {p}%
+                    Rs {q.toLocaleString("en-PK")}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => setAmount(String(Math.floor(user.balance)))}
+                  className="btn-glass h-11 text-xs font-bold text-foreground"
+                >
+                  {t("Max")}
+                </button>
               </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                {t("No tax or fee — you receive the full amount.")}
+              </p>
             </div>
+
 
             <div className="rounded-2xl glass-soft p-4">
               <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
