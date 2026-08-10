@@ -116,7 +116,7 @@ function Plans() {
         {db.plans
           .filter((p) => p.active)
           .map((p) => {
-            const d = p.min * (p.dailyRoi / 100);
+            const d = planDaily(p);
             const affordable = user.balance >= p.min;
             return (
               <GlassCard key={p.id} className="group flex flex-col overflow-hidden p-0">
