@@ -943,6 +943,16 @@ export const money = (n: number) =>
   "Rs " +
   Number(n || 0).toLocaleString("en-PK", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+/** Round to 2 decimals so stored percentages never drift the displayed amount. */
+export const round2 = (n: number) => Math.round((Number(n) || 0) * 100) / 100;
+
+/** Exact daily income of a plan (price × daily %), rounded to paisa. */
+export const planDaily = (p: { min: number; dailyRoi: number }) => round2((p.min * p.dailyRoi) / 100);
+
+/** Exact daily income of an active investment, rounded to paisa. */
+export const investmentDaily = (i: { amount: number; dailyRoi: number }) =>
+  round2((i.amount * i.dailyRoi) / 100);
+
 export const newId = uid;
 export const timestamp = now;
 
