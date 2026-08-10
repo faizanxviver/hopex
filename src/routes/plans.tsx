@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { ShieldCheck, Wallet2 } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
-import { depositBalance, investmentDaily, money, planDaily, round2, useStore } from "@/lib/store";
+import { depositBalance, money, planDaily, round2, useStore } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
 import starterImg from "@/assets/plan-starter.jpg";
 import growthImg from "@/assets/plan-growth.jpg";
