@@ -1014,9 +1014,16 @@ export function myInvestments(db: DB, userId: string) {
     .sort((a, b) => b.startedAt.localeCompare(a.startedAt));
 }
 
-/** Withdrawals are accepted between 08:00 and 20:00 Pakistan Standard Time. */
+/** Withdrawals are accepted between 08:00 and 19:00 Pakistan Standard Time. */
 export const WITHDRAW_OPEN_HOUR = 8;
-export const WITHDRAW_CLOSE_HOUR = 20;
+export const WITHDRAW_CLOSE_HOUR = 19;
+
+/** 24h hour number rendered as a 12-hour label, e.g. 19 -> "7:00 PM". */
+export function hour12(h: number) {
+  const suffix = h >= 12 ? "PM" : "AM";
+  const base = h % 12 === 0 ? 12 : h % 12;
+  return `${base}:00 ${suffix}`;
+}
 
 export function pakistanHour(at = new Date()) {
   // PKT is UTC+5 all year round.
