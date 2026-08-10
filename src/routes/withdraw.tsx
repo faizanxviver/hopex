@@ -37,7 +37,7 @@ export const Route = createFileRoute("/withdraw")({
       { title: "Withdraw Funds — HopeX" },
       {
         name: "description",
-        content: "Request a payout to your bound JazzCash or Easypaisa account between 8 AM and 8 PM PKT.",
+        content: "Request a payout to your bound JazzCash or Easypaisa account between 8:00 AM and 7:00 PM PKT.",
       },
       { property: "og:title", content: "Withdraw Funds — HopeX" },
       { property: "og:description", content: "Fast payouts, reviewed within minutes." },
