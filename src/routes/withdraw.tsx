@@ -152,7 +152,7 @@ function Withdraw() {
     }
     if (!windowOpen) {
       return toast.error(
-        t("Withdrawals are accepted between 8:00 AM and 8:00 PM Pakistan time."),
+        `${t("Withdrawals are accepted between")} ${hour12(WITHDRAW_OPEN_HOUR)} ${t("and")} ${hour12(WITHDRAW_CLOSE_HOUR)} ${t("Pakistan time")}.`,
       );
     }
     if (user.blocked) return toast.error(t("Your account is frozen. Please contact support."));
