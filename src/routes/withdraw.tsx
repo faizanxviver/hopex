@@ -297,8 +297,12 @@ function Withdraw() {
             <ul className="mt-3 space-y-2.5 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
                 <Clock4 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                {t("Requests are accepted daily from")} {WITHDRAW_OPEN_HOUR}:00 {t("to")}{" "}
-                {WITHDRAW_CLOSE_HOUR}:00 (PKT)
+                {t("Requests are accepted daily from")} {hour12(WITHDRAW_OPEN_HOUR)} {t("to")}{" "}
+                {hour12(WITHDRAW_CLOSE_HOUR)} (PKT)
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+                {t("No tax or fee — you receive the full amount.")}
               </li>
               <li className="flex items-start gap-2">
                 <Lock className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
