@@ -82,32 +82,54 @@ function Deposit() {
 
 
   return (
-    <div>
+    <div className="space-y-4 pb-24">
       {connecting ? <ConnectingOverlay amount={Number(amount)} /> : null}
 
-      <SectionTitle
+      <LedgerHeader
         title="Deposit funds"
-        subtitle={`Choose an amount, then complete payment inside the secure gateway. Minimum ${money(db.settings.minDeposit)}.`}
+        subtitle={`Pick an amount, then pay inside the secure MPay gateway. Minimum ${money(db.settings.minDeposit)}.`}
+        icon={<ArrowDownLeft className="h-5 w-5" />}
       />
 
+      <div className="grid grid-cols-2 gap-3">
+        <MoneyStat
+          label="Deposit balance"
+          value={money(deposited)}
+          tone="success"
+          icon={<Wallet className="h-4 w-4" />}
+          hint="Approved top-ups"
+        />
+        <MoneyStat
+          label="Awaiting approval"
+          value={money(pending)}
+          tone="primary"
+          icon={<Clock className="h-4 w-4" />}
+          hint="In review"
+        />
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <GlassCard>
-          <form onSubmit={openGateway} className="space-y-6">
+        <div className="relative overflow-hidden rounded-[2rem] glass p-5">
+          <span className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-primary/20 blur-3xl" />
+          <form onSubmit={openGateway} className="relative space-y-5">
             <div>
-              <p className="mb-3 text-sm font-semibold">Quick amount</p>
-              <div className="grid grid-cols-3 gap-3">
+              <p className="mb-3 text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
+                Quick amount
+              </p>
+              <div className="grid grid-cols-3 gap-2.5">
                 {quick.map((q) => (
                   <button
                     type="button"
                     key={q}
                     onClick={() => setAmount(String(q))}
                     className={cn(
-                      "rounded-2xl border py-4 text-sm font-bold transition hover:-translate-y-0.5",
+                      "relative overflow-hidden rounded-2xl py-4 text-sm font-black transition-all hover:-translate-y-0.5",
                       Number(amount) === q
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border glass-soft",
+                        ? "gradient-brand text-primary-foreground shadow-lg shadow-primary/25"
+                        : "glass-soft text-foreground",
                     )}
                   >
+                    <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
                     Rs {q.toLocaleString("en-PK")}
                   </button>
                 ))}
@@ -115,62 +137,70 @@ function Deposit() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold">
+              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
                 Or enter a custom amount (PKR)
               </label>
-              <input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="5000"
-                className="h-14 w-full rounded-xl border border-input bg-background/40 px-4 text-lg font-bold outline-none focus:ring-2 focus:ring-ring"
-              />
+              <div className="relative">
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black text-muted-foreground">
+                  Rs
+                </span>
+                <input
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="5000"
+                  className="h-14 w-full rounded-2xl border-none bg-background/40 pl-12 pr-4 font-display text-xl font-black outline-none ring-1 ring-border/50 focus:ring-2 focus:ring-primary/50"
+                />
+              </div>
             </div>
 
             <button
               disabled={busy}
-              className="btn-glass btn-glass-primary flex h-14 w-full items-center justify-center text-base font-bold disabled:opacity-60"
+              className="btn-glass btn-glass-primary flex h-14 w-full items-center justify-center gap-2 text-base font-black disabled:opacity-60"
             >
-              {busy ? "Connecting to MPay…" : "Submit & continue — MPay"}
+              {busy ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Connecting to MPay…
+                </>
+              ) : (
+                "Submit & continue — MPay"
+              )}
             </button>
-            <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
-              <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-success" /> You will be taken to our
-              automatic payment gateway to select a method, pay and upload your screenshot.
+            <p className="flex items-center justify-center gap-1.5 text-center text-[11px] text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-success" /> You'll be taken to our
+              automatic gateway to select a method, pay and upload your screenshot.
             </p>
-
           </form>
-        </GlassCard>
+        </div>
 
         <div className="space-y-4">
-          <GlassCard>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">
-              Deposit balance
+          <div className="rounded-[2rem] glass p-5">
+            <p className="flex items-center gap-2 text-sm font-black">
+              <Zap className="h-4 w-4 text-gold" /> How it works
             </p>
-            <p className="mt-2 font-display text-3xl font-extrabold">{money(deposited)}</p>
-            {pending > 0 ? (
-              <p className="mt-1 inline-flex items-center gap-1 text-xs text-warning">
-                <Clock className="h-3 w-3" /> {money(pending)} awaiting approval
-              </p>
-            ) : null}
+            <ol className="mt-4 space-y-3">
+              {[
+                "Pick an amount and submit.",
+                "The secure MPay gateway opens.",
+                "Choose a method and copy the account number.",
+                "Pay, upload the screenshot and submit.",
+                "Funds credit after approval.",
+              ].map((step, i) => (
+                <li key={step} className="flex items-start gap-3 text-xs text-muted-foreground">
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-primary/12 text-[11px] font-black text-primary">
+                    {i + 1}
+                  </span>
+                  <span className="pt-1">{step}</span>
+                </li>
+              ))}
+            </ol>
             <Link
               to="/deposit-history"
-              className="mt-5 block rounded-xl gradient-cool py-2.5 text-center text-sm font-semibold text-primary-foreground"
+              className="mt-5 flex h-11 items-center justify-center rounded-2xl gradient-cool text-sm font-black text-primary-foreground shadow-lg shadow-primary/20"
             >
               Deposit history
             </Link>
-          </GlassCard>
-          <GlassCard>
-            <p className="flex items-center gap-2 font-semibold">
-              <Zap className="h-4 w-4 text-gold" /> How it works
-            </p>
-            <ol className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li>1. Pick an amount and submit.</li>
-              <li>2. The secure gateway opens in full screen.</li>
-              <li>3. Choose a method and copy the account number.</li>
-              <li>4. Pay, upload the screenshot and submit.</li>
-              <li>5. Funds credit after admin approval.</li>
-            </ol>
-          </GlassCard>
+          </div>
         </div>
       </div>
     </div>
