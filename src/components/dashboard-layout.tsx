@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   BellRing,
-  CircleDollarSign,
+  WalletMinimal,
   Gem,
   LayoutGrid,
   Headset,
@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 export const primaryNav = [
   { to: "/dashboard", label: "Dashboard", short: "Home", icon: House },
   { to: "/plans", label: "Plans", short: "Plans", icon: Gem },
-  { to: "/deposit", label: "Deposit", short: "Deposit", icon: CircleDollarSign },
+  { to: "/deposit", label: "Deposit", short: "Deposit", icon: WalletMinimal },
   { to: "/referrals", label: "Referrals", short: "Team", icon: UsersRound },
   { to: "/more", label: "More", short: "More", icon: LayoutGrid },
 ] as const;

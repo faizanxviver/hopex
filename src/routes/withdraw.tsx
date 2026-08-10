@@ -19,6 +19,7 @@ import {
   WITHDRAW_CLOSE_HOUR,
   WITHDRAW_OPEN_HOUR,
   hasActivePlan,
+  hour12,
   isWithdrawWindowOpen,
   money,
   newId,
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/withdraw")({
       { title: "Withdraw Funds — HopeX" },
       {
         name: "description",
-        content: "Request a payout to your bound JazzCash or Easypaisa account between 8 AM and 8 PM PKT.",
+        content: "Request a payout to your bound JazzCash or Easypaisa account between 8:00 AM and 7:00 PM PKT.",
       },
       { property: "og:title", content: "Withdraw Funds — HopeX" },
       { property: "og:description", content: "Fast payouts, reviewed within minutes." },
@@ -151,7 +152,7 @@ function Withdraw() {
     }
     if (!windowOpen) {
       return toast.error(
-        t("Withdrawals are accepted between 8:00 AM and 8:00 PM Pakistan time."),
+        `${t("Withdrawals are accepted between")} ${hour12(WITHDRAW_OPEN_HOUR)} ${t("and")} ${hour12(WITHDRAW_CLOSE_HOUR)} ${t("Pakistan time")}.`,
       );
     }
     if (user.blocked) return toast.error(t("Your account is frozen. Please contact support."));
@@ -185,7 +186,11 @@ function Withdraw() {
     setAmount("");
   };
 
-  const quick = [25, 50, 75, 100];
+  const quick = (
+    db.settings.quickAmounts.length
+      ? db.settings.quickAmounts
+      : [1000, 3000, 5000, 10000, 25000, 50000]
+  ).slice(0, 6);
 
   return (
     <div className="space-y-5">
@@ -231,19 +236,33 @@ function Withdraw() {
                 placeholder="2500"
                 className="h-14 w-full rounded-2xl border border-input bg-background/40 px-4 font-display text-xl font-extrabold outline-none focus:ring-2 focus:ring-ring"
               />
-              <div className="mt-2 grid grid-cols-4 gap-2">
-                {quick.map((p) => (
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {quick.map((q) => (
                   <button
                     type="button"
-                    key={p}
-                    onClick={() => setAmount(String(Math.floor((user.balance * p) / 100)))}
-                    className="btn-glass h-10 text-xs font-bold text-foreground"
+                    key={q}
+                    onClick={() => setAmount(String(q))}
+                    className={cn(
+                      "btn-glass h-11 text-xs font-bold text-foreground",
+                      Number(amount) === q && "btn-glass-primary",
+                    )}
                   >
-                    {p}%
+                    Rs {q.toLocaleString("en-PK")}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => setAmount(String(Math.floor(user.balance)))}
+                  className="btn-glass h-11 text-xs font-bold text-foreground"
+                >
+                  {t("Max")}
+                </button>
               </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                {t("No tax or fee — you receive the full amount.")}
+              </p>
             </div>
+
 
             <div className="rounded-2xl glass-soft p-4">
               <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
@@ -278,8 +297,12 @@ function Withdraw() {
             <ul className="mt-3 space-y-2.5 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
                 <Clock4 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                {t("Requests are accepted daily from")} {WITHDRAW_OPEN_HOUR}:00 {t("to")}{" "}
-                {WITHDRAW_CLOSE_HOUR}:00 (PKT)
+                {t("Requests are accepted daily from")} {hour12(WITHDRAW_OPEN_HOUR)} {t("to")}{" "}
+                {hour12(WITHDRAW_CLOSE_HOUR)} (PKT)
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+                {t("No tax or fee — you receive the full amount.")}
               </li>
               <li className="flex items-start gap-2">
                 <Lock className="mt-0.5 h-4 w-4 shrink-0 text-gold" />

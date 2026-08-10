@@ -11,7 +11,7 @@ import {
   LifeBuoy,
   TrendingUp,
   LogOut,
-  CircleDollarSign,
+  WalletMinimal,
   Layers,
   Trophy,
   Crown,
@@ -51,7 +51,7 @@ export const Route = createFileRoute("/more")({
 });
 
 const quick = [
-  { to: "/deposit", label: "Deposit", icon: CircleDollarSign, tone: "bg-primary/15 text-primary" },
+  { to: "/deposit", label: "Deposit", icon: WalletMinimal, tone: "bg-primary/15 text-primary" },
   { to: "/withdraw", label: "Withdraw", icon: Banknote, tone: "bg-gold/20 text-gold" },
   { to: "/plans", label: "Invest", icon: TrendingUp, tone: "bg-success/15 text-success" },
   { to: "/promo", label: "Promo", icon: Ticket, tone: "bg-destructive/10 text-destructive" },

@@ -1014,9 +1014,16 @@ export function myInvestments(db: DB, userId: string) {
     .sort((a, b) => b.startedAt.localeCompare(a.startedAt));
 }
 
-/** Withdrawals are accepted between 08:00 and 20:00 Pakistan Standard Time. */
+/** Withdrawals are accepted between 08:00 and 19:00 Pakistan Standard Time. */
 export const WITHDRAW_OPEN_HOUR = 8;
-export const WITHDRAW_CLOSE_HOUR = 20;
+export const WITHDRAW_CLOSE_HOUR = 19;
+
+/** 24h hour number rendered as a 12-hour label, e.g. 19 -> "7:00 PM". */
+export function hour12(h: number) {
+  const suffix = h >= 12 ? "PM" : "AM";
+  const base = h % 12 === 0 ? 12 : h % 12;
+  return `${base}:00 ${suffix}`;
+}
 
 export function pakistanHour(at = new Date()) {
   // PKT is UTC+5 all year round.
@@ -1077,11 +1084,18 @@ export const statusLabel = (s: string) => STATUS_LABEL[s] ?? s;
 
 /* ---------------- salary programme ---------------- */
 
-const SALARY_CYCLE_MS = 30 * DAY_MS;
+const SALARY_CYCLE_MS = 7 * DAY_MS;
 
 /** Direct (level 1) team members. */
 export function directTeamCount(db: DB, referralCode: string) {
   return db.users.filter((u) => u.referredBy === referralCode).length;
+}
+
+/** Total amount invested by the direct (level 1) team. */
+export function directTeamInvested(db: DB, referralCode: string) {
+  return db.users
+    .filter((u) => u.referredBy === referralCode)
+    .reduce((sum, u) => sum + (u.invested || 0), 0);
 }
 
 export interface SalaryStatus {
@@ -1098,7 +1112,9 @@ export interface SalaryStatus {
 export function salaryStatus(db: DB, user: User, atMs = Date.now()): SalaryStatus {
   const tiers = [...db.settings.salaryTiers].sort((a, b) => a.salary - b.salary);
   const team = directTeamCount(db, user.referralCode);
-  const reached = tiers.filter((t) => team >= t.team && user.invested >= t.invested);
+  // Qualification depends only on the level 1 team's total investment.
+  const invested = directTeamInvested(db, user.referralCode);
+  const reached = tiers.filter((t) => invested >= t.invested);
   const current = reached.length ? reached[reached.length - 1] : null;
   const next = tiers.find((t) => !reached.includes(t)) ?? null;
 
@@ -1115,7 +1131,7 @@ export function salaryStatus(db: DB, user: User, atMs = Date.now()): SalaryStatu
     current,
     next,
     team,
-    invested: user.invested,
+    invested,
     lastClaimAt: last ?? null,
     nextClaimIn,
     claimable: Boolean(current) && nextClaimIn === 0,
