@@ -1023,7 +1023,7 @@ function PlansManager() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {db.plans.map((p) => {
-          const daily = p.min * (p.dailyRoi / 100);
+          const daily = planDaily(p);
           if (editing === p.id) {
             return (
               <PlanEditor
@@ -1067,7 +1067,7 @@ function PlansManager() {
                 </div>
                 <div className="flex justify-between border-t border-border/50 pt-1.5">
                   <span className="text-muted-foreground">Total return</span>
-                  <span className="font-bold text-gold">{money(daily * p.durationDays)}</span>
+                  <span className="font-bold text-gold">{money(round2(daily * p.durationDays))}</span>
                 </div>
               </div>
               <div className="mt-4 flex gap-2">

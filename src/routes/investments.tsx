@@ -36,7 +36,7 @@ function Investments() {
   if (!user) return null;
 
   const list = myInvestments(db, user.id);
-  const totalDaily = list.reduce((a, i) => a + (i.amount * i.dailyRoi) / 100, 0);
+  const totalDaily = round2(list.reduce((a, i) => a + investmentDaily(i), 0));
   const totalEarned = list.reduce((a, i) => a + i.earned, 0);
   const totalCapital = list.reduce((a, i) => a + i.amount, 0);
 
@@ -82,7 +82,7 @@ function Investments() {
         <div className="grid gap-4 lg:grid-cols-2">
           {list.map((inv) => {
             const { pct, daysLeft } = investmentProgress(inv);
-            const daily = (inv.amount * inv.dailyRoi) / 100;
+            const daily = investmentDaily(inv);
             const done = daysLeft <= 0;
             return (
               <GlassCard key={inv.id} className="relative overflow-hidden">
