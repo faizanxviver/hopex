@@ -1084,11 +1084,18 @@ export const statusLabel = (s: string) => STATUS_LABEL[s] ?? s;
 
 /* ---------------- salary programme ---------------- */
 
-const SALARY_CYCLE_MS = 30 * DAY_MS;
+const SALARY_CYCLE_MS = 7 * DAY_MS;
 
 /** Direct (level 1) team members. */
 export function directTeamCount(db: DB, referralCode: string) {
   return db.users.filter((u) => u.referredBy === referralCode).length;
+}
+
+/** Total amount invested by the direct (level 1) team. */
+export function directTeamInvested(db: DB, referralCode: string) {
+  return db.users
+    .filter((u) => u.referredBy === referralCode)
+    .reduce((sum, u) => sum + (u.invested || 0), 0);
 }
 
 export interface SalaryStatus {
@@ -1105,7 +1112,9 @@ export interface SalaryStatus {
 export function salaryStatus(db: DB, user: User, atMs = Date.now()): SalaryStatus {
   const tiers = [...db.settings.salaryTiers].sort((a, b) => a.salary - b.salary);
   const team = directTeamCount(db, user.referralCode);
-  const reached = tiers.filter((t) => team >= t.team && user.invested >= t.invested);
+  // Qualification depends only on the level 1 team's total investment.
+  const invested = directTeamInvested(db, user.referralCode);
+  const reached = tiers.filter((t) => invested >= t.invested);
   const current = reached.length ? reached[reached.length - 1] : null;
   const next = tiers.find((t) => !reached.includes(t)) ?? null;
 
@@ -1122,7 +1131,7 @@ export function salaryStatus(db: DB, user: User, atMs = Date.now()): SalaryStatu
     current,
     next,
     team,
-    invested: user.invested,
+    invested,
     lastClaimAt: last ?? null,
     nextClaimIn,
     claimable: Boolean(current) && nextClaimIn === 0,
