@@ -102,7 +102,12 @@ export interface PromoCode {
   used: number;
   expiresAt: string;
   active: boolean;
+  /** Who may redeem: everyone, past depositors, users with an active plan, or never-deposited users. */
+  audience: "all" | "depositors" | "active_plan" | "new";
+  perUserLimit: number;
+  description: string;
 }
+
 
 export interface User {
   id: string;
