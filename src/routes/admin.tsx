@@ -395,62 +395,8 @@ function Admin() {
 
           {tab === "Plans" ? <PlansManager /> : null}
 
-          {tab === "Promo Codes" ? (
-            <div className="space-y-4">
-              <button
-                onClick={() => {
-                  const code = prompt("Promo code")?.toUpperCase();
-                  if (!code) return;
-                  update((d) => {
-                    d.promos.push({
-                      id: newId(),
-                      code,
-                      type: "percent",
-                      value: 5,
-                      usageLimit: 100,
-                      used: 0,
-                      expiresAt: "2026-12-31",
-                      active: true,
-                    });
-                    return d;
-                  });
-                  toast.success("Promo code created.");
-                }}
-                className="rounded-xl gradient-brand px-5 py-2.5 text-sm font-semibold text-primary-foreground"
-              >
-                + New promo code
-              </button>
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {db.promos.map((p) => (
-                  <GlassCard key={p.id}>
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="font-display text-lg font-extrabold text-gold">{p.code}</p>
-                      <StatusBadge status={p.active ? "approved" : "rejected"} />
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {p.type === "percent" ? `${p.value}% bonus` : `${money(p.value)} bonus`} ·
-                      expires {p.expiresAt}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Used {p.used}/{p.usageLimit}
-                    </p>
-                    <button
-                      onClick={() =>
-                        update((d) => {
-                          const t = d.promos.find((x) => x.id === p.id)!;
-                          t.active = !t.active;
-                          return d;
-                        })
-                      }
-                      className="mt-4 w-full rounded-lg glass-soft py-2 text-xs font-semibold"
-                    >
-                      {p.active ? "Disable" : "Enable"}
-                    </button>
-                  </GlassCard>
-                ))}
-              </div>
-            </div>
-          ) : null}
+          {tab === "Promo Codes" ? <PromoManager /> : null}
+
 
           {tab === "Leader Plans" ? <LeaderPlansAdmin /> : null}
 
