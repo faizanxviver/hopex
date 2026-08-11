@@ -37,6 +37,8 @@ import {
   SeoSettings,
 } from "@/components/admin-tools";
 import { ApiKeysAdmin } from "@/components/admin-api";
+import { PromoManager } from "@/components/admin-promos";
+
 import { GlassCard, StatCard, StatusBadge } from "@/components/glass";
 import { money, newId, planDaily, round2, timestamp, useStore, fetchAuditLog, logAudit } from "@/lib/store";
 import type { AuditEntry, SalaryTier } from "@/lib/store";
