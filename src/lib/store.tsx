@@ -102,7 +102,12 @@ export interface PromoCode {
   used: number;
   expiresAt: string;
   active: boolean;
+  /** Who may redeem: everyone, past depositors, users with an active plan, or never-deposited users. */
+  audience: "all" | "depositors" | "active_plan" | "new";
+  perUserLimit: number;
+  description: string;
 }
+
 
 export interface User {
   id: string;
@@ -428,6 +433,9 @@ const toPromo = (r: Row): PromoCode => ({
   used: Number(r.used),
   expiresAt: (r.expires_at as string) ?? "",
   active: Boolean(r.active),
+  audience: ((r.audience as string) ?? "all") as PromoCode["audience"],
+  perUserLimit: Number(r.per_user_limit ?? 1) || 1,
+  description: (r.description as string) ?? "",
 });
 
 const fromPromo = (p: PromoCode): Row => ({
@@ -439,7 +447,11 @@ const fromPromo = (p: PromoCode): Row => ({
   used: p.used,
   expires_at: p.expiresAt || null,
   active: p.active,
+  audience: p.audience,
+  per_user_limit: p.perUserLimit,
+  description: p.description,
 });
+
 
 const toMethod = (r: Row): PaymentMethod => ({
   id: r.id as string,

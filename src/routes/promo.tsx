@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { TicketPercent, Sparkles, ArrowRight, Gift, Clock, BellRing } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
-import { money, newId, timestamp, useStore } from "@/lib/store";
+import { money, useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/promo")({
   head: () => ({
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/promo")({
 });
 
 function Promo() {
-  const { user, update, addNotification, redeemPromo } = useStore();
+  const { user, refresh, addNotification, redeemPromo } = useStore();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -41,24 +41,12 @@ function Promo() {
     if (!code.trim()) return toast.error("Enter a promo code.");
     setBusy(true);
     const res = await redeemPromo(code.trim(), 0);
+    if (!res || res.bonus <= 0) {
+      setBusy(false);
+      return toast.error("This code is invalid, expired, already used or not for your account.");
+    }
+    await refresh();
     setBusy(false);
-    if (!res || res.bonus <= 0)
-      return toast.error("This promo code is invalid, used up or expired.");
-
-    update((d) => {
-      const me = d.users.find((u) => u.id === user.id)!;
-      me.balance += res.bonus;
-      d.transactions.unshift({
-        id: newId(),
-        userId: user.id,
-        type: "bonus",
-        amount: res.bonus,
-        method: `Promo ${res.code}`,
-        status: "completed",
-        createdAt: timestamp(),
-      });
-      return d;
-    });
     addNotification(user.id, {
       title: "Promo bonus credited",
       body: `${money(res.bonus)} was added to your withdrawable balance.`,
@@ -67,6 +55,7 @@ function Promo() {
     toast.success(`${money(res.bonus)} bonus credited!`);
     setCode("");
   };
+
 
   return (
     <div className="space-y-5">

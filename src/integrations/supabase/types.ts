@@ -458,10 +458,13 @@ export type Database = {
       promo_codes: {
         Row: {
           active: boolean
+          audience: string
           code: string
           created_at: string
+          description: string
           expires_at: string | null
           id: string
+          per_user_limit: number
           type: string
           usage_limit: number
           used: number
@@ -469,10 +472,13 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          audience?: string
           code: string
           created_at?: string
+          description?: string
           expires_at?: string | null
           id?: string
+          per_user_limit?: number
           type?: string
           usage_limit?: number
           used?: number
@@ -480,16 +486,51 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          audience?: string
           code?: string
           created_at?: string
+          description?: string
           expires_at?: string | null
           id?: string
+          per_user_limit?: number
           type?: string
           usage_limit?: number
           used?: number
           value?: number
         }
         Relationships: []
+      }
+      promo_redemptions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          promo_id: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          promo_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          promo_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_redemptions_promo_id_fkey"
+            columns: ["promo_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reward_claims: {
         Row: {
