@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { TicketPercent, Sparkles, ArrowRight, Gift, Clock, BellRing } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
-import { money, newId, timestamp, useStore } from "@/lib/store";
+import { money, useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/promo")({
   head: () => ({
