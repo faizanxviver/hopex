@@ -14,7 +14,9 @@ import {
   MessageCircle,
   Megaphone,
   X,
+  Headset,
 } from "lucide-react";
+
 import type { ReactNode } from "react";
 import { useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
