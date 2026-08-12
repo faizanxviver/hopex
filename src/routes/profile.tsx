@@ -13,7 +13,9 @@ import {
   BadgeCheck,
   TrendingUp,
   Clock,
+  PenLine,
 } from "lucide-react";
+
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { Switch } from "@/components/ui/switch";
@@ -149,17 +151,34 @@ function Profile() {
         <GlassCard>
           <h2 className="text-lg font-bold">{t("Preferences")}</h2>
           <div className="mt-4 space-y-3">
-            <div className="flex items-center justify-between rounded-xl glass-soft px-4 py-3">
-              <div className="flex items-center gap-3">
-                <span className="grid h-9 w-9 place-items-center rounded-lg bg-accent text-accent-foreground">
-                  {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                </span>
-                <p className="text-sm font-semibold">
-                  {theme === "dark" ? t("Light mode") : t("Dark mode")}
-                </p>
+            <div className="rounded-xl glass-soft px-4 py-3">
+              <p className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                <Moon className="h-4 w-4" /> {t("Theme")}
+              </p>
+              <div className="flex gap-2">
+                {[
+                  { id: "light", label: t("Light"), icon: Sun },
+                  { id: "dark", label: t("Dark"), icon: Moon },
+                ].map((l) => (
+                  <button
+                    key={l.id}
+                    onClick={() => {
+                      if (theme !== l.id) toggleTheme();
+                    }}
+                    className={cn(
+                      "flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition",
+                      theme === l.id
+                        ? "btn-glass btn-glass-primary"
+                        : "glass-soft text-muted-foreground",
+                    )}
+                  >
+                    <l.icon className="h-4 w-4" />
+                    {l.label}
+                  </button>
+                ))}
               </div>
-              <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
             </div>
+
 
             <div className="rounded-xl glass-soft px-4 py-3">
               <p className="mb-2 flex items-center gap-2 text-sm font-semibold">
@@ -267,20 +286,28 @@ export function PayoutAccountCard() {
 
       {bound && !editing ? (
         <div className="mt-4 space-y-3">
-          <div className="rounded-2xl glass-soft p-4">
-            <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-              {user.bankName}
+          <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-background to-accent/20 p-5 shadow-lg">
+            <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gold/10 blur-2xl" />
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                {user.bankName} Account
+              </p>
+              <div className="h-2 w-8 rounded-full bg-gold/40" />
+            </div>
+            <p className="mt-3 font-display text-xl font-black tracking-tight">{user.accountName}</p>
+            <p className="mt-1 font-mono text-sm font-semibold text-muted-foreground tracking-wider">
+              {user.accountNumber.replace(/(\d{4})/g, "$1 ").trim()}
             </p>
-            <p className="mt-1 font-display text-lg font-extrabold">{user.accountName}</p>
-            <p className="font-mono text-sm text-muted-foreground">{user.accountNumber}</p>
           </div>
           <button
             onClick={() => setEditing(true)}
-            className="btn-glass flex h-11 w-full items-center justify-center text-sm font-semibold text-foreground"
+            className="btn-glass flex h-11 w-full items-center justify-center gap-2 text-xs font-bold text-foreground"
           >
-            {t("Change account")}
+            <PenLine className="h-3.5 w-3.5" />
+            {t("Change payout account")}
           </button>
         </div>
+
       ) : (
         <form onSubmit={save} className="mt-4 space-y-3">
           <div className="grid grid-cols-2 gap-2">
