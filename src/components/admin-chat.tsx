@@ -16,6 +16,7 @@ import {
   Rocket,
   Search,
   Send,
+  ShieldCheck,
   Smile,
   SquarePen,
   Trash2,
@@ -24,6 +25,8 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
 import { toast } from "sonner";
 import { money, newId, timestamp, useStore } from "@/lib/store";
 import type { ChatMessage } from "@/lib/store";
