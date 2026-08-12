@@ -178,12 +178,19 @@ function Leaderboard() {
         <>
           <GlassCard className="relative overflow-hidden p-4 pt-6">
             <div className="pointer-events-none absolute -top-20 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-gold/25 blur-3xl" />
-            <div className="relative grid grid-cols-3 items-end gap-2 sm:gap-4">
-              <Podium row={sorted[1]} place={1} metric={metric} />
-              <Podium row={sorted[0]} place={0} metric={metric} />
-              <Podium row={sorted[2]} place={2} metric={metric} />
+            <div className="relative flex items-end justify-center gap-2 sm:gap-6 pt-4">
+              <div className="flex-1 max-w-[120px]">
+                <Podium row={sorted[1]} place={1} metric={metric} />
+              </div>
+              <div className="flex-1 max-w-[140px] z-10">
+                <Podium row={sorted[0]} place={0} metric={metric} />
+              </div>
+              <div className="flex-1 max-w-[120px]">
+                <Podium row={sorted[2]} place={2} metric={metric} />
+              </div>
             </div>
             <div className="mt-1 h-3 rounded-b-2xl bg-gradient-to-b from-black/20 to-transparent" />
+
           </GlassCard>
 
           <GlassCard className="divide-y divide-border/40 p-2">
