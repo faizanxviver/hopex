@@ -28,6 +28,8 @@ import {
 import { toast } from "sonner";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { supabase } from "@/integrations/supabase/client";
+import { SupportLinksSettings } from "@/components/admin-support-links";
+
 import { AdminChat } from "@/components/admin-chat";
 import { BalanceControl, LeaderPlansAdmin } from "@/components/admin-rewards";
 import { MoneyDesk } from "@/components/admin-money";

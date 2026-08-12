@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageCircle, ExternalLink, X, Send, Users, Megaphone, Smartphone } from "lucide-react";
+import { MessageCircle, ExternalLink, X, Send, Users, Megaphone, Smartphone, Headset, Link2 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -9,12 +9,18 @@ export function SupportIcon() {
   const { db } = useStore();
   const { t } = useT();
 
-  const links = [
-    { label: "WhatsApp Channel", icon: Megaphone, url: "https://whatsapp.com/channel/..." },
-    { label: "WhatsApp Group", icon: Users, url: "https://chat.whatsapp.com/..." },
-    { label: "Support Chat", icon: Send, url: "https://wa.me/" + (db.settings.supportWhatsapp || "923000000000") },
-    { label: "Contact Admin", icon: Smartphone, url: "https://wa.me/" + (db.settings.supportWhatsapp || "923000000000") },
+  const links = db.settings.supportLinks?.length > 0 ? db.settings.supportLinks : [
+    { label: "WhatsApp Channel", url: "https://whatsapp.com/channel/..." },
+    { label: "WhatsApp Group", url: "https://chat.whatsapp.com/..." },
+    { label: "Support Chat", url: "https://wa.me/" + (db.settings.supportWhatsapp || "923000000000") },
   ];
+
+  const getIcon = (label: string) => {
+    if (label.includes("Channel")) return Megaphone;
+    if (label.includes("Group")) return Users;
+    if (label.includes("Support")) return Send;
+    return Link2;
+  };
 
   return (
     <div className="relative">
@@ -36,21 +42,24 @@ export function SupportIcon() {
               </button>
             </div>
             <div className="space-y-1 p-1">
-              {links.map((l) => (
-                <a
-                  key={l.label}
-                  href={l.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-3 rounded-2xl px-3 py-2.5 transition hover:bg-primary/10 group"
-                >
-                  <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary/10 text-primary">
-                    <l.icon className="h-4 w-4" />
-                  </span>
-                  <span className="flex-1 text-xs font-bold">{t(l.label)}</span>
-                  <ExternalLink className="h-3 w-3 opacity-0 transition group-hover:opacity-50" />
-                </a>
-              ))}
+              {links.map((l) => {
+                const Icon = getIcon(l.label);
+                return (
+                  <a
+                    key={l.label}
+                    href={l.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-3 rounded-2xl px-3 py-2.5 transition hover:bg-primary/10 group"
+                  >
+                    <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary/10 text-primary">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span className="flex-1 text-xs font-bold">{t(l.label)}</span>
+                    <ExternalLink className="h-3 w-3 opacity-0 transition group-hover:opacity-50" />
+                  </a>
+                );
+              })}
             </div>
           </div>
         </>
@@ -58,5 +67,3 @@ export function SupportIcon() {
     </div>
   );
 }
-
-import { Headset } from "lucide-react";
