@@ -72,8 +72,11 @@ function Plans() {
     if (!active) return;
     if (price > user.balance) return toast.error("Insufficient balance. Please deposit first.");
     setBusy(true);
+    // 1.2s rapid spinner check as requested
+    await new Promise(r => setTimeout(r, 1200));
     const { error } = await supabase.rpc("buy_plan", { _plan_id: active.id, _amount: price });
     if (error) {
+
       setBusy(false);
       return toast.error(error.message.replace(/^.*?:\s*/, ""));
     }
@@ -203,8 +206,13 @@ function Plans() {
                 disabled={busy}
                 className="btn-glass btn-glass-primary flex h-12 flex-1 items-center justify-center text-sm font-bold disabled:opacity-60"
               >
-                {busy ? "Processing…" : "Confirm & activate"}
+                {busy ? (
+                  <div className="h-5 w-5 animate-[spin_0.6s_linear_infinite] rounded-full border-2 border-primary-foreground border-t-transparent" />
+                ) : (
+                  "Confirm & activate"
+                )}
               </button>
+
             </div>
           </GlassCard>
         </div>
