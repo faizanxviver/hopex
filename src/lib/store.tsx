@@ -152,7 +152,9 @@ interface Settings {
   maintenanceMode: boolean;
   maintenanceMessage: string;
   salaryTiers: SalaryTier[];
+  supportLinks: { label: string; url: string }[];
   rewardAmount: number;
+
   rewardCooldownHours: number;
   rewardActive: boolean;
   proofRewardAmount: number;
