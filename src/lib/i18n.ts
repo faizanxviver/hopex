@@ -85,7 +85,6 @@ export const DICT = {
     "WhatsApp Group": "واٹس ایپ گروپ",
     "Support Chat": "سپورٹ چیٹ",
     "Contact Admin": "ایڈمن سے رابطہ",
-    "Active plans": "فعال پلانز",
     "days left": "دن باقی",
     Earned: "کمایا",
     Theme: "تھیم",
@@ -97,7 +96,6 @@ export const DICT = {
     "Bind your payout account": "ادائیگی کا اکاؤنٹ منسلک کریں",
     "Add the JazzCash or Easypaisa account that will receive every payout.":
       "جاز کیش یا ایزی پیسہ اکاؤنٹ شامل کریں جس پر تمام ادائیگیاں موصول ہوں گی۔",
-    "Payout account": "ادائیگی کا اکاؤنٹ",
     "Once bound, withdrawals always go to this account. You can change it later in More → Profile & settings.":
       "ایک بار منسلک ہونے کے بعد، رقم ہمیشہ اسی اکاؤنٹ میں جائے گی۔ آپ اسے بعد میں مزید → پروفائل اور سیٹنگز میں تبدیل کر سکتے ہیں۔",
     "Withdraw funds": "رقم نکلوائیں",
@@ -120,6 +118,7 @@ export const DICT = {
     "Withdrawal under review": "نکاسی زیرِ جائزہ ہے",
     "Our payouts team is verifying your request.": "ہماری ٹیم آپ کی درخواست کی تصدیق کر رہی ہے۔",
     "Reviewing…": "جائزہ لیا جا رہا ہے…",
+
   } as Record<string, string>,
 };
 
