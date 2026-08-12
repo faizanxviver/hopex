@@ -102,10 +102,16 @@ export function AdminChat() {
         const last = msgs[msgs.length - 1];
         const unread = msgs.filter((m) => m.from === "user" && m.status !== "read").length;
         const u = db.users.find((x) => x.id === id);
-        return { id, name: u?.name ?? "Unknown user", user: u, last, unread, count: msgs.length };
+        return { id, name: u?.name ?? "Unknown user", phone: u?.phone ?? "", user: u, last, unread, count: msgs.length };
       })
       .filter((t) => (filter === "unread" ? t.unread > 0 : true))
-      .filter((t) => (q.trim() ? t.name.toLowerCase().includes(q.trim().toLowerCase()) : true))
+      .filter((t) =>
+        q.trim()
+          ? t.name.toLowerCase().includes(q.trim().toLowerCase()) ||
+            t.phone.includes(q.trim())
+          : true,
+      )
+
       .sort((a, b) => (b.last?.createdAt ?? "").localeCompare(a.last?.createdAt ?? ""));
   }, [db.chats, db.users, q, filter]);
 
@@ -144,8 +150,10 @@ export function AdminChat() {
   }, [activeId, messages.length, update]);
 
   const send = (value?: string, attachment?: ChatMessage["attachment"], to = activeId) => {
+    if (!to) return;
     const body = (value ?? text).trim();
-    if ((!body && !attachment) || !to) return;
+    if (!body && !attachment) return;
+
     setText("");
     setEmoji(false);
     setCanned(false);
@@ -232,7 +240,7 @@ export function AdminChat() {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search or start a new chat"
+              placeholder="Search name or phone…"
               className="h-9 flex-1 bg-transparent text-sm outline-none"
             />
           </div>
