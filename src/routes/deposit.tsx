@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ShieldCheck, Clock, Zap, Loader2, ArrowDownLeft, Wallet } from "lucide-react";
+import { ShieldCheck, Clock, Zap, Loader2, ArrowDownLeft, Wallet, Rocket } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { LedgerHeader, MoneyStat } from "@/components/money-stats";
 import { createCheckoutSession } from "@/lib/checkout.functions";
