@@ -296,8 +296,9 @@ export function PayoutAccountCard() {
             </div>
             <p className="mt-3 font-display text-xl font-black tracking-tight">{user.accountName}</p>
             <p className="mt-1 font-mono text-sm font-semibold text-muted-foreground tracking-wider">
-              {user.accountNumber.replace(/(\d{4})/g, "$1 ").trim()}
+              {user.accountNumber?.replace(/(\d{4})/g, "$1 ").trim() || ""}
             </p>
+
           </div>
           <button
             onClick={() => setEditing(true)}
