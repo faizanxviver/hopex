@@ -267,10 +267,13 @@ function More() {
             </Link>
           ))}
         </GlassCard>
+      </section>
+
       {/* Active Plans */}
       <ActivePlansList userId={user.id} />
 
       <a
+
 
         href="mailto:support@hopex.io"
         className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5"
