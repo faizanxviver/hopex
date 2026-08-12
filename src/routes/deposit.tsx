@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ShieldCheck, Clock, Zap, Loader2, ArrowDownLeft, Wallet } from "lucide-react";
+import { ShieldCheck, Clock, Zap, Loader2, ArrowDownLeft, Wallet, Rocket } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { LedgerHeader, MoneyStat } from "@/components/money-stats";
 import { createCheckoutSession } from "@/lib/checkout.functions";
@@ -214,9 +214,13 @@ function ConnectingOverlay({ amount }: { amount: number }) {
         <div className="relative mx-auto grid h-24 w-24 place-items-center">
           <span className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
           <span className="relative grid h-20 w-20 place-items-center rounded-3xl gradient-brand text-primary-foreground">
-            <Loader2 className="h-9 w-9 animate-spin [animation-duration:0.5s]" />
+            <Rocket className="h-9 w-9 animate-pulse" />
           </span>
         </div>
+        <div className="mx-auto mt-4 h-2 w-20 overflow-hidden rounded-full bg-primary/20">
+           <div className="h-full w-full origin-left animate-[loading_0.8s_ease-in-out_infinite] bg-primary" />
+        </div>
+
         <h2 className="mt-6 font-display text-2xl font-black">Connecting to MPay</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Securing your session{amount ? ` for ${money(amount)}` : ""} — redirecting to the payment

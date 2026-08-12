@@ -15,7 +15,6 @@ import {
   Layers,
   Trophy,
   Crown,
-
   Ticket,
   ChevronRight,
   Copy,
@@ -25,6 +24,8 @@ import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { GlassCard, SectionTitle } from "@/components/glass";
 import { useT } from "@/lib/i18n";
 import { depositBalance, hasActivePlan, money, useStore } from "@/lib/store";
+import { ActivePlansList } from "@/components/active-plans-list";
+
 
 export const Route = createFileRoute("/more")({
   head: () => ({
@@ -268,7 +269,12 @@ function More() {
         </GlassCard>
       </section>
 
+      {/* Active Plans */}
+      <ActivePlansList userId={user.id} />
+
       <a
+
+
         href="mailto:support@hopex.io"
         className="glass flex items-center gap-3 rounded-2xl p-4 transition hover:-translate-y-0.5"
       >

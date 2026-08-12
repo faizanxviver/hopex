@@ -16,6 +16,7 @@ import {
   Rocket,
   Search,
   Send,
+  ShieldCheck,
   Smile,
   SquarePen,
   Trash2,
@@ -24,6 +25,8 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
 import { toast } from "sonner";
 import { money, newId, timestamp, useStore } from "@/lib/store";
 import type { ChatMessage } from "@/lib/store";
@@ -102,10 +105,16 @@ export function AdminChat() {
         const last = msgs[msgs.length - 1];
         const unread = msgs.filter((m) => m.from === "user" && m.status !== "read").length;
         const u = db.users.find((x) => x.id === id);
-        return { id, name: u?.name ?? "Unknown user", user: u, last, unread, count: msgs.length };
+        return { id, name: u?.name ?? "Unknown user", phone: u?.phone ?? "", user: u, last, unread, count: msgs.length };
       })
       .filter((t) => (filter === "unread" ? t.unread > 0 : true))
-      .filter((t) => (q.trim() ? t.name.toLowerCase().includes(q.trim().toLowerCase()) : true))
+      .filter((t) =>
+        q.trim()
+          ? t.name.toLowerCase().includes(q.trim().toLowerCase()) ||
+            t.phone.includes(q.trim())
+          : true,
+      )
+
       .sort((a, b) => (b.last?.createdAt ?? "").localeCompare(a.last?.createdAt ?? ""));
   }, [db.chats, db.users, q, filter]);
 
@@ -144,8 +153,10 @@ export function AdminChat() {
   }, [activeId, messages.length, update]);
 
   const send = (value?: string, attachment?: ChatMessage["attachment"], to = activeId) => {
+    if (!to) return;
     const body = (value ?? text).trim();
-    if ((!body && !attachment) || !to) return;
+    if (!body && !attachment) return;
+
     setText("");
     setEmoji(false);
     setCanned(false);
@@ -232,7 +243,7 @@ export function AdminChat() {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search or start a new chat"
+              placeholder="Search name or phone…"
               className="h-9 flex-1 bg-transparent text-sm outline-none"
             />
           </div>
@@ -551,74 +562,64 @@ export function AdminChat() {
             <Line label="Status" value={person.blocked ? "Frozen" : "Active"} />
           </div>
 
-          <Action
-            icon={PlusCircle}
-            label="Add funds"
-            onClick={() => {
-              const v = prompt(`Add funds to ${person.name} (PKR)`, "1000");
-              if (!v || isNaN(Number(v))) return;
-              adjust(Number(v), "Admin credit");
-              addNotification(person.id, {
-                title: "Funds added",
-                body: `${money(Number(v))} was credited by support.`,
-                kind: "success",
-              });
-              toast.success("Funds added.");
-            }}
-            primary
-          />
-
-          <Action
-            icon={MinusCircle}
-            label="Deduct funds"
-            onClick={() => {
-              const v = prompt(`Deduct funds from ${person.name} (PKR)`, "1000");
-              if (!v || isNaN(Number(v))) return;
-              adjust(-Number(v), "Admin adjustment");
-              toast.success("Funds deducted.");
-            }}
-          />
-
-          <Action
-            icon={Wallet}
-            label="Set exact balance"
-            onClick={() => {
-              const v = prompt(`Set balance for ${person.name}`, String(person.balance));
-              if (v == null || isNaN(Number(v))) return;
-              update((d) => {
-                const u = d.users.find((x) => x.id === person.id);
-                if (u) u.balance = Number(v);
-                return d;
-              });
-              toast.success("Balance updated.");
-            }}
-          />
-
-          <Action
-            icon={Coins}
-            label="Give referral bonus"
-            onClick={() => {
-              const v = prompt(`Referral bonus for ${person.name} (PKR)`, "500");
-              if (!v || isNaN(Number(v))) return;
-              update((d) => {
-                const u = d.users.find((x) => x.id === person.id);
-                if (!u) return d;
-                u.balance += Number(v);
-                u.referralEarnings += Number(v);
-                d.transactions.unshift({
-                  id: newId(),
-                  userId: u.id,
-                  type: "commission",
-                  amount: Number(v),
-                  method: "Admin referral bonus",
-                  status: "completed",
-                  createdAt: timestamp(),
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <Action
+              icon={PlusCircle}
+              label="Add funds"
+              onClick={() => {
+                const v = prompt(`Add funds to ${person.name} (PKR)`, "1000");
+                if (!v || isNaN(Number(v))) return;
+                adjust(Number(v), "Admin credit");
+                addNotification(person.id, {
+                  title: "Funds added",
+                  body: `${money(Number(v))} was credited by support.`,
+                  kind: "success",
                 });
-                return d;
-              });
-              toast.success("Bonus credited.");
-            }}
-          />
+                toast.success("Funds added.");
+              }}
+              primary
+            />
+            <Action
+              icon={MinusCircle}
+              label="Deduct funds"
+              onClick={() => {
+                const v = prompt(`Deduct funds from ${person.name} (PKR)`, "1000");
+                if (!v || isNaN(Number(v))) return;
+                adjust(-Number(v), "Admin adjustment");
+                toast.success("Funds deducted.");
+              }}
+            />
+          </div>
+
+
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <Action
+              icon={Wallet}
+              label="Set balance"
+              onClick={() => {
+                const v = prompt(`Set balance for ${person.name}`, String(person.balance));
+                if (v == null || isNaN(Number(v))) return;
+                update((d) => {
+                  const u = d.users.find((x) => x.id === person.id);
+                  if (u) u.balance = Number(v);
+                  return d;
+                });
+                toast.success("Balance updated.");
+              }}
+            />
+            <Action
+              icon={ShieldCheck}
+              label="Reset Pwd"
+              onClick={async () => {
+                const next = prompt(`Enter new password for ${person.name}`, "hopex123");
+                if (!next) return;
+                // Simulating password reset since migration-based RPC isn't available
+                toast.success("Password reset simulated for: " + next);
+              }}
+            />
+
+          </div>
+
 
           <Action
             icon={Rocket}

@@ -5,7 +5,6 @@ import {
   WalletMinimal,
   Gem,
   LayoutGrid,
-  Headset,
   LogOut,
   Moon,
   ShieldHalf,
@@ -15,11 +14,15 @@ import {
   MessageCircle,
   Megaphone,
   X,
+  Headset,
 } from "lucide-react";
+
 import type { ReactNode } from "react";
 import { useStore } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { SupportIcon } from "./support-links";
+
 
 /** Primary navigation — Withdraw intentionally lives under "More". */
 export const primaryNav = [
@@ -296,7 +299,7 @@ export function DashboardLayout({ children, wide }: { children: ReactNode; wide?
             >
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
-            <ChatButton />
+            <SupportIcon />
             <NotificationBell />
             <Link
               to="/profile"
@@ -305,6 +308,7 @@ export function DashboardLayout({ children, wide }: { children: ReactNode; wide?
             >
               {user?.name?.[0]}
             </Link>
+
             <button
               onClick={() => {
                 void logout();

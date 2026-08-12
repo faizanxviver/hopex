@@ -152,7 +152,9 @@ interface Settings {
   maintenanceMode: boolean;
   maintenanceMessage: string;
   salaryTiers: SalaryTier[];
+  supportLinks: { label: string; url: string }[];
   rewardAmount: number;
+
   rewardCooldownHours: number;
   rewardActive: boolean;
   proofRewardAmount: number;
@@ -254,7 +256,9 @@ const emptyDb = (): DB => ({
     rewardActive: true,
     proofRewardAmount: 5,
     showProofsSection: true,
+    supportLinks: [],
   },
+
   sessionId: null,
 });
 
@@ -717,7 +721,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         rewardActive: Boolean(s.reward_active ?? true),
         proofRewardAmount: num(s.proof_reward_amount ?? 5),
         showProofsSection: Boolean(s.show_proofs_section ?? true),
+        supportLinks: ((s.support_links as { label: string; url: string }[]) ?? []).map((l) => ({
+          label: String(l.label),
+          url: String(l.url),
+        })),
       };
+
     }
 
     if (!sessionId) {

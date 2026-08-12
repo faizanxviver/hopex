@@ -80,8 +80,48 @@ export const DICT = {
     "Referral center": "ریفرل سینٹر",
     "Profile & settings": "پروفائل و سیٹنگز",
     "No transactions yet.": "ابھی کوئی ٹرانزیکشن نہیں۔",
+    "Support links": "سپورٹ لنکس",
+    "WhatsApp Channel": "واٹس ایپ چینل",
+    "WhatsApp Group": "واٹس ایپ گروپ",
+    "Support Chat": "سپورٹ چیٹ",
+    "Contact Admin": "ایڈمن سے رابطہ",
+    "days left": "دن باقی",
+    Earned: "کمایا",
+    Theme: "تھیم",
+    Light: "لائٹ",
+    Dark: "ڈارک",
+    "Change payout account": "ادائیگی کا اکاؤنٹ تبدیل کریں",
+    "Account holder name": "اکاؤنٹ ہولڈر کا نام",
+    "Save account": "اکاؤنٹ محفوظ کریں",
+    "Bind your payout account": "ادائیگی کا اکاؤنٹ منسلک کریں",
+    "Add the JazzCash or Easypaisa account that will receive every payout.":
+      "جاز کیش یا ایزی پیسہ اکاؤنٹ شامل کریں جس پر تمام ادائیگیاں موصول ہوں گی۔",
+    "Once bound, withdrawals always go to this account. You can change it later in More → Profile & settings.":
+      "ایک بار منسلک ہونے کے بعد، رقم ہمیشہ اسی اکاؤنٹ میں جائے گی۔ آپ اسے بعد میں مزید → پروفائل اور سیٹنگز میں تبدیل کر سکتے ہیں۔",
+    "Withdraw funds": "رقم نکلوائیں",
+    "Fast payouts to your bound account.": "آپ کے منسلک اکاؤنٹ میں تیز رفتار ادائیگی۔",
+    "Payout window open": "نکاسی کا وقت شروع ہے",
+    "Payout window closed": "نکاسی کا وقت ختم ہے",
+    "Plan required": "پلان ضروری ہے",
+    "Max": "زیادہ سے زیادہ",
+    "No tax or fee — you receive the full amount.": "کوئی ٹیکس یا فیس نہیں — آپ پوری رقم وصول کرتے ہیں۔",
+    "To change this account go to More → Profile & settings.":
+      "اس اکاؤنٹ کو تبدیل کرنے کے لیے مزید → پروفائل و سیٹنگز پر جائیں۔",
+    "Request withdrawal": "رقم کی درخواست کریں",
+    "Withdraw rules": "نکاسی کے اصول",
+    "Requests are accepted daily from": "درخواستیں روزانہ",
+    "to": "سے",
+    "At least one investment plan must be active.": "کم از کم ایک سرمایہ کاری پلان فعال ہونا ضروری ہے۔",
+    "Minimum withdrawal is": "کم از کم نکاسی",
+    "Reviewed within about 5 minutes.": "تقریباً 5 منٹ کے اندر جائزہ لیا جاتا ہے۔",
+    "Declined requests are refunded instantly.": "مسترد شدہ درخواستیں فوری واپس کر دی جاتی ہیں۔",
+    "Withdrawal under review": "نکاسی زیرِ جائزہ ہے",
+    "Our payouts team is verifying your request.": "ہماری ٹیم آپ کی درخواست کی تصدیق کر رہی ہے۔",
+    "Reviewing…": "جائزہ لیا جا رہا ہے…",
+
   } as Record<string, string>,
 };
+
 
 export function useT() {
   const { user } = useStore();
