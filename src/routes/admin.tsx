@@ -434,7 +434,9 @@ function Admin() {
             <GlassCard className="max-w-xl space-y-4">
               <h2 className="text-lg font-bold">Platform settings</h2>
               <BrandingSettings />
+              <SupportLinksSettings />
               <AnnouncementSettings />
+
               <MaintenanceSettings />
               <SalarySettings />
               {(
