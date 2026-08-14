@@ -305,6 +305,9 @@ const emptyDb = (): DB => ({
     proofRewardAmount: 5,
     showProofsSection: true,
     supportLinks: [],
+    guidelines: DEFAULT_GUIDELINES,
+    guidelinesActive: true,
+    guidelinesTitle: "Platform Guidelines",
   },
 
   sessionId: null,
