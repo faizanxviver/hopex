@@ -196,7 +196,9 @@ function Deposit() {
             </ol>
             <Link
               to="/deposit-history"
+              search={{ ref: undefined }}
               className="mt-5 flex h-11 items-center justify-center rounded-2xl gradient-cool text-sm font-black text-primary-foreground shadow-lg shadow-primary/20"
+            
             >
               Deposit history
             </Link>
