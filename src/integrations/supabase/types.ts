@@ -575,6 +575,9 @@ export type Database = {
         Row: {
           announcement_active: boolean
           announcement_text: string
+          guidelines: Json
+          guidelines_active: boolean
+          guidelines_title: string
           id: number
           levels: number[]
           maintenance_message: string
@@ -603,6 +606,9 @@ export type Database = {
         Insert: {
           announcement_active?: boolean
           announcement_text?: string
+          guidelines?: Json
+          guidelines_active?: boolean
+          guidelines_title?: string
           id?: number
           levels?: number[]
           maintenance_message?: string
@@ -631,6 +637,9 @@ export type Database = {
         Update: {
           announcement_active?: boolean
           announcement_text?: string
+          guidelines?: Json
+          guidelines_active?: boolean
+          guidelines_title?: string
           id?: number
           levels?: number[]
           maintenance_message?: string
