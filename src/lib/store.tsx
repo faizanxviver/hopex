@@ -153,6 +153,9 @@ interface Settings {
   maintenanceMessage: string;
   salaryTiers: SalaryTier[];
   supportLinks: { label: string; url: string }[];
+  guidelines: GuidelineItem[];
+  guidelinesActive: boolean;
+  guidelinesTitle: string;
   rewardAmount: number;
 
   rewardCooldownHours: number;
@@ -160,6 +163,51 @@ interface Settings {
   proofRewardAmount: number;
   showProofsSection: boolean;
 }
+
+/**
+ * A single row inside the dashboard "Platform Guidelines" popup.
+ * `title` and `text` support live tokens: {minDeposit} {minWithdraw}
+ * {minPlan} {withdrawWindow} {siteName}.
+ */
+export interface GuidelineItem {
+  icon: string;
+  title: string;
+  text: string;
+  tone: string;
+}
+
+export const DEFAULT_GUIDELINES: GuidelineItem[] = [
+  {
+    icon: "deposit",
+    title: "Min Deposit: {minDeposit}",
+    text: "Start investing with as low as {minDeposit}",
+    tone: "primary",
+  },
+  {
+    icon: "withdraw",
+    title: "Min Withdrawal: {minWithdraw}",
+    text: "Withdraw your profits — minimum {minWithdraw}",
+    tone: "destructive",
+  },
+  {
+    icon: "invest",
+    title: "Min Investment: {minPlan}",
+    text: "Activate a plan starting from just {minPlan}",
+    tone: "gold",
+  },
+  {
+    icon: "fast",
+    title: "Fast Withdrawals",
+    text: "Processed daily {withdrawWindow} — money in minutes!",
+    tone: "warning",
+  },
+  {
+    icon: "support",
+    title: "24/7 Support",
+    text: "Contact us anytime from the in-app live chat",
+    tone: "success",
+  },
+];
 
 export interface SalaryTier {
   rank: string;
@@ -257,6 +305,9 @@ const emptyDb = (): DB => ({
     proofRewardAmount: 5,
     showProofsSection: true,
     supportLinks: [],
+    guidelines: DEFAULT_GUIDELINES,
+    guidelinesActive: true,
+    guidelinesTitle: "Platform Guidelines",
   },
 
   sessionId: null,
@@ -643,6 +694,11 @@ async function persistDiff(prev: DB, next: DB) {
           reward_active: next.settings.rewardActive,
           proof_reward_amount: next.settings.proofRewardAmount,
           show_proofs_section: next.settings.showProofsSection,
+          support_links: next.settings.supportLinks,
+          guidelines: next.settings.guidelines,
+          guidelines_active: next.settings.guidelinesActive,
+          guidelines_title: next.settings.guidelinesTitle,
+
 
         })
         .eq("id", 1),
@@ -725,6 +781,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           label: String(l.label),
           url: String(l.url),
         })),
+        guidelines: (() => {
+          const raw = (s.guidelines as GuidelineItem[]) ?? [];
+          return raw.length
+            ? raw.map((g) => ({
+                icon: String(g.icon ?? "info"),
+                title: String(g.title ?? ""),
+                text: String(g.text ?? ""),
+                tone: String(g.tone ?? "primary"),
+              }))
+            : DEFAULT_GUIDELINES;
+        })(),
+        guidelinesActive: Boolean(s.guidelines_active ?? true),
+        guidelinesTitle: (s.guidelines_title as string) ?? "Platform Guidelines",
       };
 
     }
