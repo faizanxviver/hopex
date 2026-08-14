@@ -776,6 +776,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           label: String(l.label),
           url: String(l.url),
         })),
+        guidelines: (() => {
+          const raw = (s.guidelines as GuidelineItem[]) ?? [];
+          return raw.length
+            ? raw.map((g) => ({
+                icon: String(g.icon ?? "info"),
+                title: String(g.title ?? ""),
+                text: String(g.text ?? ""),
+                tone: String(g.tone ?? "primary"),
+              }))
+            : DEFAULT_GUIDELINES;
+        })(),
+        guidelinesActive: Boolean(s.guidelines_active ?? true),
+        guidelinesTitle: (s.guidelines_title as string) ?? "Platform Guidelines",
       };
 
     }
