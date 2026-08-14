@@ -43,7 +43,7 @@ const hour12 = (h: number) => `${((h + 11) % 12) + 1}${h < 12 ? "am" : "pm"}`;
 /** Replaces live tokens so the popup always shows current platform numbers. */
 export function useGuidelineTokens() {
   const { db } = useStore();
-  const prices = db.plans.filter((p) => p.active !== false).map((p) => p.price);
+  const prices = db.plans.filter((p) => p.active !== false).map((p) => p.min);
   const minPlan = prices.length ? Math.min(...prices) : db.settings.minDeposit;
   const s = db.settings;
   const map: Record<string, string> = {
