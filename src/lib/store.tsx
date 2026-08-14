@@ -164,6 +164,51 @@ interface Settings {
   showProofsSection: boolean;
 }
 
+/**
+ * A single row inside the dashboard "Platform Guidelines" popup.
+ * `title` and `text` support live tokens: {minDeposit} {minWithdraw}
+ * {minPlan} {withdrawWindow} {siteName}.
+ */
+export interface GuidelineItem {
+  icon: string;
+  title: string;
+  text: string;
+  tone: string;
+}
+
+export const DEFAULT_GUIDELINES: GuidelineItem[] = [
+  {
+    icon: "deposit",
+    title: "Min Deposit: {minDeposit}",
+    text: "Start investing with as low as {minDeposit}",
+    tone: "primary",
+  },
+  {
+    icon: "withdraw",
+    title: "Min Withdrawal: {minWithdraw}",
+    text: "Withdraw your profits — minimum {minWithdraw}",
+    tone: "destructive",
+  },
+  {
+    icon: "invest",
+    title: "Min Investment: {minPlan}",
+    text: "Activate a plan starting from just {minPlan}",
+    tone: "gold",
+  },
+  {
+    icon: "fast",
+    title: "Fast Withdrawals",
+    text: "Processed daily {withdrawWindow} — money in minutes!",
+    tone: "warning",
+  },
+  {
+    icon: "support",
+    title: "24/7 Support",
+    text: "Contact us anytime from the in-app live chat",
+    tone: "success",
+  },
+];
+
 export interface SalaryTier {
   rank: string;
   team: number;
