@@ -153,6 +153,9 @@ interface Settings {
   maintenanceMessage: string;
   salaryTiers: SalaryTier[];
   supportLinks: { label: string; url: string }[];
+  guidelines: GuidelineItem[];
+  guidelinesActive: boolean;
+  guidelinesTitle: string;
   rewardAmount: number;
 
   rewardCooldownHours: number;
