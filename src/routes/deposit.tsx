@@ -210,25 +210,31 @@ function Deposit() {
 }
 
 function ConnectingOverlay({ amount }: { amount: number }) {
+  // Lock the page behind the overlay so mobile browsers can't scroll it away.
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
   return (
-    <div className="fixed inset-0 z-[120] grid place-items-center bg-background/80 p-6 backdrop-blur-xl">
-      <div className="animate-rise w-full max-w-sm rounded-[2rem] border border-border/50 bg-background/50 p-8 text-center shadow-[var(--shadow-elegant)] backdrop-blur-2xl">
-        <div className="relative mx-auto grid h-24 w-24 place-items-center">
+    <div className="fixed inset-0 z-[120] flex h-[100dvh] w-full items-center justify-center overflow-y-auto overscroll-contain bg-background/90 px-4 py-8 backdrop-blur-xl">
+      <div className="animate-rise mx-auto w-full max-w-[20rem] rounded-3xl border border-border/50 bg-background/70 p-6 text-center shadow-[var(--shadow-elegant)]">
+        <div className="relative mx-auto grid h-20 w-20 place-items-center">
           <span className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
-          <span className="relative grid h-20 w-20 place-items-center rounded-3xl gradient-brand text-primary-foreground">
-            <Rocket className="h-9 w-9 animate-pulse" />
+          <span className="relative grid h-16 w-16 place-items-center rounded-2xl gradient-brand text-primary-foreground">
+            <Rocket className="h-8 w-8" />
           </span>
         </div>
-        <div className="mx-auto mt-4 h-2 w-20 overflow-hidden rounded-full bg-primary/20">
-           <div className="h-full w-full origin-left animate-[loading_0.8s_ease-in-out_infinite] bg-primary" />
-        </div>
 
-        <h2 className="mt-6 font-display text-2xl font-black">Connecting to MPay</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Securing your session{amount ? ` for ${money(amount)}` : ""} — redirecting to the payment
-          gateway…
+        <h2 className="mt-5 font-display text-xl font-black">Connecting to MPay</h2>
+        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+          Securing your session{amount ? ` for ${money(amount)}` : ""} — opening the payment gateway…
         </p>
-        <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+
+        <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div className="h-full w-1/3 animate-[scroll_0.7s_linear_infinite] rounded-full gradient-cool" />
         </div>
         <p className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground">
