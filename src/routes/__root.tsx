@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { StoreProvider } from "@/lib/store";
 import { LiveChat } from "@/components/live-chat";
 import { SiteHead } from "@/components/site-head";
+import { CaptchaGate } from "@/components/captcha-gate";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
