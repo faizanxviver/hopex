@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { StoreProvider } from "@/lib/store";
 import { LiveChat } from "@/components/live-chat";
 import { SiteHead } from "@/components/site-head";
+import { CaptchaGate } from "@/components/captcha-gate";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -155,9 +156,11 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <StoreProvider>
         <SiteHead />
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <LiveChat />
+        <CaptchaGate>
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+          <LiveChat />
+        </CaptchaGate>
         <Toaster
           position="top-center"
           toastOptions={{
