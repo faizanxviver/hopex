@@ -156,9 +156,11 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <StoreProvider>
         <SiteHead />
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <LiveChat />
+        <CaptchaGate>
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+          <LiveChat />
+        </CaptchaGate>
         <Toaster
           position="top-center"
           toastOptions={{
