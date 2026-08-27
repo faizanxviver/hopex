@@ -1,0 +1,16 @@
+#!/bin/sh
+# Pre-commit hook: block commits with TypeScript errors
+
+echo "Running TypeScript type check..."
+
+bunx tsc --noEmit
+status=$?
+
+if [ $status -ne 0 ]; then
+  echo ""
+  echo "TypeScript errors found. Commit blocked."
+  exit 1
+fi
+
+echo "TypeScript check passed."
+exit 0
