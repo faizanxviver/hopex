@@ -1,30 +1,30 @@
-import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { ShieldCheck, Clock, Zap, Loader2, ArrowDownLeft, Wallet, Rocket } from "lucide-react";
+import { ArrowDownLeft, Check, Clock, Copy, Loader2, Upload, Wallet } from "lucide-react";
 import { AuthGuard, DashboardLayout } from "@/components/dashboard-layout";
 import { LedgerHeader, MoneyStat } from "@/components/money-stats";
-import { createCheckoutSession } from "@/lib/checkout.functions";
-import { depositBalance, money, pendingDeposits, useStore } from "@/lib/store";
+import { uploadProofImage } from "@/lib/uploads.functions";
+import {
+  depositBalance,
+  money,
+  newId,
+  pendingDeposits,
+  timestamp,
+  useStore,
+} from "@/lib/store";
 import { cn } from "@/lib/utils";
-
 
 export const Route = createFileRoute("/deposit")({
   head: () => ({
     meta: [
       { name: "robots", content: "noindex, nofollow" },
       { title: "Deposit Funds — HopeX" },
-      {
-        name: "description",
-        content:
-          "Fund your wallet through the secure SecurePay gateway with bank transfer, USDT, JazzCash or EasyPaisa.",
-      },
+      { name: "description", content: "Deposit manually with JazzCash, EasyPaisa or bank and submit your TID." },
       { property: "og:title", content: "Deposit Funds — HopeX" },
-      {
-        property: "og:description",
-        content: "Fast, secure deposits with multiple payment methods.",
-      },
+      { property: "og:description", content: "Manual deposits with transaction ID verification." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: () => (
@@ -36,211 +36,229 @@ export const Route = createFileRoute("/deposit")({
   ),
 });
 
-function Deposit() {
-  const { db, user } = useStore();
-  const [amount, setAmount] = useState<string>("");
-  const [busy, setBusy] = useState(false);
-  const [connecting, setConnecting] = useState(false);
-  const startCheckout = useServerFn(createCheckoutSession);
-
-  if (!user) return null;
-
-  const quick = db.settings.quickAmounts.length
-    ? db.settings.quickAmounts
-    : [1000, 3000, 5000, 10000, 25000, 50000];
-  const deposited = depositBalance(db, user.id);
-  const pending = pendingDeposits(db, user.id);
-
-  const openGateway = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const value = Number(amount);
-    if (!value || value < db.settings.minDeposit) {
-      return toast.error(`Minimum deposit is ${money(db.settings.minDeposit)}.`);
-    }
-    setBusy(true);
-    setConnecting(true);
-    try {
-      const session = await startCheckout({ data: { amount: value } });
-      // Keep the connecting screen visible for a moment, then open MPay in a new tab.
-      await new Promise((r) => setTimeout(r, 1200));
-      const tab = window.open(session.url, "_blank", "noopener,noreferrer");
-      setConnecting(false);
-      setBusy(false);
-      if (!tab) {
-        // Popup blocked — send the user straight to the gateway instead of hanging.
-        window.location.href = session.url;
-        return;
-      }
-      toast.success("MPay opened in a new tab. Complete your payment there.");
-      window.location.href = "/deposit-history";
-    } catch (err) {
-      setConnecting(false);
-      setBusy(false);
-      toast.error(err instanceof Error ? err.message : "Could not open the payment gateway.");
-    }
-  };
-
-
+function CopyRow({ label, value }: { label: string; value: string }) {
+  const [done, setDone] = useState(false);
   return (
-    <div className="space-y-4 pb-24">
-      {connecting ? <ConnectingOverlay amount={Number(amount)} /> : null}
-
-      <LedgerHeader
-        title="Deposit funds"
-        subtitle={`Pick an amount, then pay inside the secure MPay gateway. Minimum ${money(db.settings.minDeposit)}.`}
-        icon={<ArrowDownLeft className="h-5 w-5" />}
-      />
-
-      <div className="grid grid-cols-2 gap-3">
-        <MoneyStat
-          label="Deposit balance"
-          value={money(deposited)}
-          tone="success"
-          icon={<Wallet className="h-4 w-4" />}
-          hint="Approved top-ups"
-        />
-        <MoneyStat
-          label="Awaiting approval"
-          value={money(pending)}
-          tone="primary"
-          icon={<Clock className="h-4 w-4" />}
-          hint="In review"
-        />
+    <div className="flex items-center justify-between gap-3 rounded-2xl glass-soft px-4 py-3">
+      <div className="min-w-0">
+        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
+        <p className="truncate font-display text-base font-black">{value || "—"}</p>
       </div>
-
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <div className="relative overflow-hidden rounded-[2rem] glass p-5">
-          <span className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-primary/20 blur-3xl" />
-          <form onSubmit={openGateway} className="relative space-y-5">
-            <div>
-              <p className="mb-3 text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
-                Quick amount
-              </p>
-              <div className="grid grid-cols-3 gap-2.5">
-                {quick.map((q) => (
-                  <button
-                    type="button"
-                    key={q}
-                    onClick={() => setAmount(String(q))}
-                    className={cn(
-                      "relative overflow-hidden rounded-2xl py-4 text-sm font-black transition-all hover:-translate-y-0.5",
-                      Number(amount) === q
-                        ? "gradient-brand text-primary-foreground shadow-lg shadow-primary/25"
-                        : "glass-soft text-foreground",
-                    )}
-                  >
-                    <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-                    Rs {q.toLocaleString("en-PK")}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
-                Or enter a custom amount (PKR)
-              </label>
-              <div className="relative">
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black text-muted-foreground">
-                  Rs
-                </span>
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="5000"
-                  className="h-14 w-full rounded-2xl border-none bg-background/40 pl-12 pr-4 font-display text-xl font-black outline-none ring-1 ring-border/50 focus:ring-2 focus:ring-primary/50"
-                />
-              </div>
-            </div>
-
-            <button
-              disabled={busy}
-              className="btn-glass btn-glass-primary flex h-14 w-full items-center justify-center gap-2 text-base font-black disabled:opacity-60"
-            >
-              {busy ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Connecting to MPay…
-                </>
-              ) : (
-                "Submit & continue — MPay"
-              )}
-            </button>
-            <p className="flex items-center justify-center gap-1.5 text-center text-[11px] text-muted-foreground">
-              <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-success" /> You'll be taken to our
-              automatic gateway to select a method, pay and upload your screenshot.
-            </p>
-          </form>
-        </div>
-
-        <div className="space-y-4">
-          <div className="rounded-[2rem] glass p-5">
-            <p className="flex items-center gap-2 text-sm font-black">
-              <Zap className="h-4 w-4 text-gold" /> How it works
-            </p>
-            <ol className="mt-4 space-y-3">
-              {[
-                "Pick an amount and submit.",
-                "The secure MPay gateway opens.",
-                "Choose a method and copy the account number.",
-                "Pay, upload the screenshot and submit.",
-                "Funds credit after approval.",
-              ].map((step, i) => (
-                <li key={step} className="flex items-start gap-3 text-xs text-muted-foreground">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-primary/12 text-[11px] font-black text-primary">
-                    {i + 1}
-                  </span>
-                  <span className="pt-1">{step}</span>
-                </li>
-              ))}
-            </ol>
-            <Link
-              to="/deposit-history"
-              search={{ ref: undefined }}
-              className="mt-5 flex h-11 items-center justify-center rounded-2xl gradient-cool text-sm font-black text-primary-foreground shadow-lg shadow-primary/20"
-            
-            >
-              Deposit history
-            </Link>
-          </div>
-        </div>
-      </div>
+      <button
+        type="button"
+        onClick={() => {
+          navigator.clipboard.writeText(value);
+          setDone(true);
+          toast.success(`${label} copied`);
+          setTimeout(() => setDone(false), 1500);
+        }}
+        className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/12 text-primary"
+        aria-label={`Copy ${label}`}
+      >
+        {done ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+      </button>
     </div>
   );
 }
 
-function ConnectingOverlay({ amount }: { amount: number }) {
-  // Lock the page behind the overlay so mobile browsers can't scroll it away.
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
+function Deposit() {
+  const { db, user, update, addNotification } = useStore();
+  const navigate = useNavigate();
+  const [amount, setAmount] = useState("");
+  const [methodId, setMethodId] = useState("");
+  const [tid, setTid] = useState("");
+  const [proofUrl, setProofUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  if (!user) return null;
+
+  const methods = db.methods.filter((m) => m.active).sort((a, b) => a.sortOrder - b.sortOrder);
+  const method = methods.find((m) => m.id === methodId);
+  const quick = db.settings.quickAmounts.length
+    ? db.settings.quickAmounts
+    : [1000, 3000, 5000, 10000, 25000, 50000];
+
+  const onFile = async (file?: File) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result).split(",")[1] ?? "");
+        r.onerror = () => reject(new Error("Could not read the file"));
+        r.readAsDataURL(file);
+      });
+      const res = await uploadProofImage({ data: { base64, name: file.name, purpose: "proof" } });
+      setProofUrl(res.url);
+      toast.success("Screenshot uploaded");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const value = Number(amount);
+    if (!value || value < db.settings.minDeposit)
+      return toast.error(`Minimum deposit is ${money(db.settings.minDeposit)}.`);
+    if (!method) return toast.error("Select a payment method.");
+    const cleanTid = tid.trim();
+    if (cleanTid.length < 4) return toast.error("Enter a valid Transaction ID (TID).");
+    if (db.transactions.some((t) => t.type === "deposit" && (t.note ?? "") === `TID: ${cleanTid}`))
+      return toast.error("This TID has already been submitted.");
+
+    setBusy(true);
+    update((d) => {
+      d.transactions.unshift({
+        id: newId(),
+        userId: user.id,
+        type: "deposit",
+        amount: value,
+        method: method.name,
+        reference: `${method.accountName} · ${method.accountNumber} · TID ${cleanTid}`,
+        note: `TID: ${cleanTid}`,
+        proofUrl: proofUrl || undefined,
+        status: "processing",
+        createdAt: timestamp(),
+      });
+      return d;
+    });
+    addNotification(user.id, {
+      title: "Deposit submitted",
+      body: `${money(value)} via ${method.name} is under review.`,
+      kind: "info",
+    });
+    toast.success("Deposit submitted — awaiting admin approval.");
+    setBusy(false);
+    navigate({ to: "/deposit-history", search: { ref: undefined } });
+  };
 
   return (
-    <div className="fixed inset-0 z-[120] flex h-[100dvh] w-full items-center justify-center overflow-y-auto overscroll-contain bg-background/90 px-4 py-8 backdrop-blur-xl">
-      <div className="animate-rise mx-auto w-full max-w-[20rem] rounded-3xl border border-border/50 bg-background/70 p-6 text-center shadow-[var(--shadow-elegant)]">
-        <div className="relative mx-auto grid h-20 w-20 place-items-center">
-          <span className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
-          <span className="relative grid h-16 w-16 place-items-center rounded-2xl gradient-brand text-primary-foreground">
-            <Rocket className="h-8 w-8" />
-          </span>
-        </div>
+    <div className="space-y-4 pb-24">
+      <LedgerHeader
+        title="Deposit funds"
+        subtitle={`Send payment to the account below, then submit your TID. Minimum ${money(db.settings.minDeposit)}.`}
+        icon={<ArrowDownLeft className="h-5 w-5" />}
+      />
 
-        <h2 className="mt-5 font-display text-xl font-black">Connecting to MPay</h2>
-        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-          Securing your session{amount ? ` for ${money(amount)}` : ""} — opening the payment gateway…
-        </p>
-
-        <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-          <div className="h-full w-1/3 animate-[scroll_0.7s_linear_infinite] rounded-full gradient-cool" />
-        </div>
-        <p className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground">
-          <ShieldCheck className="h-3.5 w-3.5 text-success" /> Encrypted MPay session
-        </p>
+      <div className="grid grid-cols-2 gap-3">
+        <MoneyStat label="Deposit balance" value={money(depositBalance(db, user.id))} tone="success" icon={<Wallet className="h-4 w-4" />} hint="Approved top-ups" />
+        <MoneyStat label="Awaiting approval" value={money(pendingDeposits(db, user.id))} tone="primary" icon={<Clock className="h-4 w-4" />} hint="In review" />
       </div>
+
+      <form onSubmit={submit} className="relative space-y-5 overflow-hidden rounded-[2rem] glass p-5">
+        <Step n={1} title="Amount">
+          <div className="grid grid-cols-3 gap-2.5">
+            {quick.map((q) => (
+              <button
+                type="button"
+                key={q}
+                onClick={() => setAmount(String(q))}
+                className={cn(
+                  "rounded-2xl py-3.5 text-sm font-black transition-all",
+                  Number(amount) === q ? "gradient-brand text-primary-foreground shadow-lg shadow-primary/25" : "glass-soft",
+                )}
+              >
+                Rs {q.toLocaleString("en-PK")}
+              </button>
+            ))}
+          </div>
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="Custom amount (Rs)"
+            className="mt-3 h-12 w-full rounded-2xl bg-background/40 px-4 font-black outline-none ring-1 ring-border/50 focus:ring-2 focus:ring-primary/50"
+          />
+        </Step>
+
+        <Step n={2} title="Payment method">
+          {methods.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No payment methods available right now. Please contact support.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+              {methods.map((m) => (
+                <button
+                  type="button"
+                  key={m.id}
+                  onClick={() => setMethodId(m.id)}
+                  className={cn(
+                    "flex items-center gap-2 rounded-2xl p-3 text-left text-sm font-black transition-all",
+                    methodId === m.id ? "ring-2 ring-primary bg-primary/10" : "glass-soft",
+                  )}
+                >
+                  {m.imageUrl ? (
+                    <img src={m.imageUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
+                  ) : (
+                    <span className="grid h-8 w-8 place-items-center rounded-lg gradient-brand text-xs text-primary-foreground">
+                      {m.name.slice(0, 1)}
+                    </span>
+                  )}
+                  <span className="truncate">{m.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </Step>
+
+        {method ? (
+          <>
+            <Step n={3} title={`Send ${amount ? money(Number(amount)) : "payment"} to`}>
+              <div className="space-y-2.5">
+                <CopyRow label="Account title" value={method.accountName} />
+                <CopyRow label="Account number" value={method.accountNumber} />
+                {method.instructions ? (
+                  <p className="whitespace-pre-line rounded-2xl bg-muted/50 p-3 text-xs text-muted-foreground">{method.instructions}</p>
+                ) : null}
+              </div>
+            </Step>
+
+            <Step n={4} title="Transaction ID (TID)">
+              <input
+                value={tid}
+                onChange={(e) => setTid(e.target.value)}
+                placeholder="e.g. 0123456789"
+                className="h-12 w-full rounded-2xl bg-background/40 px-4 font-black tracking-wider outline-none ring-1 ring-border/50 focus:ring-2 focus:ring-primary/50"
+              />
+              <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-border p-3 text-xs font-bold text-muted-foreground">
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : proofUrl ? <Check className="h-4 w-4 text-success" /> : <Upload className="h-4 w-4" />}
+                {proofUrl ? "Screenshot attached" : "Attach screenshot (optional)"}
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
+              </label>
+            </Step>
+
+            <button
+              disabled={busy || uploading}
+              className="btn-glass btn-glass-primary flex h-14 w-full items-center justify-center gap-2 text-base font-black disabled:opacity-60"
+            >
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Submit deposit
+            </button>
+          </>
+        ) : null}
+      </form>
+
+      <Link
+        to="/deposit-history"
+        search={{ ref: undefined }}
+        className="flex h-11 items-center justify-center rounded-2xl glass text-sm font-black"
+      >
+        Deposit history
+      </Link>
+    </div>
+  );
+}
+
+function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="mb-3 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.16em] text-muted-foreground">
+        <span className="grid h-6 w-6 place-items-center rounded-lg bg-primary/12 text-primary">{n}</span>
+        {title}
+      </p>
+      {children}
     </div>
   );
 }
